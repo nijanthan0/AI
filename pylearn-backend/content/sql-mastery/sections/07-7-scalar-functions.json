@@ -1,0 +1,751 @@
+{
+  "section": "7. Scalar Functions",
+  "order": 7,
+  "topics": [
+    {
+      "topic": "What are they?",
+      "slides": [
+        {
+          "id": "sql-80",
+          "language": "sql",
+          "section": "7. Scalar Functions",
+          "topic": "What are they?",
+          "step": "7.1",
+          "category": "sql",
+          "categoryLabel": "Scalar Functions",
+          "tag": "Lesson",
+          "question": "How do scalar functions transform individual column values row-by-row?",
+          "explanation": {
+            "points": [
+              "Unlike aggregate functions that collapse multiple rows into one, **scalar functions** operate on a single input row and return a single output value.",
+              "They execute row-by-row during query evaluation.",
+              "Categories of scalar functions:",
+              "- **String transformations**: `UPPER()`, `LOWER()`, `LENGTH()`, `SUBSTR()`, `TRIM()`.",
+              "- **Mathematical transformations**: `ROUND()`, `ABS()`, `RANDOM()`.",
+              "- **Date/Time transformations**: `DATE()`, `STRFTIME()`, `JULIANDAY()`.",
+              "- **Conditional logic**: `CASE WHEN ... THEN ... ELSE ... END`, `COALESCE()`."
+            ],
+            "highlight": "Scalar functions execute on each individual row, preserving the row count while transforming data values."
+          },
+          "code": "-- Transforming customer data using scalar functions\nSELECT \n  name,\n  UPPER(name) AS uppercase_name,\n  LENGTH(name) AS character_count,\n  LOWER(email) AS standardized_email,\n  SUBSTR(name, 1, 1) AS initial\nFROM customers\nLIMIT 4;",
+          "tip": "Emphasize that scalar functions can be nested: e.g. UPPER(SUBSTR(name, 1, 3)).",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "Scalar Function Output",
+              "columns": [
+                {
+                  "name": "name",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "uppercase_name",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "character_count",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "standardized_email",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "initial",
+                  "type": "TEXT"
+                }
+              ],
+              "rows": [
+                [
+                  "Alice Smith",
+                  "ALICE SMITH",
+                  11,
+                  "alice@tech.io",
+                  "A"
+                ],
+                [
+                  "Bob Johnson",
+                  "BOB JOHNSON",
+                  11,
+                  "bob@developer.org",
+                  "B"
+                ],
+                [
+                  "Charlie Brown",
+                  "CHARLIE BROWN",
+                  13,
+                  "charlie@ai.com",
+                  "C"
+                ]
+              ],
+              "note": "Row count unchanged; values transformed row-by-row"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "String Functions",
+      "slides": [
+        {
+          "id": "sql-81",
+          "language": "sql",
+          "section": "7. Scalar Functions",
+          "topic": "String Functions",
+          "step": "7.2",
+          "category": "sql",
+          "categoryLabel": "Scalar Functions",
+          "tag": "Lesson",
+          "question": "How do string manipulation functions sanitize, slice, and concatenate text?",
+          "explanation": {
+            "points": [
+              "**`UPPER(str)` / `LOWER(str)`**: Normalizes text case for case-insensitive matching.",
+              "**`SUBSTR(str, start, length)`**: Extracts a substring starting at 1-based index `start`.",
+              "**`TRIM(str)`**: Strips leading and trailing whitespace characters.",
+              "**`REPLACE(str, search, replacement)`**: Replaces occurrences of a substring.",
+              "**Concatenation (`||`)**: Merges multiple text expressions into a single string."
+            ],
+            "highlight": "Use || for string concatenation and SUBSTR(str, start, len) to extract slices."
+          },
+          "code": "-- String manipulation demonstration\nSELECT \n  title,\n  SUBSTR(title, 1, 15) || '...' AS truncated_title,\n  UPPER(category) AS upper_category,\n  REPLACE(category, ' ', '_') AS slug_category\nFROM books\nLIMIT 4;",
+          "tip": "Remind students that SQL string indexes start at 1, NOT 0 like in Python or JavaScript.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "String Transformations",
+              "columns": [
+                {
+                  "name": "title",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "truncated_title",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "upper_category",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "slug_category",
+                  "type": "TEXT"
+                }
+              ],
+              "rows": [
+                [
+                  "Clean Code",
+                  "Clean Code...",
+                  "SOFTWARE ENGINEERING",
+                  "Software_Engineering"
+                ],
+                [
+                  "Designing Data-Intensive Applications",
+                  "Designing Data-...",
+                  "DISTRIBUTED SYSTEMS",
+                  "Distributed_Systems"
+                ]
+              ],
+              "note": "Concatenation and replacement evaluated"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Numeric Functions",
+      "slides": [
+        {
+          "id": "sql-82",
+          "language": "sql",
+          "section": "7. Scalar Functions",
+          "topic": "Numeric Functions",
+          "step": "7.3",
+          "category": "sql",
+          "categoryLabel": "Scalar Functions",
+          "tag": "Lesson",
+          "question": "How do mathematical scalar functions round, compute absolute values, and generate randoms?",
+          "explanation": {
+            "points": [
+              "**`ROUND(num, decimals)`**: Rounds a floating point number to `decimals` decimal places.",
+              "**`ABS(num)`**: Computes the absolute positive value (e.g., `ABS(-15.4) -> 15.4`).",
+              "**`RANDOM()`**: Generates a pseudo-random signed 64-bit integer.",
+              "SQLite idiom for random sample rows: `ORDER BY RANDOM() LIMIT 1` picks a random record from a table."
+            ],
+            "highlight": "Use ROUND(num, 2) for financial formatting and ORDER BY RANDOM() LIMIT n for random sampling."
+          },
+          "code": "-- Mathematical functions on prices and random sampling\nSELECT \n  title,\n  price,\n  ROUND(price * 0.925, 2) AS price_with_tax,\n  ABS(price - 40.00) AS variance_from_40_usd\nFROM books\nORDER BY RANDOM()\nLIMIT 3;",
+          "tip": "Warn learners that ORDER BY RANDOM() requires a full table scan, so avoid it on billion-row tables in production.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "Numeric Transformations",
+              "columns": [
+                {
+                  "name": "title",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "price",
+                  "type": "REAL"
+                },
+                {
+                  "name": "price_with_tax",
+                  "type": "REAL"
+                },
+                {
+                  "name": "variance_from_40_usd",
+                  "type": "REAL"
+                }
+              ],
+              "rows": [
+                [
+                  "Clean Code",
+                  32.5,
+                  30.06,
+                  7.5
+                ],
+                [
+                  "Designing Data-Intensive Applications",
+                  45.0,
+                  41.63,
+                  5.0
+                ]
+              ],
+              "note": "Tax and variance computed using ROUND and ABS"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Scalar Functions Quiz",
+      "slides": [
+        {
+          "id": "sql-83",
+          "language": "sql",
+          "section": "7. Scalar Functions",
+          "topic": "Scalar Functions Quiz",
+          "step": "7.4",
+          "category": "sql",
+          "categoryLabel": "Scalar Functions",
+          "tag": "Quiz",
+          "question": "Module 7 Quiz: Test your grasp of string, numeric, date, and CASE scalar expressions",
+          "explanation": {
+            "points": [
+              "Verify your mastery of row-level scalar transformations.",
+              "Test 1-based indexing in SUBSTR and conditional CASE evaluation.",
+              "Answer the 4 questions in the interactive quiz card."
+            ],
+            "highlight": "Test your scalar function and data transformation knowledge."
+          },
+          "code": "-- Interactive quiz slide.\n-- Answer questions in the visual panel on the left.\nSELECT 'Test your Scalar Functions knowledge.' AS status;",
+          "tip": "Review how CASE WHEN evaluates in top-to-bottom short-circuit order.",
+          "viz": {
+            "type": "sql-quiz",
+            "data": {
+              "quizTitle": "Module 7: Scalar Functions Quiz",
+              "questions": [
+                {
+                  "question": "In standard SQL, what does SUBSTR('Database', 1, 4) return?",
+                  "options": [
+                    "Data",
+                    "atab",
+                    "base",
+                    "Data (0-indexed)"
+                  ],
+                  "answer": 0,
+                  "explanation": "SQL strings are 1-based: index 1 starts at 'D', taking 4 characters yields 'Data'."
+                },
+                {
+                  "question": "What is the standard SQL string concatenation operator in SQLite and PostgreSQL?",
+                  "options": [
+                    "+",
+                    "&",
+                    "||",
+                    "CONCAT_SYM"
+                  ],
+                  "answer": 2,
+                  "explanation": "The double pipe '||' is the ANSI standard string concatenation operator."
+                },
+                {
+                  "question": "What does CASE WHEN ... THEN ... ELSE ... END do in SQL?",
+                  "options": [
+                    "It creates a loop that executes multiple times",
+                    "It provides if-then-else conditional logic within query expressions",
+                    "It pauses execution like a switch statement",
+                    "It defines a database trigger"
+                  ],
+                  "answer": 1,
+                  "explanation": "CASE expressions evaluate conditions sequentially and return the matching THEN value, or the ELSE fallback."
+                },
+                {
+                  "question": "What does STRFTIME('%Y-%m', '2024-03-15') produce?",
+                  "options": [
+                    "2024",
+                    "03",
+                    "'2024-03'",
+                    "15-03-2024"
+                  ],
+                  "answer": 2,
+                  "explanation": "STRFTIME formats date strings according to format specifiers; '%Y-%m' yields Year and Month."
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Date Functions",
+      "slides": [
+        {
+          "id": "sql-84",
+          "language": "sql",
+          "section": "7. Scalar Functions",
+          "topic": "Date Functions",
+          "step": "7.5",
+          "category": "sql",
+          "categoryLabel": "Scalar Functions",
+          "tag": "Lesson",
+          "question": "How does STRFTIME extract years, months, days, and quarters from ISO timestamps?",
+          "explanation": {
+            "points": [
+              "**`STRFTIME(format, timestring)`** formats and extracts date components.",
+              "Key format specifiers:",
+              "- `'%Y'`: 4-digit Year (`2024`)",
+              "- `'%m'`: 2-digit Month (`01` through `12`)",
+              "- `'%d'`: 2-digit Day of the month (`01` through `31`)",
+              "- `'%w'`: Day of the week (`0` = Sunday, `6` = Saturday)",
+              "- `'%Y-%m'`: Standard Year-Month cohort bucket.",
+              "Essential for grouping time-series analytics by month or quarter."
+            ],
+            "highlight": "Use STRFTIME('%Y-%m', date) to roll up time-series transactions into monthly cohort buckets."
+          },
+          "code": "-- Extracting temporal dimensions from orders\nSELECT \n  id AS order_id,\n  order_date,\n  STRFTIME('%Y', order_date) AS order_year,\n  STRFTIME('%m', order_date) AS order_month,\n  STRFTIME('%Y-%m', order_date) AS year_month_cohort,\n  STRFTIME('%w', order_date) AS day_of_week_num\nFROM orders;",
+          "tip": "Demonstrate grouping by STRFTIME('%Y-%m', order_date) to create monthly revenue bar charts.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "STRFTIME Date Decomposition",
+              "columns": [
+                {
+                  "name": "order_id",
+                  "type": "INTEGER",
+                  "isPk": true
+                },
+                {
+                  "name": "order_date",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "order_year",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "order_month",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "year_month_cohort",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "day_of_week_num",
+                  "type": "TEXT"
+                }
+              ],
+              "rows": [
+                [
+                  1,
+                  "2024-01-10",
+                  "2024",
+                  "01",
+                  "2024-01",
+                  "3"
+                ],
+                [
+                  2,
+                  "2024-01-14",
+                  "2024",
+                  "01",
+                  "2024-01",
+                  "0"
+                ],
+                [
+                  3,
+                  "2024-02-01",
+                  "2024",
+                  "02",
+                  "2024-02",
+                  "4"
+                ]
+              ],
+              "note": "Date components parsed for time-series aggregation"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Conversion Functions",
+      "slides": [
+        {
+          "id": "sql-85",
+          "language": "sql",
+          "section": "7. Scalar Functions",
+          "topic": "Conversion Functions",
+          "step": "7.6",
+          "category": "sql",
+          "categoryLabel": "Scalar Functions",
+          "tag": "Lesson",
+          "question": "How does the CAST statement safely convert data types in query expressions?",
+          "explanation": {
+            "points": [
+              "**`CAST(expression AS target_type)`** explicitly converts data types.",
+              "Common conversions:",
+              "- `CAST('42.50' AS REAL)`: Converts string text to floating-point number.",
+              "- `CAST(price AS INTEGER)`: Truncates decimal values to whole integers.",
+              "- `CAST(id AS TEXT)`: Converts numeric identifiers to strings for concatenation.",
+              "Crucial for ensuring numeric sorting when numbers are stored in text columns."
+            ],
+            "highlight": "Use CAST(col AS type) to convert strings to numbers and prevent lexicographical sorting bugs."
+          },
+          "code": "-- Type casting demonstration\nSELECT \n  title,\n  price,\n  CAST(price AS INTEGER) AS whole_dollars,\n  CAST(price AS TEXT) AS price_string,\n  'Book #' || CAST(id AS TEXT) AS book_code\nFROM books\nLIMIT 4;",
+          "tip": "Warn students what happens if you sort text numbers without casting: '10' sorts before '2'!",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "CAST() Conversions",
+              "columns": [
+                {
+                  "name": "title",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "price",
+                  "type": "REAL"
+                },
+                {
+                  "name": "whole_dollars",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "price_string",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "book_code",
+                  "type": "TEXT"
+                }
+              ],
+              "rows": [
+                [
+                  "Clean Code",
+                  32.5,
+                  32,
+                  "32.5",
+                  "Book #1"
+                ],
+                [
+                  "Designing Data-Intensive Applications",
+                  45.0,
+                  45,
+                  "45.0",
+                  "Book #2"
+                ]
+              ],
+              "note": "Types converted across REAL, INTEGER, and TEXT"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Logical Functions",
+      "slides": [
+        {
+          "id": "sql-86",
+          "language": "sql",
+          "section": "7. Scalar Functions",
+          "topic": "Logical Functions",
+          "step": "7.7",
+          "category": "sql",
+          "categoryLabel": "Scalar Functions",
+          "tag": "Lesson",
+          "question": "How do CASE expressions and IIF implement conditional branching in SQL?",
+          "explanation": {
+            "points": [
+              "The **`CASE`** expression brings if/then/else logic directly into queries:",
+              "```sql\nCASE\n  WHEN condition1 THEN result1\n  WHEN condition2 THEN result2\n  ELSE default_result\nEND\n```",
+              "It evaluates conditions sequentially and returns the first matching branch.",
+              "SQLite 3.32+ also supports the shorthand **`IIF(condition, true_val, false_val)`**.",
+              "Use CASE to bucket continuous metrics into business tiers (e.g. Bronze, Silver, Gold)."
+            ],
+            "highlight": "The CASE WHEN expression provides row-level if-then-else branching for labeling and categorization."
+          },
+          "code": "-- Classify books into price tiers using CASE\nSELECT \n  title,\n  price,\n  CASE \n    WHEN price >= 42.00 THEN 'Premium Tier'\n    WHEN price >= 35.00 THEN 'Standard Tier'\n    ELSE 'Budget Friendly'\n  END AS pricing_tier,\n  IIF(stock > 50, 'High Stock', 'Reorder Soon') AS inventory_flag\nFROM books;",
+          "tip": "Demonstrate how CASE expressions can also be placed inside aggregate functions like SUM(CASE WHEN ...).",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "CASE and IIF Classification",
+              "columns": [
+                {
+                  "name": "title",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "price",
+                  "type": "REAL"
+                },
+                {
+                  "name": "pricing_tier",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "inventory_flag",
+                  "type": "TEXT"
+                }
+              ],
+              "rows": [
+                [
+                  "Designing Data-Intensive Applications",
+                  45.0,
+                  "Premium Tier",
+                  "High Stock"
+                ],
+                [
+                  "System Design Interview Vol 2",
+                  42.0,
+                  "Premium Tier",
+                  "High Stock"
+                ],
+                [
+                  "System Design Interview Vol 1",
+                  39.99,
+                  "Standard Tier",
+                  "High Stock"
+                ],
+                [
+                  "Clean Code",
+                  32.5,
+                  "Budget Friendly",
+                  "Reorder Soon"
+                ]
+              ],
+              "note": "Categorical labels assigned via conditional evaluation"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Customer Contact List",
+      "slides": [
+        {
+          "id": "sql-87",
+          "language": "sql",
+          "section": "7. Scalar Functions",
+          "topic": "Customer Contact List",
+          "step": "7.8",
+          "category": "sql",
+          "categoryLabel": "Scalar Functions",
+          "tag": "Challenge",
+          "question": "Challenge: Clean and format standardized international contact labels",
+          "explanation": {
+            "points": [
+              "**Task**: Create a formatted customer directory from `customers`.",
+              "Return a single column aliased as `formatted_contact` containing:",
+              "`'ALICE SMITH (USA) <alice@tech.io>'`",
+              "Use `UPPER(name)`, `UPPER(country)`, and string concatenation (`||`).",
+              "Order alphabetically by `formatted_contact` ASC."
+            ],
+            "highlight": "Use UPPER() and || concatenation to format customer contact cards."
+          },
+          "code": "-- WRITE YOUR FORMATTING QUERY HERE:\nSELECT \n  UPPER(name) || ' (' || UPPER(country) || ') <' || LOWER(email) || '>' AS formatted_contact\nFROM customers\nORDER BY formatted_contact ASC;",
+          "tip": "Show how frontend exports and mailing list pipelines rely on SQL string formatting.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Combine UPPER(name), UPPER(country), and LOWER(email) using the || operator.",
+            "code": "SELECT \n  UPPER(name) || ' (' || UPPER(country) || ') <' || LOWER(email) || '>' AS formatted_contact\nFROM customers\nORDER BY formatted_contact ASC;",
+            "timeComplexity": "O(N log N)",
+            "spaceComplexity": "O(N)",
+            "explanationPoints": [
+              "`UPPER()` capitalizes customer names and countries.",
+              "`LOWER()` normalizes email strings.",
+              "`||` stitches literals and column values into standard email address format."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Membership Duration",
+      "slides": [
+        {
+          "id": "sql-88",
+          "language": "sql",
+          "section": "7. Scalar Functions",
+          "topic": "Membership Duration",
+          "step": "7.9",
+          "category": "sql",
+          "categoryLabel": "Scalar Functions",
+          "tag": "Challenge",
+          "question": "Challenge: Calculate member account tenure in days and years",
+          "explanation": {
+            "points": [
+              "**Task**: In `customers`, calculate how many days each user has been a member relative to `'2024-06-01'`.",
+              "Use `ROUND(JULIANDAY('2024-06-01') - JULIANDAY(joined_date)) AS tenure_days`.",
+              "Return `name`, `joined_date`, and `tenure_days`.",
+              "Order by `tenure_days` DESC."
+            ],
+            "highlight": "Calculate day differences using JULIANDAY('2024-06-01') - JULIANDAY(joined_date)."
+          },
+          "code": "-- WRITE YOUR TENURE QUERY HERE:\nSELECT \n  name,\n  joined_date,\n  CAST(ROUND(JULIANDAY('2024-06-01') - JULIANDAY(joined_date)) AS INTEGER) AS tenure_days\nFROM customers\nORDER BY tenure_days DESC;",
+          "tip": "Demonstrate using JULIANDAY() for precise date delta calculations in SQLite.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Subtract JULIANDAY(joined_date) from target date to obtain total elapsed days.",
+            "code": "SELECT \n  name,\n  joined_date,\n  CAST(ROUND(JULIANDAY('2024-06-01') - JULIANDAY(joined_date)) AS INTEGER) AS tenure_days\nFROM customers\nORDER BY tenure_days DESC;",
+            "timeComplexity": "O(N log N)",
+            "spaceComplexity": "O(N)",
+            "explanationPoints": [
+              "`JULIANDAY()` converts calendar strings into continuous floating-point day numbers.",
+              "Subtraction yields exact elapsed day deltas.",
+              "`CAST(... AS INTEGER)` returns clean integer days."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Book Performance",
+      "slides": [
+        {
+          "id": "sql-89",
+          "language": "sql",
+          "section": "7. Scalar Functions",
+          "topic": "Book Performance",
+          "step": "7.10",
+          "category": "sql",
+          "categoryLabel": "Scalar Functions",
+          "tag": "Challenge",
+          "question": "Challenge: Classify technical literature into critical tiers with CASE",
+          "explanation": {
+            "points": [
+              "**Task**: Classify every book in `books` based on its `rating`:",
+              "- `rating >= 4.9`: `'Masterpiece'`",
+              "- `rating >= 4.7`: `'Bestseller'`",
+              "- `ELSE`: `'Standard Quality'`",
+              "Return `title`, `rating`, `price`, and the tier aliased as `quality_label`.",
+              "Order by `rating` DESC."
+            ],
+            "highlight": "Use CASE WHEN rating >= 4.9 THEN ... to assign qualitative labels."
+          },
+          "code": "-- WRITE YOUR CASE CLASSIFICATION QUERY HERE:\nSELECT \n  title,\n  rating,\n  price,\n  CASE \n    WHEN rating >= 4.9 THEN 'Masterpiece'\n    WHEN rating >= 4.7 THEN 'Bestseller'\n    ELSE 'Standard Quality'\n  END AS quality_label\nFROM books\nORDER BY rating DESC, price DESC;",
+          "tip": "Show how CASE expressions provide domain categorization for marketing badges.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Evaluate rating thresholds using a standard CASE expression with ELSE fallback.",
+            "code": "SELECT \n  title,\n  rating,\n  price,\n  CASE \n    WHEN rating >= 4.9 THEN 'Masterpiece'\n    WHEN rating >= 4.7 THEN 'Bestseller'\n    ELSE 'Standard Quality'\n  END AS quality_label\nFROM books\nORDER BY rating DESC, price DESC;",
+            "timeComplexity": "O(N log N)",
+            "spaceComplexity": "O(N)",
+            "explanationPoints": [
+              "CASE expressions short-circuit: a 4.9 rating matches the first branch and skips subsequent WHENs.",
+              "The `ELSE` clause guarantees no row is labeled NULL."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Book Categories",
+      "slides": [
+        {
+          "id": "sql-90",
+          "language": "sql",
+          "section": "7. Scalar Functions",
+          "topic": "Book Categories",
+          "step": "7.11",
+          "category": "sql",
+          "categoryLabel": "Scalar Functions",
+          "tag": "Challenge",
+          "question": "Challenge: Clean and generate URL slugs for books",
+          "explanation": {
+            "points": [
+              "**Task**: Generate URL routing slugs for all books in `books`.",
+              "Slug format: Lowercase title with spaces replaced by hyphens (`-`).",
+              "E.g.: `'Clean Code'` -> `'clean-code'`.",
+              "Return `id`, `title`, and `LOWER(REPLACE(title, ' ', '-')) AS url_slug`."
+            ],
+            "highlight": "Nest LOWER() and REPLACE() to generate web-ready SEO URL slugs."
+          },
+          "code": "-- WRITE YOUR URL SLUG QUERY HERE:\nSELECT \n  id,\n  title,\n  LOWER(REPLACE(title, ' ', '-')) AS url_slug\nFROM books\nORDER BY id ASC;",
+          "tip": "Demonstrate function composition: the output of REPLACE() feeds directly into LOWER().",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Use REPLACE(title, ' ', '-') to swap spaces for hyphens, and wrap in LOWER() for SEO slug generation.",
+            "code": "SELECT \n  id,\n  title,\n  LOWER(REPLACE(title, ' ', '-')) AS url_slug\nFROM books\nORDER BY id ASC;",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(N)",
+            "explanationPoints": [
+              "`REPLACE(title, ' ', '-')` replaces whitespace with dashes.",
+              "`LOWER()` ensures all characters are lowercase for web standards."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Monthly Sales Analysis",
+      "slides": [
+        {
+          "id": "sql-91",
+          "language": "sql",
+          "section": "7. Scalar Functions",
+          "topic": "Monthly Sales Analysis",
+          "step": "7.12",
+          "category": "sql",
+          "categoryLabel": "Scalar Functions",
+          "tag": "Challenge",
+          "question": "Challenge: Group sales transactions into Year-Month cohort buckets",
+          "explanation": {
+            "points": [
+              "**Task**: In the `orders` table, group orders by year and month using `STRFTIME('%Y-%m', order_date)`.",
+              "Calculate:",
+              "- `STRFTIME('%Y-%m', order_date) AS month_cohort`",
+              "- `COUNT(*) AS monthly_orders`",
+              "- `ROUND(SUM(total_amount), 2) AS monthly_revenue`",
+              "Order chronologically by `month_cohort` ASC."
+            ],
+            "highlight": "Group by STRFTIME('%Y-%m', order_date) to compute monthly sales metrics."
+          },
+          "code": "-- WRITE YOUR MONTHLY ANALYSIS QUERY HERE:\nSELECT \n  STRFTIME('%Y-%m', order_date) AS month_cohort,\n  COUNT(*) AS monthly_orders,\n  ROUND(SUM(total_amount), 2) AS monthly_revenue\nFROM orders\nGROUP BY month_cohort\nORDER BY month_cohort ASC;",
+          "tip": "Show how STRFTIME enables monthly cohort reporting without needing separate year and month columns in the schema.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Group by the scalar expression STRFTIME('%Y-%m', order_date) and sum total revenues.",
+            "code": "SELECT \n  STRFTIME('%Y-%m', order_date) AS month_cohort,\n  COUNT(*) AS monthly_orders,\n  ROUND(SUM(total_amount), 2) AS monthly_revenue\nFROM orders\nGROUP BY month_cohort\nORDER BY month_cohort ASC;",
+            "timeComplexity": "O(N log M) where M is months",
+            "spaceComplexity": "O(M)",
+            "explanationPoints": [
+              "`STRFTIME('%Y-%m', ...)` formats dates into '2024-01', '2024-02', etc.",
+              "`GROUP BY month_cohort` aggregates orders occurring within each calendar month.",
+              "`ORDER BY month_cohort ASC` ensures chronological output."
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

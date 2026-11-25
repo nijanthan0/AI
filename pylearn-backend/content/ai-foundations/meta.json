@@ -1,0 +1,18 @@
+{
+  "id": "ai-foundations",
+  "title": "AI Foundations",
+  "subtitle": "How machines learn from data",
+  "emoji": "🤖",
+  "color": "#89b4fa",
+  "level": "Intermediate",
+  "estimatedTime": "6 hours",
+  "topics": [
+    "What is AI",
+    "ML vs DL",
+    "Training",
+    "Features",
+    "Neural Nets",
+    "Datasets"
+  ],
+  "description": "Understand what AI truly is — from the math to the intuition."
+}

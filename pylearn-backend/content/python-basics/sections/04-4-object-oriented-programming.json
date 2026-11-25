@@ -1,0 +1,736 @@
+{
+  "section": "4. Object Oriented Programming",
+  "order": 4,
+  "topics": [
+    {
+      "topic": "OOP Fundamentals",
+      "slides": [
+        {
+          "section": "4. Object Oriented Programming",
+          "topic": "OOP Fundamentals",
+          "step": "21.0-O1",
+          "category": "oop",
+          "categoryLabel": "OOP Basics",
+          "tag": "Classes & Objects",
+          "question": "What is a Class and Object, and why do we use Object-Oriented Programming?",
+          "explanation": {
+            "points": [
+              "**The Blueprint Model**: A **Class** is a blueprint/template (e.g. `Blueprint of a Car`). An **Object** is a concrete instance built from that blueprint (e.g. `My Red Tesla`).",
+              "**State & Behavior**: Objects bundle **data/attributes** (`color`, `speed`) together with **functions/methods** (`accelerate()`, `brake()`).",
+              "**Why OOP?**: Prevents global variable chaos by organizing complex systems into modular, reusable, self-contained components.",
+              "You instantiate a class by calling it like a function: `car = Car()`."
+            ]
+          },
+          "code": "# Defining our first minimal Python Class\nclass Developer:\n    # A class defines the capabilities of all developers\n    role = \"Software Engineer\" # Class attribute\n    \n    def code(self):\n        print(\"💻 Writing high-performance Python code...\")\n\n# Creating two distinct Object instances\ndev1 = Developer()\ndev2 = Developer()\n\nprint(\"Instance 1:\", dev1, \"Role:\", dev1.role)\nprint(\"Instance 2:\", dev2, \"Role:\", dev2.role)\nprint(\"Are they the same object?\", dev1 is dev2) # False! Separate instances\n\ndev1.code()",
+          "tip": "Use the real-world analogy: 'Class = Cookie Cutter, Object = The Cookie stamped out of the cutter.'",
+          "viz": {
+            "type": "oop",
+            "data": {
+              "className": "BankAccount",
+              "classEmoji": "🏦",
+              "properties": [
+                "account_id: str",
+                "balance: float"
+              ],
+              "methods": [
+                "deposit(amt)",
+                "withdraw(amt)"
+              ],
+              "instances": [
+                {
+                  "name": "acc_alice",
+                  "color": "#22c55e",
+                  "emoji": "💳",
+                  "props": {
+                    "account_id": "\"A01\"",
+                    "balance": "1500"
+                  }
+                },
+                {
+                  "name": "acc_bob",
+                  "color": "#38bdf8",
+                  "emoji": "💰",
+                  "props": {
+                    "account_id": "\"B02\"",
+                    "balance": "850"
+                  }
+                }
+              ]
+            }
+          },
+          "id": 142
+        },
+        {
+          "section": "4. Object Oriented Programming",
+          "topic": "OOP Fundamentals",
+          "step": "21.0-O2",
+          "category": "oop",
+          "categoryLabel": "OOP Basics",
+          "tag": "self & __init__",
+          "question": "What is `self` in Python and why must it be passed explicitly to instance methods?",
+          "explanation": {
+            "points": [
+              "**`__init__` Constructor**: The initialization dunder method called automatically whenever a new object instance is created.",
+              "**What is `self`?**: A reference to the **specific instance** being created or manipulated. In other languages (Java/C++), this is implicitly called `this`.",
+              "Python explicitly passes the instance as the first argument: calling `alice.greet()` is syntactic sugar for `User.greet(alice)`.",
+              "Attributes attached to `self` (`self.name = name`) belong uniquely to that specific instance."
+            ]
+          },
+          "code": "class Robot:\n    def __init__(self, name: str, battery: int = 100):\n        # Initializing instance attributes\n        self.name = name\n        self.battery = battery\n        print(f\"🤖 Robot '{self.name}' initialized with {self.battery}% battery.\")\n\n    def work(self, hours: int):\n        consumption = hours * 10\n        self.battery = max(0, self.battery - consumption)\n        print(f\"{self.name} worked for {hours}h. Remaining battery: {self.battery}%\")\n\n# Instantiating distinct robots with their own state\nr1 = Robot(\"Optimus\", 100)\nr2 = Robot(\"Bumblebee\", 80)\n\nr1.work(3)\nr2.work(5)\n\nprint(f\"\\nFinal States -> Optimus: {r1.battery}%, Bumblebee: {r2.battery}%\")",
+          "tip": "Always remind students that 'self' is not a reserved Python keyword—it's an essential naming convention that must always be the first parameter of instance methods.",
+          "viz": {
+            "type": "oop",
+            "data": {
+              "className": "Drone",
+              "classEmoji": "🚁",
+              "properties": [
+                "altitude: int",
+                "battery: int"
+              ],
+              "methods": [
+                "fly(self, meters)",
+                "land(self)"
+              ],
+              "instances": [
+                {
+                  "name": "drone_1 (self)",
+                  "color": "#facc15",
+                  "emoji": "📍",
+                  "props": {
+                    "altitude": "45m",
+                    "battery": "92%"
+                  }
+                }
+              ]
+            }
+          },
+          "id": 143
+        },
+        {
+          "section": "4. Object Oriented Programming",
+          "topic": "OOP Fundamentals",
+          "step": "21.0-O3",
+          "category": "oop",
+          "categoryLabel": "OOP Basics",
+          "tag": "Attributes Scope",
+          "question": "What is the critical difference between Class Attributes and Instance Attributes?",
+          "explanation": {
+            "points": [
+              "**Class Attributes**: Defined directly inside the class body; **shared by all instances** of that class.",
+              "**Instance Attributes**: Defined inside `__init__` using `self.attr`; unique to **each individual object**.",
+              "**Common Bug**: Modifying a mutable class attribute (like a `list` or `dict`) from one instance mutates it across all instances!",
+              "Use class attributes for constants or shared counters, and instance attributes for unique per-object data."
+            ]
+          },
+          "code": "class Account:\n    bank_name = \"Apex Global Bank\" # Class Attribute (Shared by all)\n    total_accounts = 0              # Shared account counter\n\n    def __init__(self, owner: str, balance: float):\n        self.owner = owner          # Instance Attribute (Unique)\n        self.balance = balance      # Instance Attribute (Unique)\n        Account.total_accounts += 1\n\nacc1 = Account(\"Alice\", 5000.0)\nacc2 = Account(\"Bob\", 12000.0)\n\nprint(f\"Account 1: {acc1.owner} at {acc1.bank_name} (${acc1.balance})\")\nprint(f\"Account 2: {acc2.owner} at {acc2.bank_name} (${acc2.balance})\")\nprint(f\"Total Accounts Created across bank: {Account.total_accounts}\")",
+          "tip": "Beware of mutable default class attributes! If 'tags = []' is a class attribute, calling 'inst.tags.append()' adds to everyone's list.",
+          "viz": {
+            "type": "oop",
+            "data": {
+              "className": "User",
+              "classEmoji": "👥",
+              "properties": [
+                "species = \"Homo Sapiens\" (Class)",
+                "name: str (Instance)"
+              ],
+              "methods": [
+                "login()",
+                "logout()"
+              ],
+              "instances": [
+                {
+                  "name": "u1",
+                  "color": "#a855f7",
+                  "emoji": "👤",
+                  "props": {
+                    "name": "\"Maya\"",
+                    "species": "\"Homo Sapiens\""
+                  }
+                },
+                {
+                  "name": "u2",
+                  "color": "#06b6d4",
+                  "emoji": "👤",
+                  "props": {
+                    "name": "\"Arjun\"",
+                    "species": "\"Homo Sapiens\""
+                  }
+                }
+              ]
+            }
+          },
+          "id": 144
+        },
+        {
+          "section": "4. Object Oriented Programming",
+          "topic": "OOP Fundamentals",
+          "step": "21.0-O4",
+          "category": "oop",
+          "categoryLabel": "Methods",
+          "tag": "@classmethod & @staticmethod",
+          "question": "When should you use Instance Methods, `@classmethod`, and `@staticmethod`?",
+          "explanation": {
+            "points": [
+              "**Instance Method (`def f(self)`)**: Operates on specific object state via `self`.",
+              "**Class Method (`@classmethod def f(cls)`)**: Receives the class `cls` as its first parameter instead of an instance. Frequently used as **alternative factory constructors** (e.g. `from_dict`, `from_string`).",
+              "**Static Method (`@staticmethod def f()`)**: Self-contained utility function that receives neither `self` nor `cls`. Lives inside the class namespace for logical grouping."
+            ]
+          },
+          "code": "class User:\n    def __init__(self, username: str, email: str):\n        self.username = username\n        self.email = email\n\n    # 1. Instance Method\n    def get_display_name(self) -> str:\n        return f\"{self.username} <{self.email}>\"\n\n    # 2. Class Method: Alternative Factory Constructor\n    @classmethod\n    def from_csv_row(cls, row_str: str):\n        u, e = row_str.strip().split(\",\")\n        return cls(u, e)\n\n    # 3. Static Method: Independent Utility\n    @staticmethod\n    def is_valid_email(email: str) -> bool:\n        return \"@\" in email and \".\" in email\n\n# Using Factory Constructor\nu1 = User.from_csv_row(\"alex,alex@company.com\")\nprint(\"Constructed via @classmethod:\", u1.get_display_name())\n\n# Using Static Utility\nprint(\"Is email valid? ->\", User.is_valid_email(\"admin@domain.io\"))",
+          "tip": "Use @classmethod whenever you want to provide multiple ways to create an object (like User.from_json() or User.from_db()).",
+          "viz": {
+            "type": "oop",
+            "data": {
+              "className": "DateFormatter",
+              "classEmoji": "📅",
+              "properties": [
+                "year: int",
+                "month: int"
+              ],
+              "methods": [
+                "format() [instance]",
+                "from_string() [@classmethod]",
+                "is_valid() [@staticmethod]"
+              ],
+              "instances": [
+                {
+                  "name": "d1",
+                  "color": "#10b981",
+                  "emoji": "📆",
+                  "props": {
+                    "year": "2026",
+                    "month": "10"
+                  }
+                }
+              ]
+            }
+          },
+          "id": 145
+        }
+      ]
+    },
+    {
+      "topic": "OOP Pillars",
+      "slides": [
+        {
+          "section": "4. Object Oriented Programming",
+          "topic": "OOP Pillars",
+          "step": "21.0-O5",
+          "category": "oop",
+          "categoryLabel": "Pillars",
+          "tag": "Encapsulation & @property",
+          "question": "How does Encapsulation work in Python (Public, Protected _, Private __ & @property)?",
+          "explanation": {
+            "points": [
+              "**Encapsulation**: Bundling data with methods and restricting direct access to internal state to maintain data integrity.",
+              "**Public**: Default attributes (`self.name`), accessible from anywhere.",
+              "**Protected (`_attr`)**: Conventional agreement meaning 'internal use; do not touch outside this class/subclass'.",
+              "**Private (`__attr`)**: Python applies **name mangling** (renaming to `_ClassName__attr`) to prevent accidental overrides in subclasses.",
+              "**`@property` Getter & Setter**: Allows accessing a method like a regular attribute while enforcing validation logic."
+            ]
+          },
+          "code": "class BankAccount:\n    def __init__(self, balance: float):\n        self.__balance = balance # Private attribute (name-mangled)\n\n    # Getter\n    @property\n    def balance(self) -> float:\n        return self.__balance\n\n    # Setter with strict business logic validation\n    @balance.setter\n    def balance(self, new_balance: float):\n        if new_balance < 0:\n            raise ValueError(\"Balance cannot be negative!\")\n        self.__balance = new_balance\n\naccount = BankAccount(500.0)\nprint(f\"Current Balance: ${account.balance}\")\n\n# Updating via setter\naccount.balance = 750.0\nprint(f\"Updated Balance: ${account.balance}\")\n\ntry:\n    account.balance = -100.0 # Raises ValueError\nexcept ValueError as e:\n    print(f\"Validation Guard Blocked Action: {e}\")",
+          "tip": "Never write Java-style 'getBalance()' and 'setBalance()' in Python. Use '@property' for clean, Pythonic attribute access.",
+          "viz": {
+            "type": "oop",
+            "data": {
+              "className": "Vault",
+              "classEmoji": "🔐",
+              "properties": [
+                "label: str (public)",
+                "_owner: str (protected)",
+                "__secret_pin: int (private)"
+              ],
+              "methods": [
+                "unlock(pin)",
+                "get_pin()"
+              ],
+              "instances": [
+                {
+                  "name": "safe",
+                  "color": "#ef4444",
+                  "emoji": "🛡️",
+                  "props": {
+                    "label": "\"Safe 1\"",
+                    "__secret_pin": "\"***\""
+                  }
+                }
+              ]
+            }
+          },
+          "id": 146
+        },
+        {
+          "section": "4. Object Oriented Programming",
+          "topic": "OOP Pillars",
+          "step": "21.0-O6",
+          "category": "oop",
+          "categoryLabel": "Pillars",
+          "tag": "Abstraction & ABC",
+          "question": "How do you enforce Interface Abstraction using Abstract Base Classes (abc.ABC)?",
+          "explanation": {
+            "points": [
+              "**Abstraction**: Hiding complex implementation details and exposing only essential interface contracts.",
+              "**Abstract Base Class (`ABC`)**: A parent class that **cannot be instantiated** directly.",
+              "**`@abstractmethod`**: Decorator specifying methods that **every concrete subclass MUST implement**, or Python raises `TypeError`.",
+              "Vital in production backend design (e.g. defining a base `DatabaseDriver` or `LLMProvider` interface)."
+            ]
+          },
+          "code": "from abc import ABC, abstractmethod\n\n# Abstract Interface Contract\nclass CloudStorage(ABC):\n    @abstractmethod\n    def upload(self, filename: str, data: bytes) -> str:\n        \"\"\"Upload data and return public URL\"\"\"\n        pass\n\n# Concrete Implementation 1: AWS S3\nclass S3Storage(CloudStorage):\n    def upload(self, filename: str, data: bytes) -> str:\n        return f\"https://s3.amazonaws.com/bucket/{filename}\"\n\n# Concrete Implementation 2: Google Cloud Storage\nclass GCSStorage(CloudStorage):\n    def upload(self, filename: str, data: bytes) -> str:\n        return f\"https://storage.googleapis.com/gcs-bucket/{filename}\"\n\n# cloud = CloudStorage() # TypeError! Can't instantiate abstract class\nprovider: CloudStorage = S3Storage()\nprint(\"S3 Upload URL:\", provider.upload(\"weights.bin\", b\"0xFA4B\"))",
+          "tip": "Abstract Base Classes guarantee architectural contracts across team microservices.",
+          "viz": {
+            "type": "oop",
+            "data": {
+              "className": "PaymentProcessor (ABC)",
+              "classEmoji": "⚡",
+              "properties": [
+                "@abstractmethod process_payment()"
+              ],
+              "methods": [
+                "refund()",
+                "log_audit()"
+              ],
+              "instances": [
+                {
+                  "name": "StripeGateway",
+                  "color": "#6366f1",
+                  "emoji": "💳",
+                  "props": {
+                    "process_payment()": "Implemented"
+                  }
+                },
+                {
+                  "name": "RazorpayGateway",
+                  "color": "#0ea5e9",
+                  "emoji": "🇮🇳",
+                  "props": {
+                    "process_payment()": "Implemented"
+                  }
+                }
+              ]
+            }
+          },
+          "id": 147
+        },
+        {
+          "section": "4. Object Oriented Programming",
+          "topic": "OOP Pillars",
+          "step": "21.0-O7",
+          "category": "oop",
+          "categoryLabel": "Pillars",
+          "tag": "Polymorphism & Duck Typing",
+          "question": "What is Polymorphism and Python's 'Duck Typing' philosophy?",
+          "explanation": {
+            "points": [
+              "**Polymorphism**: The ability of different classes to respond to the same method invocation in their own unique way.",
+              "**Duck Typing**: *'If it walks like a duck and quacks like a duck, it's a duck.'* Python does not require rigid shared inheritance hierarchies to call common methods.",
+              "As long as an object implements the required method or protocol (`.render()`, `.predict()`, `.close()`), Python will execute it.",
+              "Enables clean dependency injection and loose coupling in modern software."
+            ]
+          },
+          "code": "# Polymorphism through Duck Typing\nclass PDFDocument:\n    def export(self) -> str:\n        return \"[PDF Binary Output: 140 Pages]\"\n\nclass HTMLDocument:\n    def export(self) -> str:\n        return \"<html><body>Modern Web Document</body></html>\"\n\nclass MarkdownDocument:\n    def export(self) -> str:\n        return \"# Markdown Header\\n- Bullet point\"\n\n# Polymorphic Dispatcher function: doesn't care about class type, only .export()\ndef publish_document(doc):\n    print(\"Publishing:\", doc.export())\n\ndocuments = [PDFDocument(), HTMLDocument(), MarkdownDocument()]\nfor doc in documents:\n    publish_document(doc)",
+          "tip": "Duck typing is one of Python's greatest superpowers: you write code that depends on behaviors rather than rigid type hierarchies.",
+          "viz": {
+            "type": "oop",
+            "data": {
+              "className": "AudioPlayer (Duck Typing)",
+              "classEmoji": "🎵",
+              "properties": [
+                "Requires obj.play() method"
+              ],
+              "methods": [
+                "play_media(sound_obj)"
+              ],
+              "instances": [
+                {
+                  "name": "mp3",
+                  "color": "#ec4899",
+                  "emoji": "🎧",
+                  "props": {
+                    "play()": "Streaming sound"
+                  }
+                },
+                {
+                  "name": "synth",
+                  "color": "#8b5cf6",
+                  "emoji": "🎹",
+                  "props": {
+                    "play()": "Synthesizing tone"
+                  }
+                }
+              ]
+            }
+          },
+          "id": 148
+        }
+      ]
+    },
+    {
+      "topic": "Classes & Objects",
+      "slides": [
+        {
+          "id": 149,
+          "section": "4. Object Oriented Programming",
+          "topic": "Classes & Objects",
+          "step": "21.1",
+          "category": "oop",
+          "categoryLabel": "OOP",
+          "tag": "Classes",
+          "question": "What is a Class? (The Blueprint Concept)",
+          "explanation": {
+            "points": [
+              "A **Class** is a user-defined blueprint from which individual objects (instances) are instantiated.",
+              "The `__init__()` method is the constructor that initializes newly created instance attributes.",
+              "`self` represents the specific instance of the class and allows access to its attributes and methods.",
+              "Encapsulation binds data and the methods that operate on that data into a cohesive unit."
+            ]
+          },
+          "code": "class Car:\n    def __init__(self, brand: str, model: str, speed: int = 0):\n        self.brand = brand          # Instance attribute\n        self.model = model\n        self.speed = speed\n        \n    def accelerate(self, delta: int):\n        self.speed += delta\n        print(f\"🚗 {self.brand} {self.model} accelerated to {self.speed} km/h\")\n        \n    def brake(self):\n        self.speed = 0\n        print(f\"🛑 {self.brand} {self.model} stopped.\")\n\nmy_car = Car(\"Tesla\", \"Model 3\")\nmy_car.accelerate(45)\nmy_car.accelerate(25)\nmy_car.brake()",
+          "tip": "Explain that 'self' in Python is equivalent to 'this' in Java/C++/JS, but explicitly passed as the first parameter in Python methods.",
+          "viz": {
+            "type": "driver-car",
+            "data": {
+              "driverName": "Alice",
+              "carModel": "Tesla Model 3",
+              "speed": 45
+            }
+          }
+        },
+        {
+          "id": 150,
+          "section": "4. Object Oriented Programming",
+          "topic": "Classes & Objects",
+          "step": "21.1-P1",
+          "category": "oop",
+          "categoryLabel": "OOP",
+          "tag": "Practice 1",
+          "question": "Practice 1: Bank Account with Deposit and Withdraw",
+          "explanation": {
+            "points": [
+              "**Challenge**: Create a `BankAccount` class with `account_holder` and `balance`. Implement `deposit(amount)` and `withdraw(amount)` with validation (cannot withdraw more than balance).",
+              "**Example**: acc = BankAccount('Alice', 100) -> acc.deposit(50) -> 150 -> acc.withdraw(200) -> ValueError",
+              "**Constraints**: Validate positive amounts.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Create a `BankAccount` class with `account_holder` and `balance`. Implement `deposit(amount)` and `withdraw(amount)` with validation (cannot"
+          },
+          "code": "class BankAccount:\n    # YOUR CODE HERE\n    pass\n\nacc = BankAccount('Alice', 100)\nacc.deposit(50)\nprint('Balance:', acc.balance)",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Store attributes in __init__. In deposit and withdraw, validate positive numbers and raise ValueError if funds are insufficient.",
+                "code": "class BankAccount:\n    def __init__(self, account_holder: str, initial_balance: float = 0.0):\n        self.account_holder = account_holder\n        self.balance = initial_balance\n    def deposit(self, amount: float):\n        if amount <= 0:\n            raise ValueError('Deposit amount must be positive')\n        self.balance += amount\n        return self.balance\n    def withdraw(self, amount: float):\n        if amount <= 0:\n            raise ValueError('Withdrawal amount must be positive')\n        if amount > self.balance:\n            raise ValueError('Insufficient funds')\n        self.balance -= amount\n        return self.balance\n\nacc = BankAccount('Alice', 100.0)\nacc.deposit(50.0)\nacc.withdraw(30.0)\nprint(f'{acc.account_holder} final balance: ${acc.balance}')",
+                "timeComplexity": "O(1)",
+                "spaceComplexity": "O(1)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Store attributes in __init__. In deposit and withdraw, validate positive numbers and raise ValueError if funds are insufficient.",
+            "code": "class BankAccount:\n    def __init__(self, account_holder: str, initial_balance: float = 0.0):\n        self.account_holder = account_holder\n        self.balance = initial_balance\n    def deposit(self, amount: float):\n        if amount <= 0:\n            raise ValueError('Deposit amount must be positive')\n        self.balance += amount\n        return self.balance\n    def withdraw(self, amount: float):\n        if amount <= 0:\n            raise ValueError('Withdrawal amount must be positive')\n        if amount > self.balance:\n            raise ValueError('Insufficient funds')\n        self.balance -= amount\n        return self.balance\n\nacc = BankAccount('Alice', 100.0)\nacc.deposit(50.0)\nacc.withdraw(30.0)\nprint(f'{acc.account_holder} final balance: ${acc.balance}')",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 151,
+          "section": "4. Object Oriented Programming",
+          "topic": "Classes & Objects",
+          "step": "21.1-P2",
+          "category": "oop",
+          "categoryLabel": "OOP",
+          "tag": "Practice 2",
+          "question": "Practice 2: Custom Complex Number with Dunder __add__",
+          "explanation": {
+            "points": [
+              "**Challenge**: Implement a `ComplexNumber` class with `real` and `imag` attributes and overload `+` using `__add__` and string representation with `__str__`.",
+              "**Example**: ComplexNumber(2, 3) + ComplexNumber(1, 4) -> '3 + 7i'",
+              "**Constraints**: Format negative imaginary parts as '3 - 2i'.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Implement a `ComplexNumber` class with `real` and `imag` attributes and overload `+` using `__add__` and string representation with `__str__"
+          },
+          "code": "class ComplexNumber:\n    # YOUR CODE HERE\n    pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Implement __add__(self, other) returning a new ComplexNumber(self.real + other.real, self.imag + other.imag). Implement __str__.",
+                "code": "class ComplexNumber:\n    def __init__(self, real: float, imag: float):\n        self.real = real\n        self.imag = imag\n    def __add__(self, other):\n        return ComplexNumber(self.real + other.real, self.imag + other.imag)\n    def __str__(self):\n        op = '+' if self.imag >= 0 else '-'\n        return f'{self.real} {op} {abs(self.imag)}i'\n\nc1 = ComplexNumber(2, 3)\nc2 = ComplexNumber(1, 4)\nprint(f'({c1}) + ({c2}) = {c1 + c2}')",
+                "timeComplexity": "O(1)",
+                "spaceComplexity": "O(1)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Implement __add__(self, other) returning a new ComplexNumber(self.real + other.real, self.imag + other.imag). Implement __str__.",
+            "code": "class ComplexNumber:\n    def __init__(self, real: float, imag: float):\n        self.real = real\n        self.imag = imag\n    def __add__(self, other):\n        return ComplexNumber(self.real + other.real, self.imag + other.imag)\n    def __str__(self):\n        op = '+' if self.imag >= 0 else '-'\n        return f'{self.real} {op} {abs(self.imag)}i'\n\nc1 = ComplexNumber(2, 3)\nc2 = ComplexNumber(1, 4)\nprint(f'({c1}) + ({c2}) = {c1 + c2}')",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 152,
+          "section": "4. Object Oriented Programming",
+          "topic": "Classes & Objects",
+          "step": "21.1-L3",
+          "category": "oop",
+          "categoryLabel": "OOP",
+          "tag": "LeetCode: LeetCode #146",
+          "question": "LeetCode #146: LRU Cache (Least Recently Used)",
+          "explanation": {
+            "points": [
+              "**Challenge**: Design a data structure that follows the constraints of a Least Recently Used (LRU) cache with `get(key)` and `put(key, value)` in O(1) average time.",
+              "**Example**: LRUCache(2) -> put(1, 1) -> put(2, 2) -> get(1) -> put(3, 3) evicts key 2 -> get(2) returns -1",
+              "**Constraints**: Must run get and put in O(1) average time.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Design a data structure that follows the constraints of a Least Recently Used (LRU) cache with `get(key)` and `put(key, value)` in O(1) aver"
+          },
+          "code": "class LRUCache:\n    def __init__(self, capacity: int):\n        pass\n    def get(self, key: int) -> int:\n        pass\n    def put(self, key: int, value: int) -> None:\n        pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Use collections.OrderedDict which preserves insertion order and supports move_to_end() and popitem(last=False) in O(1).",
+                "code": "from collections import OrderedDict\n\nclass LRUCache:\n    def __init__(self, capacity: int):\n        self.capacity = capacity\n        self.cache = OrderedDict()\n    def get(self, key: int) -> int:\n        if key not in self.cache:\n            return -1\n        self.cache.move_to_end(key)\n        return self.cache[key]\n    def put(self, key: int, value: int) -> None:\n        if key in self.cache:\n            self.cache.move_to_end(key)\n        self.cache[key] = value\n        if len(self.cache) > self.capacity:\n            self.cache.popitem(last=False)\n\nlru = LRUCache(2)\nlru.put(1, 1)\nlru.put(2, 2)\nprint('Get 1:', lru.get(1))  # returns 1\nlru.put(3, 3)                # evicts key 2\nprint('Get 2:', lru.get(2))  # returns -1",
+                "timeComplexity": "O(1) get & put",
+                "spaceComplexity": "O(Capacity)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Use collections.OrderedDict which preserves insertion order and supports move_to_end() and popitem(last=False) in O(1).",
+            "code": "from collections import OrderedDict\n\nclass LRUCache:\n    def __init__(self, capacity: int):\n        self.capacity = capacity\n        self.cache = OrderedDict()\n    def get(self, key: int) -> int:\n        if key not in self.cache:\n            return -1\n        self.cache.move_to_end(key)\n        return self.cache[key]\n    def put(self, key: int, value: int) -> None:\n        if key in self.cache:\n            self.cache.move_to_end(key)\n        self.cache[key] = value\n        if len(self.cache) > self.capacity:\n            self.cache.popitem(last=False)\n\nlru = LRUCache(2)\nlru.put(1, 1)\nlru.put(2, 2)\nprint('Get 1:', lru.get(1))  # returns 1\nlru.put(3, 3)                # evicts key 2\nprint('Get 2:', lru.get(2))  # returns -1",
+            "timeComplexity": "O(1) get & put",
+            "spaceComplexity": "O(Capacity)"
+          }
+        },
+        {
+          "id": 153,
+          "section": "4. Object Oriented Programming",
+          "topic": "Classes & Objects",
+          "step": "21.1-L4",
+          "category": "oop",
+          "categoryLabel": "OOP",
+          "tag": "LeetCode: LeetCode #208",
+          "question": "LeetCode #208: Implement Trie (Prefix Tree)",
+          "explanation": {
+            "points": [
+              "**Challenge**: Implement a Trie with `insert(word)`, `search(word)`, and `startsWith(prefix)` methods for fast autocomplete and dictionary lookups.",
+              "**Example**: insert('apple') -> search('apple') is True -> search('app') is False -> startsWith('app') is True",
+              "**Constraints**: 1 <= word.length, prefix.length <= 2000",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Implement a Trie with `insert(word)`, `search(word)`, and `startsWith(prefix)` methods for fast autocomplete and dictionary lookups."
+          },
+          "code": "class Trie:\n    def __init__(self):\n        pass\n    def insert(self, word: str) -> None:\n        pass\n    def search(self, word: str) -> bool:\n        pass\n    def startsWith(self, prefix: str) -> bool:\n        pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Each TrieNode contains a dictionary of children `{char: TrieNode}` and a boolean flag `is_end_of_word`.",
+                "code": "class TrieNode:\n    def __init__(self):\n        self.children = {}\n        self.is_end = False\n\nclass Trie:\n    def __init__(self):\n        self.root = TrieNode()\n    def insert(self, word: str) -> None:\n        curr = self.root\n        for ch in word:\n            if ch not in curr.children:\n                curr.children[ch] = TrieNode()\n            curr = curr.children[ch]\n        curr.is_end = True\n    def search(self, word: str) -> bool:\n        curr = self.root\n        for ch in word:\n            if ch not in curr.children: return False\n            curr = curr.children[ch]\n        return curr.is_end\n    def startsWith(self, prefix: str) -> bool:\n        curr = self.root\n        for ch in prefix:\n            if ch not in curr.children: return False\n            curr = curr.children[ch]\n        return True\n\ntrie = Trie()\ntrie.insert('apple')\nprint(\"search('apple'):\", trie.search('apple'))\nprint(\"search('app'):\", trie.search('app'))\nprint(\"startsWith('app'):\", trie.startsWith('app'))",
+                "timeComplexity": "O(Length)",
+                "spaceComplexity": "O(TotalChars)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Each TrieNode contains a dictionary of children `{char: TrieNode}` and a boolean flag `is_end_of_word`.",
+            "code": "class TrieNode:\n    def __init__(self):\n        self.children = {}\n        self.is_end = False\n\nclass Trie:\n    def __init__(self):\n        self.root = TrieNode()\n    def insert(self, word: str) -> None:\n        curr = self.root\n        for ch in word:\n            if ch not in curr.children:\n                curr.children[ch] = TrieNode()\n            curr = curr.children[ch]\n        curr.is_end = True\n    def search(self, word: str) -> bool:\n        curr = self.root\n        for ch in word:\n            if ch not in curr.children: return False\n            curr = curr.children[ch]\n        return curr.is_end\n    def startsWith(self, prefix: str) -> bool:\n        curr = self.root\n        for ch in prefix:\n            if ch not in curr.children: return False\n            curr = curr.children[ch]\n        return True\n\ntrie = Trie()\ntrie.insert('apple')\nprint(\"search('apple'):\", trie.search('apple'))\nprint(\"search('app'):\", trie.search('app'))\nprint(\"startsWith('app'):\", trie.startsWith('app'))",
+            "timeComplexity": "O(Length)",
+            "spaceComplexity": "O(TotalChars)"
+          }
+        },
+        {
+          "id": 154,
+          "section": "4. Object Oriented Programming",
+          "topic": "Classes & Objects",
+          "step": "21.1-R5",
+          "category": "oop",
+          "categoryLabel": "OOP",
+          "tag": "Real-World: Payment Gateway",
+          "question": "Real-Time Scenario: Payment Gateway Adapter Pattern (Stripe/PayPal)",
+          "explanation": {
+            "points": [
+              "**Challenge**: Implement the Adapter design pattern using an abstract base class `PaymentGateway` and concrete classes `StripeAdapter` and `PayPalAdapter`.",
+              "**Example**: Unified charge() method handles different third-party vendor APIs uniformly.",
+              "**Constraints**: Subclasses must implement charge(amount, currency).",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Implement the Adapter design pattern using an abstract base class `PaymentGateway` and concrete classes `StripeAdapter` and `PayPalAdapter`."
+          },
+          "code": "from abc import ABC, abstractmethod\n\nclass PaymentGateway(ABC):\n    @abstractmethod\n    def charge(self, amount: float, currency: str) -> str:\n        pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Inherit from ABC and use @abstractmethod to enforce polymorphic interfaces across payment vendor implementations.",
+                "code": "from abc import ABC, abstractmethod\n\nclass PaymentGateway(ABC):\n    @abstractmethod\n    def charge(self, amount: float, currency: str) -> str:\n        pass\n\nclass StripeAdapter(PaymentGateway):\n    def charge(self, amount: float, currency: str) -> str:\n        return f'Stripe API: Charged {amount} {currency} via card token tok_visa'\n\nclass PayPalAdapter(PaymentGateway):\n    def charge(self, amount: float, currency: str) -> str:\n        return f'PayPal API: Captured order for {amount} {currency}'\n\ndef process_checkout(gateway: PaymentGateway, amount: float):\n    print(gateway.charge(amount, 'USD'))\n\nprocess_checkout(StripeAdapter(), 49.99)\nprocess_checkout(PayPalAdapter(), 99.00)",
+                "timeComplexity": "O(1)",
+                "spaceComplexity": "O(1)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Inherit from ABC and use @abstractmethod to enforce polymorphic interfaces across payment vendor implementations.",
+            "code": "from abc import ABC, abstractmethod\n\nclass PaymentGateway(ABC):\n    @abstractmethod\n    def charge(self, amount: float, currency: str) -> str:\n        pass\n\nclass StripeAdapter(PaymentGateway):\n    def charge(self, amount: float, currency: str) -> str:\n        return f'Stripe API: Charged {amount} {currency} via card token tok_visa'\n\nclass PayPalAdapter(PaymentGateway):\n    def charge(self, amount: float, currency: str) -> str:\n        return f'PayPal API: Captured order for {amount} {currency}'\n\ndef process_checkout(gateway: PaymentGateway, amount: float):\n    print(gateway.charge(amount, 'USD'))\n\nprocess_checkout(StripeAdapter(), 49.99)\nprocess_checkout(PayPalAdapter(), 99.00)",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 155,
+          "section": "4. Object Oriented Programming",
+          "topic": "Classes & Objects",
+          "step": "21.1-R6",
+          "category": "oop",
+          "categoryLabel": "OOP",
+          "tag": "Real-World: AI State Machine",
+          "question": "Real-Time Scenario: Autonomous AI Agent State Machine",
+          "explanation": {
+            "points": [
+              "**Challenge**: Implement a state machine class for an autonomous AI agent with states: 'IDLE', 'PLANNING', 'EXECUTING', 'COMPLETED', 'FAILED' and valid transitions.",
+              "**Example**: IDLE -> transition('PLANNING') -> EXECUTING -> COMPLETED. Cannot jump from IDLE to COMPLETED.",
+              "**Constraints**: Raise ValueError on invalid state transition.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Implement a state machine class for an autonomous AI agent with states: 'IDLE', 'PLANNING', 'EXECUTING', 'COMPLETED', 'FAILED' and valid tra"
+          },
+          "code": "class AgentStateMachine:\n    def __init__(self):\n        self.state = 'IDLE'\n    def transition(self, next_state: str):\n        # YOUR CODE HERE\n        pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Define a dictionary of valid transitions: VALID_TRANSITIONS = {'IDLE': {'PLANNING'}, 'PLANNING': {'EXECUTING', 'FAILED'}, ...}. Validate in transition().",
+                "code": "class AgentStateMachine:\n    VALID_TRANSITIONS = {\n        'IDLE': {'PLANNING'},\n        'PLANNING': {'EXECUTING', 'FAILED'},\n        'EXECUTING': {'COMPLETED', 'FAILED'},\n        'COMPLETED': set(),\n        'FAILED': {'PLANNING'}\n    }\n    def __init__(self):\n        self.state = 'IDLE'\n    def transition(self, next_state: str):\n        allowed = self.VALID_TRANSITIONS.get(self.state, set())\n        if next_state not in allowed:\n            raise ValueError(f'Invalid transition from {self.state} to {next_state}')\n        self.state = next_state\n        return f'Agent is now in state: {self.state}'\n\nagent = AgentStateMachine()\nprint(agent.transition('PLANNING'))\nprint(agent.transition('EXECUTING'))\nprint(agent.transition('COMPLETED'))",
+                "timeComplexity": "O(1)",
+                "spaceComplexity": "O(1)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Define a dictionary of valid transitions: VALID_TRANSITIONS = {'IDLE': {'PLANNING'}, 'PLANNING': {'EXECUTING', 'FAILED'}, ...}. Validate in transition().",
+            "code": "class AgentStateMachine:\n    VALID_TRANSITIONS = {\n        'IDLE': {'PLANNING'},\n        'PLANNING': {'EXECUTING', 'FAILED'},\n        'EXECUTING': {'COMPLETED', 'FAILED'},\n        'COMPLETED': set(),\n        'FAILED': {'PLANNING'}\n    }\n    def __init__(self):\n        self.state = 'IDLE'\n    def transition(self, next_state: str):\n        allowed = self.VALID_TRANSITIONS.get(self.state, set())\n        if next_state not in allowed:\n            raise ValueError(f'Invalid transition from {self.state} to {next_state}')\n        self.state = next_state\n        return f'Agent is now in state: {self.state}'\n\nagent = AgentStateMachine()\nprint(agent.transition('PLANNING'))\nprint(agent.transition('EXECUTING'))\nprint(agent.transition('COMPLETED'))",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(1)"
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Objects Collaboration",
+      "slides": [
+        {
+          "id": 156,
+          "section": "4. Object Oriented Programming",
+          "topic": "Objects Collaboration",
+          "step": "21.2",
+          "category": "oop",
+          "categoryLabel": "OOP",
+          "tag": "OOP Interaction",
+          "question": "How do multiple Objects interact? (Person driving a Car)",
+          "explanation": {
+            "points": [
+              "Real-world OOP systems involve **multiple collaborating objects** passing messages and references.",
+              "A `Driver` object holds a reference to a `Car` object (Composition/Association).",
+              "Calling `driver.drive(car, 60)` invokes methods on both instances collaboratively.",
+              "This mirrors real software architecture: e.g. An `Agent` object commanding a `Database` object."
+            ]
+          },
+          "code": "class Car:\n    def __init__(self, brand: str, model: str):\n        self.brand = brand\n        self.model = model\n        self.speed = 0\n\n    def accelerate(self, amount: int):\n        self.speed += amount\n        print(f\"🚗 {self.brand} {self.model} accelerated to {self.speed} mph\")\n\nclass Person:\n    def __init__(self, name: str):\n        self.name = name\n        \n    def enter_car(self, car: Car):\n        print(f\"👤 {self.name} entered {car.brand} {car.model}\")\n        \n    def press_gas_pedal(self, car: Car, amount: int):\n        print(f\"👟 {self.name} presses the pedal (+{amount})\")\n        car.accelerate(amount)\n\nalice = Person(\"Alice\")\ntesla = Car(\"Tesla\", \"Model S\")\n\nalice.enter_car(tesla)\nalice.press_gas_pedal(tesla, 65)",
+          "tip": "Try driving the car in the interactive simulation below to watch Alice enter the car and accelerate/brake.",
+          "viz": {
+            "type": "driver-car",
+            "data": {
+              "driverName": "Alice",
+              "carModel": "Tesla Model S",
+              "speed": 65
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Dunder Methods",
+      "slides": [
+        {
+          "id": 157,
+          "section": "4. Object Oriented Programming",
+          "topic": "Dunder Methods",
+          "step": "22.1",
+          "category": "oop",
+          "categoryLabel": "OOP",
+          "tag": "Dunder Methods",
+          "question": "What are Dunder (Magic) Methods and Operator Overloading?",
+          "explanation": {
+            "points": [
+              "**Dunder** (Double Underscore) methods allow custom classes to integrate with Python's built-in operators and protocols.",
+              "`__str__` returns a readable string for users (`str(obj)` or `print(obj)`).",
+              "`__repr__` returns an unambiguous representation for developers.",
+              "`__len__` enables `len(obj)`; `__getitem__` enables indexing `obj[key]`.",
+              "Operator overloading: `__add__` defines `+`, `__eq__` defines `==`, `__lt__` defines `<`."
+            ]
+          },
+          "code": "class Vector2D:\n    def __init__(self, x: float, y: float):\n        self.x = x\n        self.y = y\n        \n    def __repr__(self):\n        return f\"Vector2D({self.x}, {self.y})\"\n        \n    def __add__(self, other):\n        # Overloading the + operator\n        return Vector2D(self.x + other.x, self.y + other.y)\n        \n    def __eq__(self, other):\n        # Overloading the == operator\n        return self.x == other.x and self.y == other.y\n\nv1 = Vector2D(2, 4)\nv2 = Vector2D(3, 1)\nv3 = v1 + v2  # Calls v1.__add__(v2)\n\nprint(\"v1 + v2 =\", v3)\nprint(\"Is v3 == Vector2D(5, 5)?\", v3 == Vector2D(5, 5))",
+          "tip": "Explain that Python's clean syntax is powered entirely by dunder methods: len('abc') calls 'abc'.__len__().",
+          "viz": {
+            "type": "oop",
+            "data": {
+              "className": "Vector2D",
+              "dunderMethods": [
+                "__init__",
+                "__repr__",
+                "__add__",
+                "__eq__"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Inheritance & Polymorphism",
+      "slides": [
+        {
+          "id": 158,
+          "section": "4. Object Oriented Programming",
+          "topic": "Inheritance & Polymorphism",
+          "step": "23.1",
+          "category": "oop",
+          "categoryLabel": "OOP",
+          "tag": "Inheritance",
+          "question": "How does Inheritance promote code reuse and polymorphism?",
+          "explanation": {
+            "points": [
+              "**Inheritance** allows a child class to inherit attributes and methods from a parent class.",
+              "`super().__init__()` calls the parent constructor to initialize shared attributes.",
+              "**Method Overriding**: Child classes can customize inherited methods.",
+              "**Polymorphism**: Different classes can implement the same method interface, allowing uniform handling in collections."
+            ]
+          },
+          "code": "class NeuralModel:\n    def __init__(self, name: str, params: int):\n        self.name = name\n        self.params = params\n    def forward(self, x):\n        raise NotImplementedError(\"Subclasses must implement forward!\")\n\nclass LLM(NeuralModel):\n    def forward(self, prompt: str):\n        return f\"[{self.name} - {self.params}B params] Generating response for: {prompt}\"\n\nclass VisionTransformer(NeuralModel):\n    def forward(self, image_tensor):\n        return f\"[{self.name}] Classifying image with {self.params}M parameters\"\n\nmodels: list[NeuralModel] = [\n    LLM(\"Gemini-Flash\", 12),\n    VisionTransformer(\"ViT-Large\", 300)\n]\n\nfor m in models:\n    print(m.forward(\"Sample Input\"))",
+          "tip": "Point out the interactive class hierarchy visualizer below showing parent-child relationship and method overrides.",
+          "viz": {
+            "type": "inheritance",
+            "data": {
+              "parent": "NeuralModel",
+              "children": [
+                "LLM",
+                "VisionTransformer"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

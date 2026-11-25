@@ -1,0 +1,19 @@
+{
+  "id": "sql-murder-mystery",
+  "title": "SQL Murder Mystery: The SQL City Detective",
+  "subtitle": "Gamified Detective Investigation — Solve a Murder Case with SQL Queries",
+  "emoji": "🕵️‍♂️",
+  "color": "#f59e0b",
+  "level": "Interactive Mystery",
+  "estimatedTime": "1.5 hours",
+  "topics": [
+    "Phase 1: The Crime Scene Report",
+    "Phase 2: Locating the Eyewitnesses",
+    "Phase 3: Interrogating Witnesses",
+    "Phase 4: The Get Fit Now Gym Trail",
+    "Phase 5: The Vehicle & Killer Match",
+    "Phase 6: The Killer's Secret Confession",
+    "Phase 7: Unmasking the Wealthy Mastermind"
+  ],
+  "description": "A crime has occurred in SQL City! You are the lead detective with database access. Write SQL queries to inspect crime reports, interview witnesses, cross-reference vehicle plates, and unmask the mastermind."
+}

@@ -1,0 +1,406 @@
+{
+  "section": "1. Introduction",
+  "order": 1,
+  "topics": [
+    {
+      "topic": "Basics of Databases",
+      "slides": [
+        {
+          "id": "sql-1",
+          "language": "sql",
+          "section": "1. Introduction",
+          "topic": "Basics of Databases",
+          "step": "1.1",
+          "category": "sql",
+          "categoryLabel": "Introduction",
+          "tag": "Lesson",
+          "question": "What is a Relational Database Management System (RDBMS) and how is data structured?",
+          "explanation": {
+            "points": [
+              "A **Database** is an organized electronic repository managed by a **DBMS** (Database Management System).",
+              "In **Relational Databases (RDBMS)**, data is stored in two-dimensional **tables** consisting of rows (tuples/records) and columns (attributes).",
+              "Each column has a specific **data type** (INTEGER, TEXT, REAL), and rows are uniquely identifiable through a **Primary Key**.",
+              "Relational guarantees follow the **ACID principle**: Atomicity, Consistency, Isolation, and Durability."
+            ],
+            "highlight": "Relational databases store structured data in rows and columns, enforcing ACID guarantees."
+          },
+          "code": "-- Inspect existing tables in our bookstore SQLite database\nSELECT name, type \nFROM sqlite_master \nWHERE type = 'table' AND name NOT LIKE 'sqlite_%'\nORDER BY name;",
+          "tip": "Demonstrate to students that sqlite_master is SQLite's built-in system catalog containing schema definitions.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "sqlite_master (System Catalog)",
+              "columns": [
+                {
+                  "name": "name",
+                  "type": "TEXT",
+                  "isPk": true
+                },
+                {
+                  "name": "type",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "description",
+                  "type": "TEXT"
+                }
+              ],
+              "rows": [
+                [
+                  "authors",
+                  "table",
+                  "Stores book writers, nationalities, and tiers"
+                ],
+                [
+                  "books",
+                  "table",
+                  "Inventory catalog with pricing, stock, and ratings"
+                ],
+                [
+                  "customers",
+                  "table",
+                  "Registered shoppers and referral linkages"
+                ],
+                [
+                  "orders",
+                  "table",
+                  "Purchase transactions and fulfillment statuses"
+                ],
+                [
+                  "order_items",
+                  "table",
+                  "Line items linking orders to specific books"
+                ],
+                [
+                  "employees",
+                  "table",
+                  "Internal staff and hierarchy"
+                ]
+              ],
+              "note": "The bookstore database is fully loaded in in-memory SQLite."
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "What is SQL?",
+      "slides": [
+        {
+          "id": "sql-2",
+          "language": "sql",
+          "section": "1. Introduction",
+          "topic": "What is SQL?",
+          "step": "1.2",
+          "category": "sql",
+          "categoryLabel": "Introduction",
+          "tag": "Lesson",
+          "question": "What is Structured Query Language (SQL) and how does declarative querying work?",
+          "explanation": {
+            "points": [
+              "**SQL (Structured Query Language)** is the ANSI/ISO standard declarative language for relational databases.",
+              "Unlike imperative programming (Python, C++) where you write loops step-by-step, in SQL you declare **WHAT** data you want, not how to fetch it.",
+              "The database's internal **Query Optimizer** builds an execution plan using indexes and cost-based heuristics.",
+              "SQL keywords are case-insensitive (`SELECT` vs `select`), but uppercase keywords are industry standard."
+            ],
+            "highlight": "SQL is declarative: you describe the target dataset, and the query optimizer figures out the most efficient way to fetch it."
+          },
+          "code": "-- Declarative Query: Fetch all books in the catalog\nSELECT title, category, price, stock\nFROM books\nORDER BY price DESC;",
+          "tip": "Encourage learners to click '▶ Run' to see the instant tabular execution in the SQLite WASM terminal.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "books",
+              "columns": [
+                {
+                  "name": "title",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "category",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "price",
+                  "type": "REAL"
+                },
+                {
+                  "name": "stock",
+                  "type": "INTEGER"
+                }
+              ],
+              "rows": [
+                [
+                  "Designing Data-Intensive Applications",
+                  "Distributed Systems",
+                  45.0,
+                  80
+                ],
+                [
+                  "System Design Interview Vol 2",
+                  "System Design",
+                  42.0,
+                  95
+                ],
+                [
+                  "System Design Interview Vol 1",
+                  "System Design",
+                  39.99,
+                  120
+                ],
+                [
+                  "Designing Machine Learning Systems",
+                  "AI & Data",
+                  38.5,
+                  60
+                ],
+                [
+                  "Clean Code",
+                  "Software Engineering",
+                  32.5,
+                  45
+                ]
+              ],
+              "note": "Sorted descending by book price"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Types of Queries",
+      "slides": [
+        {
+          "id": "sql-3",
+          "language": "sql",
+          "section": "1. Introduction",
+          "topic": "Types of Queries",
+          "step": "1.3",
+          "category": "sql",
+          "categoryLabel": "Introduction",
+          "tag": "Lesson",
+          "question": "What are the core sub-languages of SQL (DQL, DDL, DML, DCL, TCL)?",
+          "explanation": {
+            "points": [
+              "**DQL (Data Query Language)**: `SELECT` retrieves records without mutating state.",
+              "**DML (Data Manipulation Language)**: `INSERT`, `UPDATE`, `DELETE` modify stored data.",
+              "**DDL (Data Definition Language)**: `CREATE`, `ALTER`, `DROP`, `TRUNCATE` define and alter table structures.",
+              "**TCL (Transaction Control Language)**: `COMMIT`, `ROLLBACK`, `SAVEPOINT` ensure atomic transaction boundaries.",
+              "**DCL (Data Control Language)**: `GRANT`, `REVOKE` manage user permissions and security roles."
+            ],
+            "highlight": "SQL is divided into 5 specialized sublanguages: DQL (Query), DML (Modify), DDL (Define), TCL (Transactions), and DCL (Permissions)."
+          },
+          "code": "-- 1. DQL Query\nSELECT COUNT(*) AS total_books, AVG(price) AS average_price FROM books;\n\n-- 2. DDL Schema Inspection\nPRAGMA table_info(books);",
+          "tip": "Point out that DDL commands change table shapes, while DML commands change the rows inside them.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "PRAGMA table_info(books)",
+              "columns": [
+                {
+                  "name": "cid",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "name",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "type",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "notnull",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "pk",
+                  "type": "INTEGER"
+                }
+              ],
+              "rows": [
+                [
+                  0,
+                  "id",
+                  "INTEGER",
+                  0,
+                  1
+                ],
+                [
+                  1,
+                  "title",
+                  "TEXT",
+                  1,
+                  0
+                ],
+                [
+                  2,
+                  "author_id",
+                  "INTEGER",
+                  0,
+                  0
+                ],
+                [
+                  3,
+                  "category",
+                  "TEXT",
+                  0,
+                  0
+                ],
+                [
+                  4,
+                  "price",
+                  "REAL",
+                  0,
+                  0
+                ],
+                [
+                  5,
+                  "stock",
+                  "INTEGER",
+                  0,
+                  0
+                ]
+              ],
+              "note": "Schema metadata for books table"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Next Steps",
+      "slides": [
+        {
+          "id": "sql-4",
+          "language": "sql",
+          "section": "1. Introduction",
+          "topic": "Next Steps",
+          "step": "1.4",
+          "category": "sql",
+          "categoryLabel": "Introduction",
+          "tag": "Lesson",
+          "question": "What is our learning path across the 9 modules of SQL Mastery?",
+          "explanation": {
+            "points": [
+              "**Module 2 (SQL Basics)**: `SELECT`, filtering (`WHERE`), sorting (`ORDER BY`), pagination (`LIMIT`), and `NULL` handling.",
+              "**Module 3 & 4 (DML & DDL)**: `INSERT`, `UPDATE`, `DELETE`, schema creation, data types, and primary key constraints.",
+              "**Module 5 (Relational Joins)**: `INNER`, `LEFT`, `RIGHT`, `SELF JOIN`, and `UNION` sets.",
+              "**Module 6 & 7 (Analytics)**: `GROUP BY`, `HAVING`, aggregations, scalar math, string & date parsing.",
+              "**Module 8 & 9 (Advanced SQL)**: Correlated subqueries, Common Table Expressions (`WITH`), and Window Functions (`OVER`, `PARTITION BY`, `RANK`)."
+            ],
+            "highlight": "You will master both everyday operational queries and advanced analytical reporting."
+          },
+          "code": "-- Verify SQLite WASM engine readiness\nSELECT \n  sqlite_version() AS engine_version,\n  (SELECT COUNT(*) FROM books) AS book_catalog_count,\n  (SELECT COUNT(*) FROM customers) AS customer_count;",
+          "tip": "Every slide in this course runs on an in-memory SQLite WASM database with zero server latency.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "System Readiness Check",
+              "columns": [
+                {
+                  "name": "engine_version",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "book_catalog_count",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "customer_count",
+                  "type": "INTEGER"
+                }
+              ],
+              "rows": [
+                [
+                  "3.45.0",
+                  8,
+                  6
+                ]
+              ],
+              "note": "Pre-seeded relational tables ready for queries"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Introduction Quiz",
+      "slides": [
+        {
+          "id": "sql-5",
+          "language": "sql",
+          "section": "1. Introduction",
+          "topic": "Introduction Quiz",
+          "step": "1.5",
+          "category": "sql",
+          "categoryLabel": "Introduction",
+          "tag": "Quiz",
+          "question": "Module 1 Mastery Quiz: Test your grasp of databases, ACID, and SQL sublanguages",
+          "explanation": {
+            "points": [
+              "Test your grasp of core database concepts.",
+              "Answer all 4 questions in the visual panel to verify your understanding before diving into SQL Basics.",
+              "Instant feedback and explanations are provided on each selection."
+            ],
+            "highlight": "Complete the 4 questions in the quiz panel to unlock the next module."
+          },
+          "code": "-- Interactive quiz slide.\n-- Click your answers on the interactive visual panel on the left!\nSELECT 'Please answer questions in the left panel.' AS notice;",
+          "tip": "Use quizzes to test retention before transitioning to query syntax.",
+          "viz": {
+            "type": "sql-quiz",
+            "data": {
+              "quizTitle": "Module 1: Introduction & Relational Foundations",
+              "questions": [
+                {
+                  "question": "Which of the following best describes SQL?",
+                  "options": [
+                    "An imperative language that defines memory addresses",
+                    "A declarative language specifying WHAT data is needed",
+                    "An object-oriented programming language like Java",
+                    "A markup language for styling database schemas"
+                  ],
+                  "answer": 1,
+                  "explanation": "SQL is declarative: developers describe what dataset they want, and the query planner figures out how to retrieve it."
+                },
+                {
+                  "question": "Which SQL sublanguage does the 'CREATE TABLE' command belong to?",
+                  "options": [
+                    "DQL",
+                    "DML",
+                    "DDL",
+                    "TCL"
+                  ],
+                  "answer": 2,
+                  "explanation": "CREATE TABLE is DDL (Data Definition Language) because it defines database structure and schema."
+                },
+                {
+                  "question": "What does the 'A' in ACID transactions stand for?",
+                  "options": [
+                    "Availability",
+                    "Atomicity",
+                    "Accuracy",
+                    "Asynchronous"
+                  ],
+                  "answer": 1,
+                  "explanation": "Atomicity ensures that all operations in a transaction succeed completely, or the entire transaction is rolled back."
+                },
+                {
+                  "question": "In a relational database table, what does each row represent?",
+                  "options": [
+                    "An individual column type definition",
+                    "A single record or entity instance",
+                    "A table constraint rule",
+                    "An index pointer only"
+                  ],
+                  "answer": 1,
+                  "explanation": "In relational modeling, each row (tuple) represents a specific instance of the entity (e.g., a specific customer or book)."
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

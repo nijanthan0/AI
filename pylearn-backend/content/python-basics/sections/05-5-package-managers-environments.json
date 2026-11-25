@@ -1,0 +1,95 @@
+{
+  "section": "5. Package Managers & Environments",
+  "order": 5,
+  "topics": [
+    {
+      "topic": "Package Managers: Pip, uv, Conda",
+      "slides": [
+        {
+          "id": 159,
+          "section": "5. Package Managers & Environments",
+          "topic": "Package Managers: Pip, uv, Conda",
+          "step": "24.1",
+          "category": "tooling",
+          "categoryLabel": "Tooling",
+          "tag": "Package Managers",
+          "question": "How do Pip, uv, Poetry, and Conda manage dependencies from PyPI?",
+          "explanation": {
+            "points": [
+              "**PyPI** (Python Package Index) is the official public repository hosting over 500,000 Python libraries.",
+              "**pip**: Standard built-in package installer (`pip install requests`).",
+              "**uv**: Extremely fast, Rust-powered drop-in replacement for pip and virtualenv developed by Astral (10x-100x faster).",
+              "**Poetry**: Deterministic dependency resolver with lockfiles (`poetry.lock`) and packaging toolkit.",
+              "**Conda**: Cross-platform package manager managing Python, C/C++ binaries, and CUDA drivers (popular in AI/data science)."
+            ]
+          },
+          "code": "# Common Terminal Commands for Package Managers\n\n# 1. Standard pip\n# pip install numpy pandas fastapi\n# pip freeze > requirements.txt\n\n# 2. Modern uv (Rust-speed)\n# uv pip install torch torchvision\n# uv venv .venv\n\n# 3. Poetry (deterministic dependency resolution)\n# poetry add pydantic\n# poetry run python main.py\n\nimport sys\nprint(\"Current Python interpreter:\", sys.executable)\nprint(\"Standard library location:\", sys.prefix)",
+          "tip": "Strongly highlight 'uv' to your audience as the modern industry standard in 2025/2026 for blindingly fast CI/CD and local environments.",
+          "viz": {
+            "type": "packaging-venv",
+            "data": {}
+          }
+        }
+      ]
+    },
+    {
+      "topic": "pyproject.toml Configuration",
+      "slides": [
+        {
+          "id": 160,
+          "section": "5. Package Managers & Environments",
+          "topic": "pyproject.toml Configuration",
+          "step": "24.2",
+          "category": "tooling",
+          "categoryLabel": "Tooling",
+          "tag": "Packaging",
+          "question": "How does pyproject.toml standardize Modern Python Project Configuration?",
+          "explanation": {
+            "points": [
+              "`pyproject.toml` is the official modern Python standard (PEP 518 & PEP 621) replacing legacy `setup.py`, `setup.cfg`, and `requirements.txt`.",
+              "Defines project metadata (name, version, authors, license) and runtime dependencies in a clean, human-readable format.",
+              "Configures build backends (e.g. `flit`, `hatchling`, `setuptools`, `poetry-core`).",
+              "Unifies tool configurations in a single file: `[tool.ruff]`, `[tool.pytest.ini_options]`, `[tool.mypy]`."
+            ]
+          },
+          "code": "# Example pyproject.toml Structure (PEP 621 Standard)\n\n\"\"\"\n[project]\nname = \"ai-vision-agent\"\nversion = \"0.1.0\"\ndescription = \"Autonomous Vision Agent powered by Gemini\"\nrequires-python = \">=3.11\"\ndependencies = [\n    \"fastapi>=0.110.0\",\n    \"pydantic>=2.7.0\",\n    \"uvicorn>=0.29.0\",\n]\n\n[build-system]\nrequires = [\"hatchling\"]\nbuild-backend = \"hatchling.build\"\n\n[tool.ruff]\nline-length = 88\nselect = [\"E\", \"F\", \"I\"]\n\"\"\"\n\nprint(\"pyproject.toml eliminates fragmented config files across Python tools!\")",
+          "tip": "Explain how pyproject.toml avoids executing arbitrary code during install, unlike legacy setup.py.",
+          "viz": {
+            "type": "packaging-venv",
+            "data": {}
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Virtual Environments: venv & pyenv",
+      "slides": [
+        {
+          "id": 161,
+          "section": "5. Package Managers & Environments",
+          "topic": "Virtual Environments: venv & pyenv",
+          "step": "25.1",
+          "category": "tooling",
+          "categoryLabel": "Tooling",
+          "tag": "Environments",
+          "question": "Why are Virtual Environments (venv, pyenv, Pipenv) essential?",
+          "explanation": {
+            "points": [
+              "Installing packages globally pollutes your system Python and leads to disastrous **dependency version conflicts**.",
+              "**Virtual Environments** create isolated directory sandboxes containing their own Python binary and `site-packages` directory.",
+              "**venv**: Standard library tool (`python -m venv .venv`).",
+              "**pyenv**: Manages multiple global Python versions (e.g. switch between Python 3.10, 3.11, and 3.12 with one command).",
+              "**Pipenv**: Combines packaging, pip, and virtual environments with automatic `Pipfile.lock`."
+            ]
+          },
+          "code": "# Workflow in Terminal:\n\n# 1. Create a virtual environment named '.venv'\n# python3 -m venv .venv\n\n# 2. Activate the environment\n# Source on macOS/Linux: source .venv/bin/activate\n# Command on Windows:   .venv\\Scripts\\activate\n\n# 3. Check active environment in Python code\nimport os\nimport sys\n\nin_venv = sys.prefix != sys.base_prefix\nprint(\"Running inside a Virtual Environment?\", in_venv)\nprint(\"Prefix Path:\", sys.prefix)",
+          "tip": "Always remind viewers to add '.venv' and '__pycache__' to their .gitignore before committing code to GitHub!",
+          "viz": {
+            "type": "packaging-venv",
+            "data": {}
+          }
+        }
+      ]
+    }
+  ]
+}

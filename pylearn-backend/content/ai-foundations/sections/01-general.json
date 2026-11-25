@@ -1,0 +1,88 @@
+{
+  "section": "General",
+  "order": 1,
+  "topics": [
+    {
+      "topic": "Overview",
+      "slides": [
+        {
+          "id": "1",
+          "category": "concepts",
+          "categoryLabel": "Concepts",
+          "tag": "What is AI?",
+          "question": "What exactly is Artificial Intelligence?",
+          "explanation": {
+            "points": [
+              "**AI** is the ability of a machine to perform tasks that normally require **human intelligence**.",
+              "**Machine Learning (ML)** is a subset of AI where machines **learn from data** instead of being explicitly programmed.",
+              "**Deep Learning (DL)** is a subset of ML using **neural networks** with many layers.",
+              "AI ≠ robots. Most AI is software running on servers."
+            ],
+            "highlight": "🧠 The key insight: instead of writing rules manually, we **show the machine examples** and it figures out the rules."
+          },
+          "code": "# AI vs Traditional Programming\n\n# Traditional: you write the rules\ndef is_spam_traditional(email):\n    if \"free money\" in email:\n        return True\n    if \"click here\" in email:\n        return True\n    return False\n\n# ML: the model learns rules from 10,000 example emails\n# model = train(spam_emails, not_spam_emails)\n# model.predict(new_email)  ← it figures out the rules!\n\n# Let's simulate a simple prediction\nspam_words = [\"free\", \"win\", \"click\", \"prize\", \"money\"]\n\ndef spam_score(text):\n    words = text.lower().split()\n    hits = sum(1 for w in words if w in spam_words)\n    return hits / len(words)\n\nemails = [\n    \"Hello friend how are you\",\n    \"Win free money click here now\",\n    \"Meeting tomorrow at 10am\"\n]\n\nfor email in emails:\n    score = spam_score(email)\n    label = \"SPAM\" if score > 0.2 else \"NOT SPAM\"\n    print(f\"{label} ({score:.0%}) → {email}\")",
+          "tip": "Every AI model is just a mathematical function: input data → output prediction. The magic is in training.",
+          "viz": {
+            "type": "ai-hierarchy",
+            "data": {
+              "levels": [
+                {
+                  "name": "Artificial Intelligence",
+                  "color": "#cba6f7",
+                  "width": 100
+                },
+                {
+                  "name": "Machine Learning",
+                  "color": "#89b4fa",
+                  "width": 70
+                },
+                {
+                  "name": "Deep Learning",
+                  "color": "#40a02b",
+                  "width": 45
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "2",
+          "category": "ml",
+          "categoryLabel": "ML",
+          "tag": "Training a Model",
+          "question": "How does a Machine Learning model actually learn?",
+          "explanation": {
+            "points": [
+              "**Training** is the process of adjusting a model's parameters using data.",
+              "The model makes a **prediction**, computes an **error (loss)**, then updates itself.",
+              "This loop repeats thousands of times — called **gradient descent**.",
+              "More data + more iterations = better model."
+            ],
+            "highlight": "🎯 Imagine throwing darts at a target blindfolded. After each throw, someone tells you 'too left, too high'. You adjust. That's gradient descent."
+          },
+          "code": "# Simulating the training loop concept (Convergent SGD)\nimport random\n\nweight = 0.5\nlearning_rate = 0.01\n\n# True relationship: y = 2x  (Target weight = 2.0)\ndata = [(1, 2), (2, 4), (3, 6), (4, 8), (5, 10)]\n\nprint(f\"Starting weight: {weight:.3f}\")\nprint(\"Training across 10 Epochs...\")\n\nfor epoch in range(1, 11):\n    total_loss = 0\n    for x, true_y in data:\n        predicted = weight * x\n        error = predicted - true_y\n        total_loss += error ** 2\n        weight -= learning_rate * 2 * error * x\n\n    avg_loss = total_loss / len(data)\n    print(f\"Epoch {epoch:2d} | weight={weight:.4f} | loss={avg_loss:.4f}\")\n\nprint(f\"Final converged weight: {weight:.4f} (target was 2.0)\")",
+          "tip": "The learning rate controls how big each update step is. Too large → overshoots. Too small → takes forever.",
+          "viz": {
+            "type": "training-loop",
+            "data": {
+              "steps": [
+                "Data In",
+                "Predict",
+                "Measure Error",
+                "Update Weights",
+                "Repeat"
+              ],
+              "colors": [
+                "#89b4fa",
+                "#cba6f7",
+                "#f38ba8",
+                "#40a02b",
+                "#fab387"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

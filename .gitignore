@@ -1,0 +1,27 @@
+# OS & Editor
+.DS_Store
+.vscode/
+.idea/
+
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+
+# Frontend (Vite / Node)
+node_modules/
+pylearn-vite/dist/
+*.log
+
+# Backend (Python / FastAPI)
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.db
+*.sqlite
+*.sqlite3
+
+# Legacy / Extra local artifacts
+pylearn-framework/
+Python_Complete_Course_Curriculum.pdf

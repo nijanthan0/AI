@@ -1,0 +1,19 @@
+{
+  "id": "python-cyber-mystery",
+  "title": "Python Cyber Heist: Operation ShadowByte",
+  "subtitle": "Gamified Cyber Forensics Mystery — Crack Codes & Unmask a Hacker with Python",
+  "emoji": "💻",
+  "color": "#10b981",
+  "level": "Interactive Mystery",
+  "estimatedTime": "1.5 hours",
+  "topics": [
+    "Stage 1: Decoding the Obfuscated Transmission (Strings & Slicing)",
+    "Stage 2: Server Access Log Intrusion Analysis (Lists & Dicts)",
+    "Stage 3: Extracting Crypto Wallets from Memory Dumps (Regex)",
+    "Stage 4: Cracking the C2 Command Token (Hashlib & Security)",
+    "Stage 5: Reconstructing Network Hop Route (BFS Traversal)",
+    "Stage 6: The Suspect Dossier Validation (OOP & Classes)",
+    "Stage 7: Executing the Interpol Arrest Warrant"
+  ],
+  "description": "A midnight cyber heist drained $10M from CyberTech Bank. As Lead Python Forensics Officer, write Python scripts to decode ciphers, parse server logs, extract bitcoin wallets with regex, crack hashes, and unmask the hacker."
+}

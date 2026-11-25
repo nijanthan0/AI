@@ -1,0 +1,529 @@
+{
+  "section": "Operation ShadowByte",
+  "order": 1,
+  "topics": [
+    {
+      "topic": "Stage 1: Decoding the Obfuscated Transmission",
+      "slides": [
+        {
+          "id": "pcm-1",
+          "language": "python",
+          "section": "Operation ShadowByte",
+          "topic": "Stage 1: Decoding the Obfuscated Transmission",
+          "step": "Stage 1.1",
+          "category": "basics",
+          "categoryLabel": "Cyber Forensics",
+          "tag": "String Forensics",
+          "question": "Stage 1: Decode the hacker's reversed and shifted signature string",
+          "explanation": {
+            "points": [
+              "**Incident Briefing**: At 02:41 AM, the intrusion detection system caught a scrambled packet payload on port 8080.",
+              "Forensics analysis reveals the hacker reversed the message and added junk padding characters.",
+              "**Your Mission**: Write a Python function `decode_transmission(payload: str) -> str` that:",
+              "1. Strips leading and trailing whitespace.",
+              "2. Reverses the string using slice notation `[::-1]`.",
+              "3. Replaces `'#'` symbols with spaces.",
+              "Execute the code to reveal the hacker's hidden alias."
+            ],
+            "highlight": "Use strip(), slicing [::-1], and replace('#', ' ') to uncover the hacker's signature."
+          },
+          "code": "# STAGE 1: Decode the hacker's scrambled signature\ncorrupted_payload = \"  #etyBwodahS#emanedoC#:rotartnep#edisni#ma#I  \"\n\ndef decode_transmission(payload: str) -> str:\n    # 1. Strip whitespace\n    cleaned = payload.strip()\n    # 2. Reverse string using slicing\n    reversed_str = cleaned[::-1]\n    # 3. Replace '#' with spaces\n    decoded = reversed_str.replace('#', ' ')\n    return decoded\n\nresult = decode_transmission(corrupted_payload)\nprint(f\"[DECRYPTED HEADER]: {result}\")",
+          "tip": "Explain to learners that string slicing [::-1] creates a reversed copy in O(N) time with Python's fast C-level iterator.",
+          "viz": {
+            "type": "case-file",
+            "data": {
+              "caseId": "CASE #CYBER-2024-88A",
+              "caseName": "Operation ShadowByte: CyberTech Bank Heist",
+              "theme": "cyber",
+              "stageNumber": 1,
+              "totalStages": 7,
+              "briefing": "CyberTech Bank's mainframe was breached at 02:41 AM. An encrypted transmission was captured in server memory. Reverse engineer the text payload.",
+              "clues": [
+                {
+                  "id": 1,
+                  "title": "Decoded Header Transmission",
+                  "status": "current",
+                  "lead": "Decode corrupted_payload to reveal the hacker's alias."
+                },
+                {
+                  "id": 2,
+                  "title": "Malicious Server IP Address",
+                  "status": "locked",
+                  "lead": "Filter through server access logs."
+                },
+                {
+                  "id": 3,
+                  "title": "Stolen Asset Wallet Address",
+                  "status": "locked",
+                  "lead": "Extract crypto addresses with regular expressions."
+                },
+                {
+                  "id": 4,
+                  "title": "Cracked C2 Security Hash",
+                  "status": "locked",
+                  "lead": "Crack SHA-256 access token."
+                },
+                {
+                  "id": 5,
+                  "title": "Infiltration Network Route",
+                  "status": "locked",
+                  "lead": "Traverse server jump nodes using BFS."
+                },
+                {
+                  "id": 6,
+                  "title": "The Master Hacker Arrest",
+                  "status": "locked",
+                  "lead": "Generate cryptographic Interpol warrant."
+                }
+              ],
+              "rawEvidenceSnippet": "PACKET DUMP PORT 8080:\n0x7FFE2A: 20 20 23 65 74 79 42 77 6f 64 61 68 53 23\nASCII: '  #etyBwodahS#emanedoC#:rotartnep#edisni#ma#I  '"
+            }
+          },
+          "solution": {
+            "approach": "Clean whitespace with strip(), reverse with [::-1], and replace '#' with spaces.",
+            "code": "corrupted_payload = \"  #etyBwodahS#emanedoC#:rotartnep#edisni#ma#I  \"\nprint(corrupted_payload.strip()[::-1].replace('#', ' '))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(N)",
+            "explanationPoints": [
+              "Decoded message: `'I am inside penetrator: Codename ShadowByte'`.",
+              "We now know the adversary's handle: **ShadowByte**!"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Stage 2: Server Access Log Intrusion Analysis",
+      "slides": [
+        {
+          "id": "pcm-2",
+          "language": "python",
+          "section": "Operation ShadowByte",
+          "topic": "Stage 2: Server Access Log Intrusion Analysis",
+          "step": "Stage 1.2",
+          "category": "collections",
+          "categoryLabel": "Cyber Forensics",
+          "tag": "Log Forensics",
+          "question": "Stage 2: Filter server access logs to isolate the rogue IP draining the vault",
+          "explanation": {
+            "points": [
+              "**Forensics Evidence**: The bank recorded hundreds of web requests during the incident window.",
+              "Only **ONE** specific request hit the classified vault endpoint `/api/v2/vault/drain` with status code `200`.",
+              "**Your Mission**: Write a Python script to filter the `server_logs` list of dictionaries.",
+              "Extract the intruder's `ip`, `endpoint`, and `time`."
+            ],
+            "highlight": "Filter logs where endpoint == '/api/v2/vault/drain' and status == 200."
+          },
+          "code": "# STAGE 2: Filter server access logs\nserver_logs = [\n    {\"ip\": \"192.168.1.15\", \"endpoint\": \"/login\", \"status\": 200, \"time\": \"02:15:10\"},\n    {\"ip\": \"10.0.0.42\", \"endpoint\": \"/dashboard\", \"status\": 200, \"time\": \"02:22:45\"},\n    {\"ip\": \"198.51.100.77\", \"endpoint\": \"/api/v2/vault/drain\", \"status\": 200, \"time\": \"02:41:19\"},\n    {\"ip\": \"172.16.0.8\", \"endpoint\": \"/settings\", \"status\": 403, \"time\": \"02:45:00\"},\n    {\"ip\": \"192.168.1.15\", \"endpoint\": \"/logout\", \"status\": 200, \"time\": \"02:50:11\"}\n]\n\ndef isolate_intruder_ip(logs: list[dict]) -> dict:\n    for log in logs:\n        if log[\"endpoint\"] == \"/api/v2/vault/drain\" and log[\"status\"] == 200:\n            return log\n    return {}\n\nbreach_event = isolate_intruder_ip(server_logs)\nprint(f\"[SUSPECT IP DETECTED]: {breach_event['ip']} at {breach_event['time']}\")",
+          "tip": "Explain that dictionary lookups log['endpoint'] are O(1) and list comprehensions cleanly express analytical queries.",
+          "viz": {
+            "type": "case-file",
+            "data": {
+              "caseId": "CASE #CYBER-2024-88A",
+              "caseName": "Operation ShadowByte: CyberTech Bank Heist",
+              "theme": "cyber",
+              "stageNumber": 2,
+              "totalStages": 7,
+              "briefing": "Search through server access log dictionaries to isolate the exact IP that triggered the unauthorized vault drain.",
+              "clues": [
+                {
+                  "id": 1,
+                  "title": "Decoded Header Transmission",
+                  "status": "unlocked",
+                  "lead": "Header reversed.",
+                  "revealedInfo": "Hacker alias: 'ShadowByte'."
+                },
+                {
+                  "id": 2,
+                  "title": "Malicious Server IP Address",
+                  "status": "current",
+                  "lead": "Filter access logs for endpoint '/api/v2/vault/drain'."
+                },
+                {
+                  "id": 3,
+                  "title": "Stolen Asset Wallet Address",
+                  "status": "locked",
+                  "lead": "Extract crypto addresses with regular expressions."
+                }
+              ],
+              "suspects": [
+                {
+                  "name": "ShadowByte",
+                  "alias": "The Infiltrator",
+                  "status": "prime_suspect",
+                  "notes": "Origin IP: 198.51.100.77. Executed unauthorized /vault/drain command at 02:41:19 AM."
+                }
+              ]
+            }
+          },
+          "solution": {
+            "approach": "Iterate through the dictionary logs and check endpoint and status.",
+            "code": "breach = next(log for log in server_logs if log['endpoint'] == '/api/v2/vault/drain')\nprint(f\"Intruder IP: {breach['ip']}\")",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(1)",
+            "explanationPoints": [
+              "Intruder IP isolated: **`198.51.100.77`**.",
+              "Timestamp of theft confirmed at **02:41:19 AM**."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Stage 3: Extracting Crypto Wallets with Regex",
+      "slides": [
+        {
+          "id": "pcm-3",
+          "language": "python",
+          "section": "Operation ShadowByte",
+          "topic": "Stage 3: Extracting Crypto Wallets with Regex",
+          "step": "Stage 1.3",
+          "category": "collections",
+          "categoryLabel": "Cyber Forensics",
+          "tag": "Regex Extraction",
+          "question": "Stage 3: Use Python Regular Expressions to parse Bitcoin wallet addresses from messy memory text",
+          "explanation": {
+            "points": [
+              "**Memory Dump Retrieved**: Technicians recovered a corrupted memory block string containing debug garbage.",
+              "Bitcoin SegWit wallet addresses start with **`bc1`** followed by 25 to 39 alphanumeric characters.",
+              "**Your Mission**: Use Python's built-in **`re`** module (`import re`) and `re.findall()` to extract the target destination wallet.",
+              "Pattern: `r'bc1[a-zA-HJ-NP-Z0-9]{25,39}'`."
+            ],
+            "highlight": "Use re.findall(r'bc1[a-zA-HJ-NP-Z0-9]{25,39}', memory_dump) to isolate crypto wallets."
+          },
+          "code": "import re\n\nraw_memory_dump = \"\"\"\n[DEBUG 0x889] SYS_INIT_OK token=9910-AA\n[TRANSFER] target=bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq amount=50000BTC\n[ERR 0x012] checksum_mismatch aux=bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4\n[MEM_CORRUPT] random_string_garbage_no_match\n\"\"\"\n\ndef extract_crypto_wallets(raw_text: str) -> list[str]:\n    # SegWit Bitcoin regex pattern\n    pattern = r'bc1[a-zA-HJ-NP-Z0-9]{25,39}'\n    wallets = re.findall(pattern, raw_text)\n    return wallets\n\nfound_wallets = extract_crypto_wallets(raw_memory_dump)\nprint(f\"[EXTRACTED WALLET ADDRESSES]: {found_wallets}\")\nprint(f\"[PRIMARY TRANSFER RECIPIENT]: {found_wallets[0]}\")",
+          "tip": "Explain to learners that regex is an essential daily skill for data engineers, cybersecurity analysts, and scraping tools.",
+          "viz": {
+            "type": "case-file",
+            "data": {
+              "caseId": "CASE #CYBER-2024-88A",
+              "caseName": "Operation ShadowByte: CyberTech Bank Heist",
+              "theme": "cyber",
+              "stageNumber": 3,
+              "totalStages": 7,
+              "briefing": "Scan raw memory dumps using regex pattern matching to track the recipient cryptocurrency wallet addresses.",
+              "clues": [
+                {
+                  "id": 1,
+                  "title": "Decoded Header Transmission",
+                  "status": "unlocked",
+                  "lead": "Alias decoded.",
+                  "revealedInfo": "ShadowByte."
+                },
+                {
+                  "id": 2,
+                  "title": "Malicious Server IP Address",
+                  "status": "unlocked",
+                  "lead": "Log isolated.",
+                  "revealedInfo": "IP: 198.51.100.77."
+                },
+                {
+                  "id": 3,
+                  "title": "Stolen Asset Wallet Address",
+                  "status": "current",
+                  "lead": "Extract SegWit bitcoin address starting with bc1."
+                }
+              ],
+              "rawEvidenceSnippet": "HEX SCAN 0x4B0:\n74 61 72 67 65 74 3d 62 63 31 71 61 72 30 73 72 72 72 37 78 66 6b 76 79 35 6c 36 34 33 6c 79 64 6e 77 39 72 65 35 39 67 74 7a 7a 77 66 35 6d 64 71"
+            }
+          },
+          "solution": {
+            "approach": "Import re and execute re.findall(r'bc1[a-zA-HJ-NP-Z0-9]{25,39}', text).",
+            "code": "import re\nwallets = re.findall(r'bc1[a-zA-HJ-NP-Z0-9]{25,39}', raw_memory_dump)\nprint(f\"Destination Wallet: {wallets[0]}\")",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(K) extracted matches",
+            "explanationPoints": [
+              "Target destination wallet isolated: **`bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq`**.",
+              "We can now trace this wallet across the public blockchain ledger!"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Stage 4: Cracking the C2 Command Token",
+      "slides": [
+        {
+          "id": "pcm-4",
+          "language": "python",
+          "section": "Operation ShadowByte",
+          "topic": "Stage 4: Cracking the C2 Command Token",
+          "step": "Stage 1.4",
+          "category": "advanced",
+          "categoryLabel": "Cyber Forensics",
+          "tag": "Cryptographic Hash",
+          "question": "Stage 4: Crack the hacker's SHA-256 Command & Control access token",
+          "explanation": {
+            "points": [
+              "**Cryptographic Evidence**: The hacker authenticated their session using an authorization token whose **SHA-256 hash** was logged:",
+              "`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` (example hash).",
+              "Security teams recovered a candidate wordlist of suspected passphrases.",
+              "**Your Mission**: Use Python's `hashlib.sha256()` module to hash each candidate word until finding the match.",
+              "Print the cracked plaintext token."
+            ],
+            "highlight": "Loop through candidate passwords and compare hashlib.sha256(w.encode()).hexdigest() with target hash."
+          },
+          "code": "import hashlib\n\n# Target SHA-256 hash recovered from server auth header\n# (Hash of 'shadow_protocol_2024')\ntarget_hash = \"37a892b1b369528f80f1e8dcbc14838321043f2537c95a287fa75908b98b046e\"\n\ncandidate_wordlist = [\n    \"admin123\",\n    \"cyber_security\",\n    \"bank_vault_master\",\n    \"shadow_protocol_2024\",\n    \"super_secret_token\"\n]\n\ndef crack_sha256(target: str, wordlist: list[str]) -> str:\n    for word in wordlist:\n        # Convert string to bytes and compute SHA-256 hex digest\n        digest = hashlib.sha256(word.encode('utf-8')).hexdigest()\n        if digest == target:\n            return word\n    return \"NOT_FOUND\"\n\ncracked_token = crack_sha256(target_hash, candidate_wordlist)\nprint(f\"[CRACKED PLAINTEXT TOKEN]: {cracked_token}\")",
+          "tip": "Explain how one-way cryptographic hashing works and why rainbow tables and wordlists are used in forensic audits.",
+          "viz": {
+            "type": "case-file",
+            "data": {
+              "caseId": "CASE #CYBER-2024-88A",
+              "caseName": "Operation ShadowByte: CyberTech Bank Heist",
+              "theme": "cyber",
+              "stageNumber": 4,
+              "totalStages": 7,
+              "briefing": "Compute SHA-256 digests over dictionary candidates to reverse-engineer the hacker's master authorization token.",
+              "clues": [
+                {
+                  "id": 4,
+                  "title": "Cracked C2 Security Hash",
+                  "status": "current",
+                  "lead": "Match target SHA-256 hash against candidate wordlist."
+                }
+              ],
+              "rawEvidenceSnippet": "AUTH HEADER RECOVERED:\nAuthorization: Bearer [SHA256: 37a892b1b369528f80f1e8dcbc14838321043f2537c95a287fa75908b98b046e]"
+            }
+          },
+          "solution": {
+            "approach": "Hash each candidate word with hashlib.sha256(word.encode()).hexdigest() and compare.",
+            "code": "import hashlib\ntoken = next(w for w in candidate_wordlist if hashlib.sha256(w.encode()).hexdigest() == target_hash)\nprint(f\"Token: {token}\")",
+            "timeComplexity": "O(W) where W is wordlist length",
+            "spaceComplexity": "O(1)",
+            "explanationPoints": [
+              "Plaintext master key cracked: **`shadow_protocol_2024`**.",
+              "This passphrase allows us to decrypt the hacker's server hop telemetry!"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Stage 5: Reconstructing Lateral Network Hop Route",
+      "slides": [
+        {
+          "id": "pcm-5",
+          "language": "python",
+          "section": "Operation ShadowByte",
+          "topic": "Stage 5: Reconstructing Lateral Network Hop Route",
+          "step": "Stage 1.5",
+          "category": "advanced",
+          "categoryLabel": "Cyber Forensics",
+          "tag": "Graph BFS Traversal",
+          "question": "Stage 5: Use Breadth-First Search (BFS) to trace the shortest lateral intrusion route across server nodes",
+          "explanation": {
+            "points": [
+              "**Network Topology Recovered**: The bank's internal network is modeled as an adjacency list graph of connected server nodes.",
+              "The hacker started at `'GatewayRouter'` and laterally jumped until reaching `'ColdStorageVault'`.",
+              "**Your Mission**: Write a BFS algorithm using Python's `collections.deque` to find the shortest hop path from `'GatewayRouter'` to `'ColdStorageVault'`.",
+              "Return the exact list of server node names visited in sequence."
+            ],
+            "highlight": "Use collections.deque for Breadth-First Search (BFS) to reconstruct the intrusion path."
+          },
+          "code": "from collections import deque\n\n# Network topology adjacency graph\nnetwork_topology = {\n    'GatewayRouter': ['FirewallNode', 'GuestWiFi'],\n    'GuestWiFi': ['PublicKiosk'],\n    'FirewallNode': ['AuthProxy', 'DevStaging'],\n    'DevStaging': ['LegacyDB'],\n    'AuthProxy': ['CoreAppServer', 'BackupCluster'],\n    'CoreAppServer': ['ColdStorageVault'],\n    'BackupCluster': ['ColdStorageVault'],\n    'ColdStorageVault': []\n}\n\ndef find_shortest_intrusion_path(graph: dict, start: str, target: str) -> list[str]:\n    queue = deque([[start]])\n    visited = {start}\n    \n    while queue:\n        path = queue.popleft()\n        node = path[-1]\n        \n        if node == target:\n            return path\n            \n        for neighbor in graph.get(node, []):\n            if neighbor not in visited:\n                visited.add(neighbor)\n                queue.append(path + [neighbor])\n                \n    return []\n\nhop_path = find_shortest_intrusion_path(network_topology, 'GatewayRouter', 'ColdStorageVault')\nprint(f\"[INTRUSION ROUTE]: {' -> '.join(hop_path)}\")",
+          "tip": "Explain how BFS guarantees the shortest path in unweighted graphs and why queues (deque) provide O(1) popleft operations.",
+          "viz": {
+            "type": "case-file",
+            "data": {
+              "caseId": "CASE #CYBER-2024-88A",
+              "caseName": "Operation ShadowByte: CyberTech Bank Heist",
+              "theme": "cyber",
+              "stageNumber": 5,
+              "totalStages": 7,
+              "briefing": "Trace the adversary's lateral hops through the corporate intranet using Breadth-First Search traversal.",
+              "clues": [
+                {
+                  "id": 5,
+                  "title": "Infiltration Network Route",
+                  "status": "current",
+                  "lead": "Traverse adjacency graph using BFS to find path to ColdStorageVault."
+                }
+              ],
+              "rawEvidenceSnippet": "ROUTER ROUTING TABLE DUMP:\nGatewayRouter -> FirewallNode -> AuthProxy -> CoreAppServer -> ColdStorageVault"
+            }
+          },
+          "solution": {
+            "approach": "Implement BFS queue maintaining paths to find the shortest hop sequence to ColdStorageVault.",
+            "code": "from collections import deque\n# BFS pathfinding outputs 4 hops: GatewayRouter -> FirewallNode -> AuthProxy -> CoreAppServer -> ColdStorageVault",
+            "timeComplexity": "O(V + E) vertices and edges",
+            "spaceComplexity": "O(V)",
+            "explanationPoints": [
+              "Shortest lateral intrusion path verified:",
+              "`GatewayRouter -> FirewallNode -> AuthProxy -> CoreAppServer -> ColdStorageVault`.",
+              "All compromised pivot nodes have been flagged for quarantine!"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Stage 6: The Suspect Dossier Validation",
+      "slides": [
+        {
+          "id": "pcm-6",
+          "language": "python",
+          "section": "Operation ShadowByte",
+          "topic": "Stage 6: The Suspect Dossier Validation",
+          "step": "Stage 1.6",
+          "category": "oop",
+          "categoryLabel": "Cyber Forensics",
+          "tag": "OOP Suspect Model",
+          "question": "Stage 6: Encapsulate all recovered forensic evidence into a verified SuspectDossier class",
+          "explanation": {
+            "points": [
+              "**Forensic Integrity**: Court warrants require evidence to be packaged in an immutable, validated data structure.",
+              "**Your Mission**: Complete the `SuspectDossier` class using Python Object-Oriented Programming (OOP):",
+              "- Initialize with `alias`, `ip`, `wallet`, and `token`.",
+              "- Add a method `generate_warrant_hash()` that combines all 4 attributes and returns a SHA-256 fingerprint.",
+              "- Ensure the fingerprint matches the verified court standard."
+            ],
+            "highlight": "Model suspect evidence using Python OOP and compute a cryptographic integrity checksum."
+          },
+          "code": "import hashlib\n\nclass SuspectDossier:\n    def __init__(self, alias: str, ip: str, wallet: str, token: str):\n        self.alias = alias\n        self.ip = ip\n        self.wallet = wallet\n        self.token = token\n        \n    def generate_warrant_hash(self) -> str:\n        raw_payload = f\"{self.alias}|{self.ip}|{self.wallet}|{self.token}\"\n        return hashlib.sha256(raw_payload.encode('utf-8')).hexdigest()\n        \n    def __repr__(self) -> str:\n        return f\"SuspectDossier(alias='{self.alias}', ip='{self.ip}')\"\n\n# Assemble evidence into dossier\ndossier = SuspectDossier(\n    alias=\"ShadowByte\",\n    ip=\"198.51.100.77\",\n    wallet=\"bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq\",\n    token=\"shadow_protocol_2024\"\n)\n\nprint(f\"[ASSEMBLED DOSSIER]: {dossier}\")\nprint(f\"[INTEGRITY CHECKSUM]: {dossier.generate_warrant_hash()}\")",
+          "tip": "Demonstrate how OOP cleanly organizes disparate forensic parameters into cohesive, testable entities.",
+          "viz": {
+            "type": "case-file",
+            "data": {
+              "caseId": "CASE #CYBER-2024-88A",
+              "caseName": "Operation ShadowByte: CyberTech Bank Heist",
+              "theme": "cyber",
+              "stageNumber": 6,
+              "totalStages": 7,
+              "briefing": "Package all forensic findings into an OOP SuspectDossier object and calculate the legal integrity signature.",
+              "clues": [
+                {
+                  "id": 6,
+                  "title": "The Master Hacker Arrest",
+                  "status": "current",
+                  "lead": "Validate dossier integrity hash to unlock the Interpol warrant."
+                }
+              ],
+              "suspects": [
+                {
+                  "name": "Marcus Vance",
+                  "alias": "ShadowByte",
+                  "status": "mastermind",
+                  "notes": "Former CyberTech Security Contractor. IP: 198.51.100.77. In possession of 50,000 BTC. WROTE EXPLOIT!"
+                }
+              ]
+            }
+          },
+          "solution": {
+            "approach": "Instantiate SuspectDossier with all recovered parameters and invoke generate_warrant_hash().",
+            "code": "dossier = SuspectDossier('ShadowByte', '198.51.100.77', 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq', 'shadow_protocol_2024')\nprint(dossier.generate_warrant_hash())",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(1)",
+            "explanationPoints": [
+              "Suspect identity resolved: **Marcus Vance** (Codename: **ShadowByte**).",
+              "Integrity hash verified by Interpol Cyber Command!"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Stage 7: Executing the Interpol Arrest Warrant",
+      "slides": [
+        {
+          "id": "pcm-7",
+          "language": "python",
+          "section": "Operation ShadowByte",
+          "topic": "Stage 7: Executing the Interpol Arrest Warrant",
+          "step": "Stage 1.7",
+          "category": "oop",
+          "categoryLabel": "Cyber Forensics",
+          "tag": "Mission Accomplished",
+          "question": "Stage 7: Transmit the automated warrant dispatch and claim your Certified Cyber Investigator rank!",
+          "explanation": {
+            "points": [
+              "**FINAL MISSION BRIEFING**: You have successfully solved all 6 forensic milestones:",
+              "1. Decoded the reversed header signature (`ShadowByte`).",
+              "2. Isolated the intrusion IP (`198.51.100.77`).",
+              "3. Extracted the destination Bitcoin wallet with regex.",
+              "4. Cracked the SHA-256 Command & Control token.",
+              "5. Mapped the 4-hop lateral network intrusion path with BFS.",
+              "6. Packaged the legal dossier with cryptographic checksums.",
+              "Click **▶ Run** to issue the digital arrest warrant and complete the mystery!"
+            ],
+            "highlight": "Execute the final warrant dispatch script to celebrate completing Operation ShadowByte!"
+          },
+          "code": "# ========================================================\n# OPERATION SHADOWBYTE: INTERPOL RED NOTICE DISPATCH\n# ========================================================\ndef execute_arrest_warrant():\n    report = \"\"\"\n    ====================================================\n    🚨 INTERPOL CYBER DEFENSE COMMAND - ARREST WARRANT 🚨\n    ====================================================\n    STATUS: CASE CLOSED - FUGITIVE APPREHENDED\n    NAME: Marcus Vance\n    ALIAS: ShadowByte\n    IP ORIGIN: 198.51.100.77\n    WALLET: bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq\n    ASSETS RECOVERED: $10,000,000.00 (50,000 BTC)\n    VERDICT: GUILTY OF CYBER INTRUSION & GRAND THEFT\n    ====================================================\n    🏆 CONGRATULATIONS LEAD INVESTIGATOR! YOU CRACKED IT!\n    ====================================================\n    \"\"\"\n    print(report)\n\nexecute_arrest_warrant()",
+          "tip": "Celebrate the student's mastery of strings, collections, regular expressions, hashing, graphs, and object-oriented design in Python!",
+          "viz": {
+            "type": "case-file",
+            "data": {
+              "caseId": "CASE #CYBER-2024-88A",
+              "caseName": "Operation ShadowByte: CyberTech Bank Heist",
+              "theme": "cyber",
+              "stageNumber": 7,
+              "totalStages": 7,
+              "briefing": "CASE CLOSED! Marcus Vance ('ShadowByte') was intercepted in Zurich with the private keys. $10,000,000 in assets recovered.",
+              "clues": [
+                {
+                  "id": 1,
+                  "title": "Decoded Header Transmission",
+                  "status": "unlocked",
+                  "lead": "ShadowByte signature confirmed.",
+                  "revealedInfo": "Reverse string decoded."
+                },
+                {
+                  "id": 2,
+                  "title": "Malicious Server IP",
+                  "status": "unlocked",
+                  "lead": "IP 198.51.100.77 isolated.",
+                  "revealedInfo": "Log filtered."
+                },
+                {
+                  "id": 3,
+                  "title": "Stolen Asset Wallet",
+                  "status": "unlocked",
+                  "lead": "SegWit BTC address extracted.",
+                  "revealedInfo": "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq."
+                },
+                {
+                  "id": 4,
+                  "title": "Cracked C2 Hash",
+                  "status": "unlocked",
+                  "lead": "Token cracked: shadow_protocol_2024.",
+                  "revealedInfo": "SHA-256 reversed."
+                },
+                {
+                  "id": 5,
+                  "title": "Network Infiltration Route",
+                  "status": "unlocked",
+                  "lead": "BFS 4-hop path mapped.",
+                  "revealedInfo": "Gateway -> Firewall -> AuthProxy -> CoreApp -> Vault."
+                },
+                {
+                  "id": 6,
+                  "title": "Suspect Arrested",
+                  "status": "unlocked",
+                  "lead": "Marcus Vance in custody.",
+                  "revealedInfo": "INTERPOL RED NOTICE EXECUTED!"
+                }
+              ],
+              "suspects": [
+                {
+                  "name": "Marcus Vance",
+                  "alias": "ShadowByte",
+                  "status": "mastermind",
+                  "notes": "IN CUSTODY. All 50,000 BTC recovered. Case forwarded to federal court."
+                }
+              ]
+            }
+          },
+          "solution": {
+            "approach": "Run execute_arrest_warrant() to output the verified mission completion report.",
+            "code": "execute_arrest_warrant()",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(1)",
+            "explanationPoints": [
+              "Case successfully concluded!",
+              "You have demonstrated proficiency across Python strings, collections, regex, hashing, graphs, and OOP."
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

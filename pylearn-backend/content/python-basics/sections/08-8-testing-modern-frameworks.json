@@ -1,0 +1,543 @@
+{
+  "section": "8. Testing & Modern Frameworks",
+  "order": 8,
+  "topics": [
+    {
+      "topic": "Testing: unittest & pytest",
+      "slides": [
+        {
+          "section": "8. Testing & Modern Frameworks",
+          "topic": "Testing: unittest & pytest",
+          "step": "31.1",
+          "category": "testing",
+          "categoryLabel": "Testing",
+          "tag": "Standard Testing",
+          "question": "How do unittest and doctest verify code reliability in Python?",
+          "explanation": {
+            "points": [
+              "Testing guarantees that code refactors and updates do not introduce silent bugs or regressions.",
+              "**doctest**: Runs interactive Python examples written directly inside docstrings (great for living documentation).",
+              "**unittest** (pyUnit): Python's standard library xUnit testing framework inspired by JUnit.",
+              "Subclasses `unittest.TestCase` and uses assertion methods: `assertEqual`, `assertTrue`, `assertRaises`.",
+              "Always direct `TextTestRunner` to `sys.stdout` in automated environments."
+            ],
+            "highlight": "Automated testing catches regressions before code hits production."
+          },
+          "code": "import unittest\nimport doctest\nimport sys\n\n# 1. Function with living doctest documentation\ndef add_numbers(a: int, b: int) -> int:\n    \"\"\"\n    Adds two integers.\n    >>> add_numbers(2, 3)\n    5\n    >>> add_numbers(-1, 1)\n    0\n    \"\"\"\n    return a + b\n\n# 2. unittest Test Suite\nclass TestMathSuite(unittest.TestCase):\n    def test_positive_addition(self):\n        self.assertEqual(add_numbers(10, 5), 15)\n        \n    def test_negative_addition(self):\n        self.assertEqual(add_numbers(-5, -5), -10)\n        \n    def test_zero_identity(self):\n        self.assertEqual(add_numbers(42, 0), 42)\n\nprint(\"🧪 [1] Running doctests:\")\ndoctest.testmod(verbose=True)\n\nprint(\"\\n🧪 [2] Running unittest Suite:\")\nsuite = unittest.TestLoader().loadTestsFromTestCase(TestMathSuite)\nrunner = unittest.TextTestRunner(verbosity=2, stream=sys.stdout)\nrunner.run(suite)\n",
+          "tip": "Watch the terminal output below! Notice how doctest verifies docstrings while unittest runs organized assertions.",
+          "viz": {
+            "type": "test-runner",
+            "data": {}
+          },
+          "id": 175
+        },
+        {
+          "section": "8. Testing & Modern Frameworks",
+          "topic": "Testing: unittest & pytest",
+          "step": "31.2",
+          "category": "testing",
+          "categoryLabel": "Testing",
+          "tag": "Pytest & Parametrize",
+          "question": "Why is pytest the industry favorite and how does parametrize work?",
+          "explanation": {
+            "points": [
+              "**pytest** is the de-facto standard testing framework in modern Python: no boilerplate classes required, just write plain `def test_*()` functions with standard `assert` statements.",
+              "**Fixtures** (`@pytest.fixture`) manage setup and teardown of test databases and mock clients with clean dependency injection.",
+              "`@pytest.mark.parametrize` runs a single test across dozens of input combinations.",
+              "**tox**: Automates running your test suite across multiple isolated Python versions (3.10, 3.11, 3.12) to guarantee package compatibility."
+            ],
+            "highlight": "Write clean, boilerplate-free tests with plain Python assert statements."
+          },
+          "code": "# Pytest-style test runner demonstration\ndef calculate_discount(price: float, rate: float) -> float:\n    if rate < 0 or rate > 1:\n        raise ValueError(\"Rate must be between 0 and 1\")\n    return round(price * (1 - rate), 2)\n\n# Simulated @pytest.mark.parametrize test execution\ntest_cases = [\n    (\"test_standard_20_percent\", 100.0, 0.20, 80.0),\n    (\"test_zero_percent\", 50.0, 0.0, 50.0),\n    (\"test_full_100_percent\", 75.0, 1.0, 0.0),\n    (\"test_small_fraction\", 99.99, 0.10, 89.99),\n]\n\nprint(\"🚀 Running Pytest Suite with Parametrize:\\n\")\nfor name, price, rate, expected in test_cases:\n    actual = calculate_discount(price, rate)\n    assert actual == expected, f\"Failed {name}: expected {expected}, got {actual}\"\n    print(f\"  PASSED: {name} (price={price}, rate={rate}) -> ${actual}\")\n\nprint(\"\\n✅ 4 passed, 0 failed in 0.02s\")\n",
+          "tip": "Pytest allows clean, concise testing with plain assert statements. Click Run to test the suite!",
+          "viz": {
+            "type": "test-runner",
+            "data": {}
+          },
+          "id": 176
+        },
+        {
+          "section": "8. Testing & Modern Frameworks",
+          "topic": "Testing: unittest & pytest",
+          "step": "31.2-P",
+          "category": "testing",
+          "categoryLabel": "Testing",
+          "tag": "Practice: String Assertion Tests",
+          "question": "Practice 1: Write Unit Tests with Assertions & Doctests",
+          "explanation": {
+            "points": [
+              "**Challenge**: Implement a string manipulation function `clean_slug(title)` and write unit tests verifying that spaces become hyphens, punctuation is removed, and result is lowercase.",
+              "**Example**: clean_slug('Hello World! 2026') -> 'hello-world-2026'",
+              "**Constraints**: Include both a doctest and 2 unittest assertions.",
+              "**Hint**: Click 'Reveal Solution' in the visual panel on the left to review the verified code and load it into your editor."
+            ],
+            "highlight": "Implement a string manipulation function `clean_slug(title)` and write unit tests verifying that spaces become hyphens, punctuation is remov"
+          },
+          "code": "import unittest\n\ndef clean_slug(title: str) -> str:\n    \"\"\"\n    Converts title into URL-friendly slug.\n    >>> clean_slug('Hello World')\n    'hello-world'\n    \"\"\"\n    # YOUR CODE HERE\n    pass\n\nclass TestSlug(unittest.TestCase):\n    def test_basic_slug(self):\n        pass\n\n# unittest.main()\n",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to see the verified optimal code.",
+          "viz": {
+            "type": "test-runner",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Clean characters with regex or loop: keep alphanumeric, replace spaces with '-', strip punctuation, and return lowercase string. In unittest, test basic words and edge cases with punctuation.",
+            "code": "import unittest, re, sys\n\ndef clean_slug(title: str) -> str:\n    \"\"\"\n    Converts title into URL-friendly slug.\n    >>> clean_slug('Hello World')\n    'hello-world'\n    \"\"\"\n    clean = re.sub(r'[^a-zA-Z0-9\\s-]', '', title).strip().lower()\n    return re.sub(r'[\\s-]+', '-', clean)\n\nclass TestSlug(unittest.TestCase):\n    def test_basic_slug(self):\n        self.assertEqual(clean_slug('Hello World'), 'hello-world')\n        \n    def test_punctuation_and_spaces(self):\n        self.assertEqual(clean_slug('Python 3.12: Modern & Fast!'), 'python-312-modern-fast')\n\nsuite = unittest.TestLoader().loadTestsFromTestCase(TestSlug)\nrunner = unittest.TextTestRunner(verbosity=2, stream=sys.stdout)\nrunner.run(suite)\n",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(N)"
+          },
+          "id": 177
+        },
+        {
+          "section": "8. Testing & Modern Frameworks",
+          "topic": "Testing: unittest & pytest",
+          "step": "31.2-P",
+          "category": "testing",
+          "categoryLabel": "Testing",
+          "tag": "Practice: Testing Exceptions",
+          "question": "Practice 2: Testing Expected Exceptions (assertRaises)",
+          "explanation": {
+            "points": [
+              "**Challenge**: Write a function `parse_age(age_str)` and a unit test using `self.assertRaises(ValueError)` to verify that negative numbers or non-numeric strings raise a ValueError.",
+              "**Example**: parse_age('-5') -> raises ValueError | parse_age('25') -> returns 25",
+              "**Constraints**: Test both valid integer conversion and raised exceptions.",
+              "**Hint**: Click 'Reveal Solution' in the visual panel on the left to review the verified code and load it into your editor."
+            ],
+            "highlight": "Write a function `parse_age(age_str)` and a unit test using `self.assertRaises(ValueError)` to verify that negative numbers or non-numeric s"
+          },
+          "code": "import unittest\n\ndef parse_age(raw: str) -> int:\n    # YOUR CODE HERE\n    pass\n\nclass TestAgeValidation(unittest.TestCase):\n    pass\n",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to see the verified optimal code.",
+          "viz": {
+            "type": "test-runner",
+            "data": {}
+          },
+          "solution": {
+            "approach": "In parse_age, check int(raw) and if val < 0 raise ValueError. In unittest, use with self.assertRaises(ValueError): parse_age('-10').",
+            "code": "import unittest, sys\n\ndef parse_age(raw: str) -> int:\n    val = int(raw)\n    if val < 0 or val > 150:\n        raise ValueError(\"Age out of valid human range\")\n    return val\n\nclass TestAgeValidation(unittest.TestCase):\n    def test_valid_age(self):\n        self.assertEqual(parse_age('28'), 28)\n        \n    def test_negative_age_raises(self):\n        with self.assertRaises(ValueError):\n            parse_age('-5')\n            \n    def test_invalid_string_raises(self):\n        with self.assertRaises(ValueError):\n            parse_age('twenty')\n\nsuite = unittest.TestLoader().loadTestsFromTestCase(TestAgeValidation)\nrunner = unittest.TextTestRunner(verbosity=2, stream=sys.stdout)\nrunner.run(suite)\n",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(1)"
+          },
+          "id": 178
+        },
+        {
+          "section": "8. Testing & Modern Frameworks",
+          "topic": "Testing: unittest & pytest",
+          "step": "31.2-L",
+          "category": "testing",
+          "categoryLabel": "Testing",
+          "tag": "LeetCode: LeetCode #125",
+          "question": "LeetCode #242: Valid Anagram (Test-Driven Development with Unit Tests)",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given two strings `s` and `t`, return `true` if `t` is an anagram of `s`, and `false` otherwise.",
+              "**Example**: Input: `s = 'anagram'`, `t = 'nagaram'` -> `True`.",
+              "**Constraints**: Solve using frequency mapping (`collections.Counter`).",
+              "**TDD Practice**: Write a structured assertions suite validating edge cases."
+            ],
+            "highlight": "Implement `is_palindrome(s)` and write a comprehensive parameterized test suite covering edge cases: empty strings, single character, punctu"
+          },
+          "code": "def is_anagram(s: str, t: str) -> bool:\n    # YOUR CODE HERE\n    pass\n\n# Write test cases to verify",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to see the verified optimal code.",
+          "viz": {
+            "type": "test-runner",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Count character frequencies using collections.Counter (or array of 26 letters). Assert expected booleans across comprehensive test cases.",
+            "code": "from collections import Counter\n\ndef is_anagram(s: str, t: str) -> bool:\n    if len(s) != len(t):\n        return False\n    return Counter(s) == Counter(t)\n\n# Parametrized Test Suite\ncases = [\n    (\"anagram\", \"nagaram\", True),\n    (\"rat\", \"car\", False),\n    (\"listen\", \"silent\", True),\n    (\"a\", \"ab\", False),\n    (\"openai\", \"aiopen\", True)\n]\n\nfor s, t, expected in cases:\n    actual = is_anagram(s, t)\n    assert actual == expected, f\"Failed for '{s}' and '{t}'\"\n    print(f\"✅ PASSED: is_anagram('{s}', '{t}') -> {actual}\")\nprint(\"\\nAll Anagram unit test checks green!\")",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(1)"
+          },
+          "id": 179
+        },
+        {
+          "section": "8. Testing & Modern Frameworks",
+          "topic": "Testing: unittest & pytest",
+          "step": "31.2-L",
+          "category": "testing",
+          "categoryLabel": "Testing",
+          "tag": "LeetCode: LeetCode #225",
+          "question": "LeetCode #225: Implement Stack using Queues (Test Suite)",
+          "explanation": {
+            "points": [
+              "**Challenge**: Implement a LIFO stack using only a standard FIFO queue (collections.deque), and verify its operations (`push`, `pop`, `top`, `empty`) with unit tests.",
+              "**Example**: push(1) -> push(2) -> top() returns 2 -> pop() returns 2",
+              "**Constraints**: Must use only queue operations (append and popleft).",
+              "**Hint**: Click 'Reveal Solution' in the visual panel on the left to review the verified code and load it into your editor."
+            ],
+            "highlight": "Implement a LIFO stack using only a standard FIFO queue (collections.deque), and verify its operations (`push`, `pop`, `top`, `empty`) with "
+          },
+          "code": "from collections import deque\nimport unittest\n\nclass MyStack:\n    def __init__(self):\n        pass\n    def push(self, x: int) -> None:\n        pass\n    def pop(self) -> int:\n        pass\n    def top(self) -> int:\n        pass\n    def empty(self) -> bool:\n        pass\n",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to see the verified optimal code.",
+          "viz": {
+            "type": "test-runner",
+            "data": {}
+          },
+          "solution": {
+            "approach": "In push(x), append x to deque, then rotate the previous elements: for _ in range(len(q)-1): q.append(q.popleft()). This places the newest element at the front.",
+            "code": "from collections import deque\nimport unittest, sys\n\nclass MyStack:\n    def __init__(self):\n        self.q = deque()\n    def push(self, x: int) -> None:\n        self.q.append(x)\n        for _ in range(len(self.q) - 1):\n            self.q.append(self.q.popleft())\n    def pop(self) -> int:\n        return self.q.popleft()\n    def top(self) -> int:\n        return self.q[0]\n    def empty(self) -> bool:\n        return len(self.q) == 0\n\nclass TestMyStack(unittest.TestCase):\n    def test_stack_operations(self):\n        st = MyStack()\n        st.push(1)\n        st.push(2)\n        self.assertEqual(st.top(), 2)\n        self.assertEqual(st.pop(), 2)\n        self.assertFalse(st.empty())\n        self.assertEqual(st.pop(), 1)\n        self.assertTrue(st.empty())\n\nsuite = unittest.TestLoader().loadTestsFromTestCase(TestMyStack)\nrunner = unittest.TextTestRunner(verbosity=2, stream=sys.stdout)\nrunner.run(suite)\n",
+            "timeComplexity": "O(N) push, O(1) pop",
+            "spaceComplexity": "O(N)"
+          },
+          "id": 180
+        },
+        {
+          "section": "8. Testing & Modern Frameworks",
+          "topic": "Testing: unittest & pytest",
+          "step": "31.2-R",
+          "category": "testing",
+          "categoryLabel": "Testing",
+          "tag": "Real-World: API Mocking",
+          "question": "Real-Time Scenario: API Client Mocking & Test Fixture Simulator",
+          "explanation": {
+            "points": [
+              "**Challenge**: Build a mock HTTP client fixture that intercepts external network calls and returns pre-configured mock JSON responses to test service logic offline.",
+              "**Example**: MockClient.get('/users/1') returns {'id': 1, 'name': 'Alice'} without touching the internet.",
+              "**Constraints**: Allow registering custom status codes and payloads.",
+              "**Hint**: Click 'Reveal Solution' in the visual panel on the left to review the verified code and load it into your editor."
+            ],
+            "highlight": "Build a mock HTTP client fixture that intercepts external network calls and returns pre-configured mock JSON responses to test service logic"
+          },
+          "code": "class MockHttpClient:\n    def __init__(self):\n        pass\n    def register_mock(self, endpoint, status_code, data):\n        pass\n    def get(self, endpoint):\n        pass\n",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to see the verified optimal code.",
+          "viz": {
+            "type": "test-runner",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Store routes in a dictionary: self.mock_routes[endpoint] = (status_code, data). In get(endpoint), return mock response object.",
+            "code": "class MockResponse:\n    def __init__(self, status, json_data):\n        self.status_code = status\n        self._data = json_data\n    def json(self):\n        return self._data\n\nclass MockHttpClient:\n    def __init__(self):\n        self.routes = {}\n    def mock(self, url: str, status: int, data: dict):\n        self.routes[url] = MockResponse(status, data)\n    def get(self, url: str):\n        if url in self.routes:\n            return self.routes[url]\n        return MockResponse(404, {\"error\": \"Not Found\"})\n\n# Test our service using the mock\nclient = MockHttpClient()\nclient.mock(\"https://api.ai.org/models\", 200, {\"models\": [\"gemini-1.5\", \"gpt-4o\"]})\n\nresp = client.get(\"https://api.ai.org/models\")\nassert resp.status_code == 200\nassert \"gemini-1.5\" in resp.json()[\"models\"]\nprint(\"✅ API Mock Fixture successfully verified service logic without internet!\")\n",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(Routes)"
+          },
+          "id": 181
+        },
+        {
+          "section": "8. Testing & Modern Frameworks",
+          "topic": "Testing: unittest & pytest",
+          "step": "31.2-R",
+          "category": "testing",
+          "categoryLabel": "Testing",
+          "tag": "Real-World: Regression Suite",
+          "question": "Real-Time Scenario: Automated Regression Test Runner with Output Reporting",
+          "explanation": {
+            "points": [
+              "**Challenge**: Build an automated regression test runner class that inspects test functions, executes them, logs pass/fail metrics, and prints an ANSI terminal summary report.",
+              "**Example**: Runs 5 tests -> Prints: '5 Passed, 0 Failed, Duration: 0.003s'.",
+              "**Constraints**: Catch AssertionError and record failed test names.",
+              "**Hint**: Click 'Reveal Solution' in the visual panel on the left to review the verified code and load it into your editor."
+            ],
+            "highlight": "Build an automated regression test runner class that inspects test functions, executes them, logs pass/fail metrics, and prints an ANSI term"
+          },
+          "code": "class MiniTestRunner:\n    def __init__(self):\n        self.tests = []\n    def add(self, fn):\n        self.tests.append(fn)\n    def run_all(self):\n        pass\n\n# Define test functions and pass to runner",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to see the verified optimal code.",
+          "viz": {
+            "type": "test-runner",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Store test functions in self.tests. In run_all(), execute each inside a try/except AssertionError block. Track passes/failures cleanly.",
+            "code": "import time\n\nclass MiniTestRunner:\n    def __init__(self):\n        self.tests = []\n    def add(self, fn):\n        self.tests.append(fn)\n    def run_all(self):\n        passed, failed = 0, []\n        t0 = time.perf_counter()\n        for test in self.tests:\n            try:\n                test()\n                passed += 1\n            except AssertionError as err:\n                failed.append((test.__name__, str(err)))\n        elapsed = time.perf_counter() - t0\n        print(f\"📊 Test Summary: {passed} Passed, {len(failed)} Failed in {elapsed:.4f}s\")\n        if failed:\n            print(\"  ❌ Failures:\", failed)\n        else:\n            print(\"  ✨ All regression checks green!\")\n\n# Define standard test functions with assertions\ndef test_reverse_list():\n    lst = [1, 2, 3]\n    lst.reverse()\n    assert lst == [3, 2, 1], \"List reversal failed\"\n\ndef test_string_length():\n    assert len(\"PyLearn\") == 7, \"String length mismatch\"\n\nrunner = MiniTestRunner()\nrunner.add(test_reverse_list)\nrunner.add(test_string_length)\nrunner.run_all()",
+            "timeComplexity": "O(Tests)",
+            "spaceComplexity": "O(Tests)"
+          },
+          "id": 182
+        }
+      ]
+    },
+    {
+      "topic": "Web Frameworks: FastAPI & Services",
+      "slides": [
+        {
+          "section": "8. Testing & Modern Frameworks",
+          "topic": "Web Frameworks: FastAPI & Services",
+          "step": "32.1",
+          "category": "frameworks",
+          "categoryLabel": "Frameworks",
+          "tag": "FastAPI Architecture",
+          "question": "How do FastAPI, Django, and Flask differ and how does Routing work?",
+          "explanation": {
+            "points": [
+              "**FastAPI**: Modern, async-native web framework built on Starlette and Pydantic with automatic Swagger UI documentation (Top choice for AI microservices and APIs).",
+              "**Django**: 'Batteries-included' full-stack framework with built-in ORM, admin panel, authentication, and migrations (Top choice for robust enterprise web apps).",
+              "**Flask**: Lightweight, minimalist micro-framework giving full freedom over database and template choices.",
+              "FastAPI uses Python type annotations and decorators (`@app.get`, `@app.post`) for automatic serialization and validation."
+            ],
+            "highlight": "FastAPI auto-generates interactive OpenAPI Swagger docs at /docs."
+          },
+          "code": "# Pure Python FastAPI-Style Microservice Router Simulation\nclass FastAPISimulator:\n    def __init__(self, title: str):\n        self.title = title\n        self.routes = {}\n\n    def get(self, path: str):\n        def decorator(func):\n            self.routes[('GET', path)] = func\n            return func\n        return decorator\n\n    def post(self, path: str):\n        def decorator(func):\n            self.routes[('POST', path)] = func\n            return func\n        return decorator\n\n    def dispatch(self, method: str, path: str, payload: dict = None):\n        handler = self.routes.get((method.upper(), path))\n        if not handler:\n            return {\"status\": 404, \"error\": f\"Route {method} {path} not found\"}\n        return {\"status\": 200, \"data\": handler(payload) if payload else handler()}\n\napp = FastAPISimulator(\"AI Prediction Microservice\")\n\n@app.get(\"/health\")\ndef health_check():\n    return {\"status\": \"healthy\", \"service\": \"LLM Inference API\", \"version\": \"1.0.0\"}\n\n@app.post(\"/v1/predict\")\ndef predict(data):\n    prompt = data.get(\"prompt\", \"\")\n    return {\"prompt\": prompt, \"tokens\": len(prompt.split()), \"sentiment\": \"POSITIVE\"}\n\nprint(\"🚀 FastAPI App Routes Registered:\", list(app.routes.keys()))\nprint(\"\\n1. Dispatch GET /health:\")\nprint(\"  Response:\", app.dispatch(\"GET\", \"/health\"))\n\nprint(\"\\n2. Dispatch POST /v1/predict:\")\nprint(\"  Response:\", app.dispatch(\"POST\", \"/v1/predict\", {\"prompt\": \"Python with FastAPI is lightning fast\"}))\n",
+          "tip": "This shows how FastAPI decorators register routes and dispatch handlers cleanly under the hood. Click Run!",
+          "viz": {
+            "type": "pydantic",
+            "data": {
+              "modelName": "PredictionResponse",
+              "fields": [
+                "status: int",
+                "data: dict",
+                "sentiment: str"
+              ]
+            }
+          },
+          "id": 183
+        },
+        {
+          "section": "8. Testing & Modern Frameworks",
+          "topic": "Web Frameworks: FastAPI & Services",
+          "step": "32.2",
+          "category": "frameworks",
+          "categoryLabel": "Frameworks",
+          "tag": "Specialized Frameworks",
+          "question": "What are aiohttp, Sanic, Tornado, and Plotly Dash used for?",
+          "explanation": {
+            "points": [
+              "**aiohttp**: Asynchronous HTTP client/server for handling tens of thousands of concurrent WebSocket and REST connections.",
+              "**Sanic**: Blazing-fast async framework built on `uvloop` specifically optimized for raw throughput.",
+              "**Tornado**: Long-standing asynchronous networking library known for WebSockets and long-polling.",
+              "**Plotly Dash**: Framework for building rich, interactive analytical web applications and AI dashboards entirely in pure Python without writing JavaScript."
+            ],
+            "highlight": "Choose specialized async frameworks for raw WebSocket throughput or Dash for data visualization."
+          },
+          "code": "import asyncio\n\n# Asynchronous Microservice Event Dispatcher (aiohttp / Sanic architecture)\nclass AsyncMicroservice:\n    def __init__(self):\n        self.active_clients = 0\n\n    async def handle_websocket_message(self, client_id: str, message: str):\n        # Simulate non-blocking asynchronous event handling\n        await asyncio.sleep(0.02)\n        return {\n            \"client\": client_id,\n            \"received\": message,\n            \"broadcast\": f\"ECHO: {message.upper()}\",\n            \"status\": \"DELIVERED\"\n        }\n\nasync def main():\n    service = AsyncMicroservice()\n    print(\"📡 Async WebSocket Server Listening for events...\")\n    \n    # Process 3 real-time events concurrently\n    events = await asyncio.gather(\n        service.handle_websocket_message(\"client_101\", \"Model training epoch 1 complete\"),\n        service.handle_websocket_message(\"client_102\", \"Loss reached 0.042\"),\n        service.handle_websocket_message(\"client_103\", \"Validation accuracy 98.4%\")\n    )\n    \n    for event in events:\n        print(\"  Event Dispatched:\", event)\n\nasyncio.run(main())\n",
+          "tip": "aiohttp and Sanic excel at handling streaming WebSockets for live AI updates and telemetry.",
+          "viz": {
+            "type": "ai-hierarchy",
+            "data": {
+              "levels": [
+                "FastAPI (REST & OpenAPI)",
+                "aiohttp / Sanic (WebSockets & High Concurrency)",
+                "Plotly Dash (Interactive AI Analytics Dashboards)"
+              ]
+            }
+          },
+          "id": 184
+        },
+        {
+          "section": "8. Testing & Modern Frameworks",
+          "topic": "Web Frameworks: FastAPI & Services",
+          "step": "32.2-P",
+          "category": "frameworks",
+          "categoryLabel": "Frameworks",
+          "tag": "Practice: URL Router",
+          "question": "Practice 1: Pure Python URL Micro-Router with Path Parameters",
+          "explanation": {
+            "points": [
+              "**Challenge**: Build a URL routing function that matches paths with dynamic integer parameters like `/users/{user_id}` and extracts the user_id into a params dictionary.",
+              "**Example**: Path '/users/42' matches '/users/{id}' -> extracts {'id': 42}",
+              "**Constraints**: Use split('/') or regex to extract path parameters.",
+              "**Hint**: Click 'Reveal Solution' in the visual panel on the left to review the verified code and load it into your editor."
+            ],
+            "highlight": "Build a URL routing function that matches paths with dynamic integer parameters like `/users/{user_id}` and extracts the user_id into a para"
+          },
+          "code": "def match_route(pattern: str, request_path: str):\n    # YOUR CODE HERE\n    pass\n\nprint(match_route('/users/{id}', '/users/42'))\n",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to see the verified optimal code.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Split pattern and request_path by '/'. If segment counts differ, return None. For each segment, if pattern starts with '{' and ends with '}', extract param name and cast to int if numeric.",
+                "code": "def match_route(pattern: str, request_path: str):\n    pat_parts = pattern.strip('/').split('/')\n    req_parts = request_path.strip('/').split('/')\n    if len(pat_parts) != len(req_parts): return None\n    params = {}\n    for p, r in zip(pat_parts, req_parts):\n        if p.startswith('{') and p.endswith('}'):\n            param_name = p[1:-1]\n            params[param_name] = int(r) if r.isdigit() else r\n        elif p != r:\n            return None\n    return params\n\nprint('Match /users/42:', match_route('/users/{id}', '/users/42'))\nprint('Match /models/gemini/v1:', match_route('/models/{name}/{version}', '/models/gemini/v1'))\nprint('Mismatch /items/5:', match_route('/users/{id}', '/items/5'))\n",
+                "timeComplexity": "O(Segments)",
+                "spaceComplexity": "O(Params)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Split pattern and request_path by '/'. If segment counts differ, return None. For each segment, if pattern starts with '{' and ends with '}', extract param name and cast to int if numeric.",
+            "code": "def match_route(pattern: str, request_path: str):\n    pat_parts = pattern.strip('/').split('/')\n    req_parts = request_path.strip('/').split('/')\n    if len(pat_parts) != len(req_parts): return None\n    params = {}\n    for p, r in zip(pat_parts, req_parts):\n        if p.startswith('{') and p.endswith('}'):\n            param_name = p[1:-1]\n            params[param_name] = int(r) if r.isdigit() else r\n        elif p != r:\n            return None\n    return params\n\nprint('Match /users/42:', match_route('/users/{id}', '/users/42'))\nprint('Match /models/gemini/v1:', match_route('/models/{name}/{version}', '/models/gemini/v1'))\nprint('Mismatch /items/5:', match_route('/users/{id}', '/items/5'))\n",
+            "timeComplexity": "O(Segments)",
+            "spaceComplexity": "O(Params)"
+          },
+          "id": 185
+        },
+        {
+          "section": "8. Testing & Modern Frameworks",
+          "topic": "Web Frameworks: FastAPI & Services",
+          "step": "32.2-P",
+          "category": "frameworks",
+          "categoryLabel": "Frameworks",
+          "tag": "Practice: Status Code Dispatcher",
+          "question": "Practice 2: JSON Payload Schema Validator & HTTP Status Codes",
+          "explanation": {
+            "points": [
+              "**Challenge**: Validate incoming JSON POST requests for a `/v1/signup` route. If 'email' or 'password' is missing, return HTTP 422 Unprocessable Entity. If email invalid, return 400. If valid, return 201 Created.",
+              "**Example**: {'email': 'alice@ai.com', 'password': 'pass'} -> (201, {'status': 'user created'})",
+              "**Constraints**: Must return tuple of (status_code, response_dict).",
+              "**Hint**: Click 'Reveal Solution' in the visual panel on the left to review the verified code and load it into your editor."
+            ],
+            "highlight": "Validate incoming JSON POST requests for a `/v1/signup` route. If 'email' or 'password' is missing, return HTTP 422 Unprocessable Entity. If"
+          },
+          "code": "def handle_signup(payload: dict) -> tuple[int, dict]:\n    # YOUR CODE HERE\n    pass\n\nprint(handle_signup({'email': 'alice@ai.com', 'password': 'secret'}))\nprint(handle_signup({'email': 'alice@ai.com'}))\n",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to see the verified optimal code.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Check if 'email' and 'password' are in payload (if not return 422). Check '@' in email (if not return 400). Return (201, created) on success.",
+                "code": "def handle_signup(payload: dict) -> tuple[int, dict]:\n    if not payload or 'email' not in payload or 'password' not in payload:\n        return 422, {\"detail\": \"Missing required fields: email and password\"}\n    email = payload['email']\n    if '@' not in email or '.' not in email:\n        return 400, {\"detail\": \"Malformed email format\"}\n    return 201, {\"id\": 101, \"email\": email, \"message\": \"User account created successfully\"}\n\nprint('Valid:', handle_signup({'email': 'alice@ai.com', 'password': 'secret'}))\nprint('Missing field:', handle_signup({'email': 'alice@ai.com'}))\nprint('Bad email:', handle_signup({'email': 'not_an_email', 'password': 'secret'}))\n",
+                "timeComplexity": "O(1)",
+                "spaceComplexity": "O(1)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Check if 'email' and 'password' are in payload (if not return 422). Check '@' in email (if not return 400). Return (201, created) on success.",
+            "code": "def handle_signup(payload: dict) -> tuple[int, dict]:\n    if not payload or 'email' not in payload or 'password' not in payload:\n        return 422, {\"detail\": \"Missing required fields: email and password\"}\n    email = payload['email']\n    if '@' not in email or '.' not in email:\n        return 400, {\"detail\": \"Malformed email format\"}\n    return 201, {\"id\": 101, \"email\": email, \"message\": \"User account created successfully\"}\n\nprint('Valid:', handle_signup({'email': 'alice@ai.com', 'password': 'secret'}))\nprint('Missing field:', handle_signup({'email': 'alice@ai.com'}))\nprint('Bad email:', handle_signup({'email': 'not_an_email', 'password': 'secret'}))\n",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(1)"
+          },
+          "id": 186
+        },
+        {
+          "section": "8. Testing & Modern Frameworks",
+          "topic": "Web Frameworks: FastAPI & Services",
+          "step": "32.2-L",
+          "category": "frameworks",
+          "categoryLabel": "Frameworks",
+          "tag": "LeetCode: LeetCode #20",
+          "question": "FastAPI Scenario: API Route Path Template Parameter Matcher",
+          "explanation": {
+            "points": [
+              "**Challenge**: Implement the core routing engine for FastAPI that matches incoming URL requests against route patterns like `/users/{user_id}/items/{item_id}`.",
+              "**Example**: Template: `/users/{user_id}/orders/{order_id}` with URL `/users/42/orders/999` -> extracts `{'user_id': '42', 'order_id': '999'}`.",
+              "**Constraints**: Return a dictionary of extracted parameters, or `None` if the path doesn't match."
+            ],
+            "highlight": "Given a string of opening and closing delimiters '()[]{}' representing a serialized request payload, verify that all brackets are properly c"
+          },
+          "code": "def match_route_params(template: str, url: str) -> dict | None:\n    # YOUR CODE HERE\n    pass\n\nprint(match_route_params('/users/{user_id}/items/{item_id}', '/users/42/items/99'))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to see the verified optimal code.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Push opening brackets to stack. For closing brackets, check if stack is non-empty and top matches expected pair.",
+                "code": "def validate_payload_delimiters(s: str) -> bool:\n    pairs = {')': '(', ']': '[', '}': '{'}\n    stack = []\n    for ch in s:\n        if ch in pairs.values():\n            stack.append(ch)\n        elif ch in pairs:\n            if not stack or stack.pop() != pairs[ch]:\n                return False\n    return len(stack) == 0\n\nprint('{[()]} ->', validate_payload_delimiters('{[()]}'))\nprint('{[(])} ->', validate_payload_delimiters('{[(])}'))\n",
+                "timeComplexity": "O(N)",
+                "spaceComplexity": "O(N)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Split template and url paths by '/'. If segment counts differ, return None. For each segment, if template is enclosed in '{...}', extract parameter key; otherwise assert exact string match.",
+            "code": "def match_route_params(template: str, url: str) -> dict | None:\n    tpl_parts = template.strip('/').split('/')\n    url_parts = url.strip('/').split('/')\n    if len(tpl_parts) != len(url_parts):\n        return None\n    params = {}\n    for t_seg, u_seg in zip(tpl_parts, url_parts):\n        if t_seg.startswith('{') and t_seg.endswith('}'):\n            param_key = t_seg[1:-1]\n            params[param_key] = u_seg\n        elif t_seg != u_seg:\n            return None\n    return params\n\ntemplate = '/users/{user_id}/orders/{order_id}'\ntest_url = '/users/42/orders/999'\nextracted = match_route_params(template, test_url)\nprint('Matched Params:', extracted)\nprint('Mismatched URL test:', match_route_params(template, '/users/42/settings'))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(N)"
+          },
+          "id": 187
+        },
+        {
+          "section": "8. Testing & Modern Frameworks",
+          "topic": "Web Frameworks: FastAPI & Services",
+          "step": "32.2-L",
+          "category": "frameworks",
+          "categoryLabel": "Frameworks",
+          "tag": "LeetCode: LeetCode #383",
+          "question": "LeetCode #383: API Rate Limit Token Authenticator",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given a required request token string and a user's API credit string, determine if the request can be constructed from the credits without reusing any credit character.",
+              "**Example**: Token: 'aab', Credits: 'baa' -> Output: True | Token: 'aa', Credits: 'ab' -> Output: False",
+              "**Constraints**: 1 <= token.length, credits.length <= 10^5",
+              "**Hint**: Click 'Reveal Solution' in the visual panel on the left to review the verified code and load it into your editor."
+            ],
+            "highlight": "Given a required request token string and a user's API credit string, determine if the request can be constructed from the credits without r"
+          },
+          "code": "def can_authenticate(token: str, credits: str) -> bool:\n    # YOUR CODE HERE\n    pass\n\nprint(can_authenticate('aab', 'baa'))\nprint(can_authenticate('aa', 'ab'))\n",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to see the verified optimal code.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Count character occurrences using collections.Counter. Return all(credit_counts[ch] >= token_counts[ch] for ch in token).",
+                "code": "from collections import Counter\n\ndef can_authenticate(token: str, credits: str) -> bool:\n    token_counts = Counter(token)\n    credit_counts = Counter(credits)\n    for ch, count in token_counts.items():\n        if credit_counts[ch] < count:\n            return False\n    return True\n\nprint('aab from baa:', can_authenticate('aab', 'baa'))\nprint('aa from ab:', can_authenticate('aa', 'ab'))\n",
+                "timeComplexity": "O(N + M)",
+                "spaceComplexity": "O(1)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Count character occurrences using collections.Counter. Return all(credit_counts[ch] >= token_counts[ch] for ch in token).",
+            "code": "from collections import Counter\n\ndef can_authenticate(token: str, credits: str) -> bool:\n    token_counts = Counter(token)\n    credit_counts = Counter(credits)\n    for ch, count in token_counts.items():\n        if credit_counts[ch] < count:\n            return False\n    return True\n\nprint('aab from baa:', can_authenticate('aab', 'baa'))\nprint('aa from ab:', can_authenticate('aa', 'ab'))\n",
+            "timeComplexity": "O(N + M)",
+            "spaceComplexity": "O(1)"
+          },
+          "id": 188
+        },
+        {
+          "section": "8. Testing & Modern Frameworks",
+          "topic": "Web Frameworks: FastAPI & Services",
+          "step": "32.2-R",
+          "category": "frameworks",
+          "categoryLabel": "Frameworks",
+          "tag": "Real-World: Swagger Generator",
+          "question": "Real-Time Scenario: OpenAPI Swagger Documentation Generator",
+          "explanation": {
+            "points": [
+              "**Challenge**: Simulate FastAPI's automatic `/openapi.json` documentation generator that inspects registered route endpoints, methods, and docstrings to build a Swagger JSON schema.",
+              "**Example**: Registered routes -> generates Swagger JSON with 'paths', 'get', 'post', 'responses'.",
+              "**Constraints**: Outputs standard OpenAPI 3.0 dictionary format.",
+              "**Hint**: Click 'Reveal Solution' in the visual panel on the left to review the verified code and load it into your editor."
+            ],
+            "highlight": "Simulate FastAPI's automatic `/openapi.json` documentation generator that inspects registered route endpoints, methods, and docstrings to bu"
+          },
+          "code": "def generate_openapi_schema(routes: list[dict]) -> dict:\n    # YOUR CODE HERE\n    pass\n\nsample_routes = [\n    {\"method\": \"GET\", \"path\": \"/health\", \"summary\": \"System Health Check\"},\n    {\"method\": \"POST\", \"path\": \"/v1/predict\", \"summary\": \"LLM Inference Endpoint\"}\n]\nprint(generate_openapi_schema(sample_routes))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to see the verified optimal code.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Build OpenAPI dictionary structure with 'openapi': '3.0.0', 'info', and 'paths'. Populate path and method details from route metadata.",
+                "code": "def generate_openapi_schema(routes: list[dict]) -> dict:\n    schema = {\n        \"openapi\": \"3.1.0\",\n        \"info\": {\"title\": \"PyLearn AI Microservice API\", \"version\": \"1.0.0\"},\n        \"paths\": {}\n    }\n    for r in routes:\n        path = r['path']\n        method = r['method'].lower()\n        if path not in schema['paths']:\n            schema['paths'][path] = {}\n        schema['paths'][path][method] = {\n            \"summary\": r.get('summary', 'Endpoint'),\n            \"responses\": {\"200\": {\"description\": \"Successful Response\"}}\n        }\n    return schema\n\nsample_routes = [\n    {\"method\": \"GET\", \"path\": \"/health\", \"summary\": \"System Health Check\"},\n    {\"method\": \"POST\", \"path\": \"/v1/predict\", \"summary\": \"LLM Inference Endpoint\"}\n]\ndoc = generate_openapi_schema(sample_routes)\nprint(\"Auto-Generated OpenAPI /openapi.json:\\n\")\nimport json\nprint(json.dumps(doc, indent=2))\n",
+                "timeComplexity": "O(Routes)",
+                "spaceComplexity": "O(Routes)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Build OpenAPI dictionary structure with 'openapi': '3.1.0', 'info', and 'paths'. Populate path and method details from route metadata.",
+            "code": "def generate_openapi_schema(routes: list[dict]) -> dict:\n    schema = {\n        \"openapi\": \"3.1.0\",\n        \"info\": {\"title\": \"PyLearn AI Microservice API\", \"version\": \"1.0.0\"},\n        \"paths\": {}\n    }\n    for r in routes:\n        path = r['path']\n        method = r['method'].lower()\n        if path not in schema['paths']:\n            schema['paths'][path] = {}\n        schema['paths'][path][method] = {\n            \"summary\": r.get('summary', 'Endpoint'),\n            \"responses\": {\"200\": {\"description\": \"Successful Response\"}}\n        }\n    return schema\n\nsample_routes = [\n    {\"method\": \"GET\", \"path\": \"/health\", \"summary\": \"System Health Check\"},\n    {\"method\": \"POST\", \"path\": \"/v1/predict\", \"summary\": \"LLM Inference Endpoint\"}\n]\ndoc = generate_openapi_schema(sample_routes)\nprint(\"Auto-Generated OpenAPI /openapi.json:\\n\")\nimport json\nprint(json.dumps(doc, indent=2))\n",
+            "timeComplexity": "O(Routes)",
+            "spaceComplexity": "O(Routes)"
+          },
+          "id": 189
+        },
+        {
+          "section": "8. Testing & Modern Frameworks",
+          "topic": "Web Frameworks: FastAPI & Services",
+          "step": "32.2-R",
+          "category": "frameworks",
+          "categoryLabel": "Frameworks",
+          "tag": "Real-World: Async WebSocket Broker",
+          "question": "Real-Time Scenario: Async Pub/Sub WebSocket Broadcast Channel",
+          "explanation": {
+            "points": [
+              "**Challenge**: Build an async Pub/Sub message broker class (like aiohttp/Sanic channels) allowing multiple client listeners to subscribe to a topic and broadcast messages concurrently.",
+              "**Example**: Clients Alice and Bob subscribe to 'ai-alerts' -> broadcast('High GPU Temp') delivers to both.",
+              "**Constraints**: Thread/coroutine safe.",
+              "**Hint**: Click 'Reveal Solution' in the visual panel on the left to review the verified code and load it into your editor."
+            ],
+            "highlight": "Build an async Pub/Sub message broker class (like aiohttp/Sanic channels) allowing multiple client listeners to subscribe to a topic and bro"
+          },
+          "code": "import asyncio\n\nclass PubSubBroker:\n    def __init__(self):\n        self.channels = {}\n    def subscribe(self, topic: str, callback):\n        self.channels.setdefault(topic, set()).add(callback)\n    async def broadcast(self, topic: str, message: str):\n        pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to see the verified optimal code.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Store subscribers in a dictionary of sets: self.channels[topic] = set(). Broadcast invokes each listener callback with asyncio.gather().",
+                "code": "import asyncio\n\nclass PubSubBroker:\n    def __init__(self):\n        self.channels = {}\n    def subscribe(self, topic: str, callback):\n        self.channels.setdefault(topic, set()).add(callback)\n    async def broadcast(self, topic: str, message: str):\n        listeners = self.channels.get(topic, set())\n        results = await asyncio.gather(*(cb(message) for cb in listeners))\n        return results\n\nasync def main():\n    broker = PubSubBroker()\n    broker.subscribe(\"telemetry\", lambda msg: f\"Client A received: {msg}\")\n    broker.subscribe(\"telemetry\", lambda msg: f\"Client B received: {msg}\")\n    \n    responses = await broker.broadcast(\"telemetry\", \"Epoch 10 Accuracy 99.1%\")\n    for r in responses:\n        print(\"  Broadcast:\", r)\n\nasyncio.run(main())\n",
+                "timeComplexity": "O(Subscribers)",
+                "spaceComplexity": "O(Subscribers)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Store subscribers in sets. In broadcast(), execute callbacks with asyncio.gather(). Inspect whether callbacks are coroutines or wrap synchronous functions safely.",
+            "code": "import asyncio, inspect\n\nclass PubSubBroker:\n    def __init__(self):\n        self.channels = {}\n    def subscribe(self, topic: str, callback):\n        self.channels.setdefault(topic, set()).add(callback)\n    async def broadcast(self, topic: str, message: str):\n        listeners = self.channels.get(topic, set())\n        tasks = []\n        for cb in listeners:\n            if inspect.iscoroutinefunction(cb):\n                tasks.append(cb(message))\n            else:\n                # Wrap sync callback into an awaitable task\n                async def _sync_wrap(fn=cb, msg=message):\n                    return fn(msg)\n                tasks.append(_sync_wrap())\n        return await asyncio.gather(*tasks) if tasks else []\n\nasync def main():\n    broker = PubSubBroker()\n    async def client_a(msg):\n        return f\"Client A (WebSocket) received: {msg}\"\n    def client_b(msg):\n        return f\"Client B (Logger) recorded: {msg}\"\n    \n    broker.subscribe(\"telemetry\", client_a)\n    broker.subscribe(\"telemetry\", client_b)\n    \n    responses = await broker.broadcast(\"telemetry\", \"Epoch 10 Accuracy 99.1%\")\n    for r in responses:\n        print(\"  Broadcast ->\", r)\n\ntry:\n    asyncio.run(main())\nexcept RuntimeError:\n    import asyncio, inspect\n    asyncio.create_task(main())",
+            "timeComplexity": "O(Subscribers)",
+            "spaceComplexity": "O(Subscribers)"
+          },
+          "id": 190
+        }
+      ]
+    }
+  ]
+}

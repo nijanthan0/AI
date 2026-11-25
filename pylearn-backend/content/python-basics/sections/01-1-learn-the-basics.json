@@ -1,0 +1,2625 @@
+{
+  "section": "1. Learn the Basics",
+  "order": 1,
+  "topics": [
+    {
+      "topic": "Architecture & Setup",
+      "slides": [
+        {
+          "section": "1. Learn the Basics",
+          "topic": "Architecture & Setup",
+          "step": "0.1",
+          "category": "basics",
+          "categoryLabel": "Setup",
+          "tag": "Environment & CLI",
+          "question": "How do you properly install Python 3.12+ across Windows, macOS, and Linux from Terminal?",
+          "explanation": {
+            "points": [
+              "**Windows Terminal (winget / PowerShell)**:\n• Install: `winget install Python.Python.3.12`\n• Create venv: `python -m venv .venv`\n• Activate & Auto-Set PATH: `.\\.venv\\Scripts\\Activate.ps1`\n• Note: If PowerShell blocks scripts, run `Set-ExecutionPolicy RemoteSigned -Scope CurrentUser` once (or use `.\\.venv\\Scripts\\activate.bat` in CMD).",
+              "**macOS Terminal (Homebrew / zsh)**:\n• Install: `brew install python@3.12`\n• Create venv: `python3.12 -m venv .venv` (avoids older system `python3` like 3.9)\n• Activate & Auto-Set PATH: `source .venv/bin/activate`",
+              "**Linux Terminal (Ubuntu/Debian / apt)**:\n• Install: `sudo apt update && sudo apt install -y python3.12 python3.12-venv python3-pip`\n• Create venv: `python3.12 -m venv .venv` (avoids older default `python3` like 3.10)\n• Activate & Auto-Set PATH: `source .venv/bin/activate`",
+              "**How Environment Sets $PATH**:\n• Activating `.venv` modifies your current shell's `$PATH` variable by **prepending** `.venv/bin` (or `.\\.venv\\Scripts`) right at index 0.\n• Now typing `python` immediately runs the local environment rather than the global system Python!"
+            ]
+          },
+          "code": "# Verifying Python & Environment Active PATH\nimport sys\nimport os\n\nprint(\"🐍 Python Executable:\", sys.executable)\nprint(\"📦 Virtual Env Active:\", hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix))\nprint(\"📂 Prefix Path      :\", sys.prefix)\nprint(\"🔍 Top PATH Entry    :\", os.environ.get('PATH', '').split(os.pathsep)[0])",
+          "tip": "Check for the (.venv) prefix in your prompt to confirm activation.",
+          "viz": {
+            "type": "terminal-setup",
+            "data": {}
+          },
+          "id": 1
+        },
+        {
+          "section": "1. Learn the Basics",
+          "topic": "Architecture & Setup",
+          "step": "0.2",
+          "category": "basics",
+          "categoryLabel": "Setup",
+          "tag": "pip, Poetry & Conda",
+          "question": "What is the difference between pip, Poetry, and Conda, how do you use them, and what are their pros and cons?",
+          "explanation": {
+            "points": [
+              "**pip (Built-in PyPI Package Installer)**:\n• What it does: Installs Python packages from PyPI, but does **not** create virtual environments itself (pair with `python3.12 -m venv .venv`).\n• How to use: `pip install fastapi` and `pip freeze > requirements.txt`\n• Pros: Zero extra setup, lightweight, universal in Docker & CI.\n• Cons: No automatic lockfile or strict sub-dependency isolation.",
+              "**Poetry (Modern App & Library Manager)**:\n• What it does: All-in-one manager using `pyproject.toml`; auto-creates `.venv` and generates a deterministic `poetry.lock`.\n• How to use: `poetry init -n` -> `poetry add fastapi` -> `poetry run python main.py`\n• Pros: Exact reproducible builds and built-in PyPI publishing.\n• Cons: Requires separate install (`pipx install poetry`); slower on huge ML trees.",
+              "**Conda (Cross-Language & Binary Manager)**:\n• What it does: Manages environments, Python versions, **and** non-Python system/C++/CUDA binaries.\n• How to use: `conda create -n ml python=3.12` -> `conda activate ml` -> `conda install numpy pytorch`\n• Pros: Handles complex GPU/C++ binaries effortlessly.\n• Cons: Heavy disk footprint (prefer Miniconda) and slower solver than pip.",
+              "**Key Difference & When to Pick Which**:\n• `pip` + `.venv` -> Quick scripts, simple apps, and lean Docker containers.\n• `Poetry` -> Production backend APIs, team projects, and publishable libraries.\n• `Conda` -> Data Science, Machine Learning, PyTorch/CUDA, and C++ dependencies."
+            ]
+          },
+          "code": "# Package Manager Quick Reference & Active Environment Check\nimport sys\nimport importlib.metadata as meta\n\nprint(\"🐍 Active Python :\", sys.executable)\nprint(\"📦 Environment   :\", sys.prefix)\n\n# Common CLI workflows:\n# 1. pip    : pip install fastapi && pip freeze > requirements.txt\n# 2. Poetry : poetry add fastapi && poetry run python main.py\n# 3. Conda  : conda create -n ml python=3.12 && conda install pytorch\n\ninstalled = sorted([dist.metadata[\"Name\"] for dist in meta.distributions()])\nprint(f\"📚 Installed Packages ({len(installed)}):\", installed[:5])",
+          "tip": "Use pip+venv for simple scripts, Poetry for production apps, and Conda for ML/GPU stacks.",
+          "viz": {
+            "type": "package-managers",
+            "data": {}
+          },
+          "id": 2
+        },
+        {
+          "section": "1. Learn the Basics",
+          "topic": "Architecture & Setup",
+          "step": "0.3",
+          "category": "basics",
+          "categoryLabel": "Setup",
+          "tag": "Execution Model",
+          "question": "How does Python execute your source code under the hood (Compiler, Bytecode & PVM)?",
+          "explanation": {
+            "points": [
+              "Python is **not purely interpreted**: It is first compiled into intermediate **Bytecode** instructions (`.pyc` files stored in `__pycache__`).",
+              "The **CPython Virtual Machine (PVM)** is a stack-based runtime loop that executes these bytecode instructions sequentially.",
+              "**Compilation step**: Checks syntax and generates opcode instructions (`LOAD_FAST`, `BINARY_OP`, `RETURN_VALUE`).",
+              "**Execution step**: The PVM interprets bytecode into machine CPU operations. The `dis` module lets you inspect bytecode directly."
+            ]
+          },
+          "code": "import dis\n\ndef calculate_tax(gross: float, rate: float = 0.15) -> float:\n    net_tax = gross * rate\n    return round(net_tax, 2)\n\nprint(\"--- Disassembled CPython Bytecode ---\")\n# Disassemble the function to see the actual PVM instructions\ndis.dis(calculate_tax)\n\nresult = calculate_tax(1000.0)\nprint(f\"\\nResult: ${result}\")",
+          "tip": "Explain to students that .pyc files prevent Python from having to re-parse and compile your code on every subsequent execution unless the .py file changes.",
+          "viz": {
+            "type": "execution-flow",
+            "data": {}
+          },
+          "id": 3
+        },
+        {
+          "section": "1. Learn the Basics",
+          "topic": "Architecture & Setup",
+          "step": "0.4",
+          "category": "basics",
+          "categoryLabel": "Setup",
+          "tag": "Python 2 vs 3",
+          "question": "What is the history of Python and what are the critical breaking differences between Python 2 and Python 3?",
+          "explanation": {
+            "points": [
+              "**History**: Created in 1991 by **Guido van Rossum** as a successor to the ABC language. Python 3 was released in 2008 to clean up fundamental flaws; Python 2 reached End-Of-Life (EOL) in 2020.",
+              "**Print Statement vs Function**: Python 2 used `print 'hello'`, whereas Python 3 requires `print('hello')` as a first-class function.",
+              "**Text vs Bytes**: Python 3 strings are **Unicode UTF-8** by default; binary data is handled by the distinct `bytes` type.",
+              "**Division**: In Python 2, `5 / 2` performed integer floor division (`2`). In Python 3, `5 / 2 = 2.5` (float) and `5 // 2 = 2` (explicit floor division).",
+              "**Iteration**: `range()` in Python 3 is an efficient memory generator (replacing Python 2's memory-heavy `xrange` list allocation)."
+            ]
+          },
+          "code": "# Python 3 Modern Standards Demonstration\n\n# 1. Print is a function with kwargs\nprint(\"Python 3\", \"Standards\", sep=\" | \", end=\" -> Verified!\\n\")\n\n# 2. Strict Unicode text vs raw bytes\ntext_str = \"AI & ML 🤖\"\nbyte_data = text_str.encode(\"utf-8\")\nprint(f\"Unicode String: {text_str} (type: {type(text_str).__name__})\")\nprint(f\"Binary Bytes  : {byte_data} (type: {type(byte_data).__name__})\")\n\n# 3. True Division vs Floor Division\nprint(\"True Division  (5 / 2)  =\", 5 / 2)   # 2.5\nprint(\"Floor Division (5 // 2) =\", 5 // 2)  # 2",
+          "tip": "Never write new code in Python 2. All modern libraries (NumPy, PyTorch, FastAPI) require Python 3.10+.",
+          "viz": {
+            "type": "packaging-venv",
+            "data": {}
+          },
+          "id": 4
+        }
+      ]
+    },
+    {
+      "topic": "Basic Syntax & PEP 8",
+      "slides": [
+        {
+          "id": 5,
+          "section": "1. Learn the Basics",
+          "topic": "Basic Syntax & PEP 8",
+          "step": "1.0",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Syntax & Formatting",
+          "question": "What is Python's Basic Syntax and what are the PEP 8 Formatting Rules?",
+          "explanation": {
+            "points": [
+              "Python uses **meaningful whitespace and indentation (4 spaces)** instead of curly braces `{}` to define code blocks.",
+              "**Comments** start with `#` for single lines or triple quotes `\"\"\"` for multi-line documentation.",
+              "Python is strictly **case-sensitive** (`data` is completely distinct from `Data`).",
+              "**PEP 8** is the official style guide: use `snake_case` for variables/functions, `PascalCase` for classes, and `SCREAMING_SNAKE_CASE` for constants.",
+              "Lines are terminated by newlines; statements don't need semicolons `;`."
+            ]
+          },
+          "code": "# 1. Python uses 4-space indentation for code blocks\ndef greet_developer(name: str) -> str:\n    # Indented 4 spaces inside function\n    greeting = f\"Hello, {name}! Welcome to Python.\"\n    return greeting\n\n# 2. Case sensitivity demonstration\nmodel_count = 5\nModel_count = 10\nprint(f\"model_count: {model_count}, Model_count: {Model_count}\")\n\n# 3. Call function\nresult = greet_developer(\"Nijanthan\")\nprint(result)",
+          "tip": "Explain to your YouTube audience that unlike C++, Java, or JS, Python replaces braces with indentation. Remind them to never mix tabs and spaces!",
+          "viz": {
+            "type": "syntax",
+            "data": {}
+          }
+        },
+        {
+          "section": "1. Learn the Basics",
+          "topic": "Basic Syntax & PEP 8",
+          "step": "1.0-K1",
+          "category": "basics",
+          "categoryLabel": "Syntax",
+          "tag": "Keywords",
+          "question": "What are Python's Reserved Keywords and why can't they be used as variable identifiers?",
+          "explanation": {
+            "points": [
+              "**Reserved Keywords**: Words with special built-in meaning that form the grammatical syntax of the Python language.",
+              "Python has **35 reserved keywords** (such as `def`, `class`, `if`, `while`, `import`, `return`, `async`, `await`, `match`, `case`).",
+              "You **cannot** use any reserved keyword as a variable, function, or class identifier (e.g. `class = 'Math'` raises `SyntaxError`).",
+              "Use the built-in `keyword` module to programmatically inspect or validate whether a name is reserved."
+            ]
+          },
+          "code": "import keyword\n\nprint(f\"Total Python Reserved Keywords: {len(keyword.kwlist)}\")\nprint(\"\\nAll Reserved Keywords:\")\nfor i in range(0, len(keyword.kwlist), 5):\n    print(\"  \" + \"  \".join(f\"{kw:<10}\" for kw in keyword.kwlist[i:i+5]))\n\n# Testing whether an identifier is reserved\ntest_words = [\"model_weight\", \"class\", \"async\", \"temperature\", \"def\", \"learning_rate\"]\nprint(\"\\nKeyword Check:\")\nfor w in test_words:\n    is_kw = keyword.iskeyword(w)\n    status = \"❌ RESERVED KEYWORD\" if is_kw else \"✅ VALID IDENTIFIER\"\n    print(f\"  {w:<15} -> {status}\")",
+          "tip": "If you genuinely need a variable name that clashes with a keyword (like 'class'), the PEP 8 convention is to append a trailing underscore: 'class_'.",
+          "viz": {
+            "type": "keywords-matrix",
+            "data": {}
+          },
+          "id": 6
+        },
+        {
+          "section": "1. Learn the Basics",
+          "topic": "Basic Syntax & PEP 8",
+          "step": "1.0-K2",
+          "category": "basics",
+          "categoryLabel": "Syntax",
+          "tag": "Identifiers",
+          "question": "What are the strict rules for Valid vs. Invalid Identifiers in Python?",
+          "explanation": {
+            "points": [
+              "**Rule 1**: Must begin with an uppercase/lowercase letter (`A-Z`, `a-z`) or an underscore (`_`).",
+              "**Rule 2**: Cannot start with a digit (`2model` ❌ -> `model_2` ✅).",
+              "**Rule 3**: Can only contain alphanumeric characters and underscores (`a-z`, `0-9`, `_`). No spaces, dashes, or special symbols (`user-id` ❌, `total$` ❌).",
+              "**Rule 4**: Python is strictly **case-sensitive** (`batch_size` $\neq$ `Batch_Size`).",
+              "**Rule 5**: Cannot be any reserved Python keyword (`pass = 10` ❌)."
+            ]
+          },
+          "code": "# Valid vs Invalid Identifier Rules\n\n# ✅ VALID IDENTIFIERS:\nuser_name = \"Nijanthan\"     # snake_case (PEP 8 for variables)\n_private_api_key = \"sk_123\" # leading underscore\nmodel_epoch_10 = 0.985      # digits allowed after first char\nTOTAL_CAPACITY = 5000       # SCREAMING_SNAKE_CASE (constants)\nNeuralNetwork = \"Class\"     # PascalCase (classes)\n\n# ❌ INVALID IDENTIFIERS (Uncommenting raises SyntaxError):\n# 10_epochs = 10            # Cannot start with a digit\n# user-name = \"Alex\"        # Cannot contain hyphen (interpreted as minus)\n# max$cost = 99             # Cannot contain special symbols\n# def = \"function\"          # Cannot use reserved keyword\n\nprint(\"All valid variables declared successfully:\")\nprint(f\"  user_name: {user_name}, epoch: {model_epoch_10}\")",
+          "tip": "Demonstrate that 'user_id' is valid while 'user-id' triggers a SyntaxError because Python interprets '-' as subtraction.",
+          "viz": {
+            "type": "identifier-rules",
+            "data": {}
+          },
+          "id": 7
+        },
+        {
+          "id": 8,
+          "section": "1. Learn the Basics",
+          "topic": "Basic Syntax & PEP 8",
+          "step": "1.0-P1",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Practice 1",
+          "question": "Practice 1: CamelCase to snake_case Identifier Converter",
+          "explanation": {
+            "points": [
+              "**Challenge**: Write a function that converts camelCase or PascalCase variable names into idiomatic PEP 8 snake_case.",
+              "**Example**: Input: 'modelTrainingLoss' -> Output: 'model_training_loss'",
+              "**Constraints**: Preserve consecutive lowercase characters and insert underscores before uppercase characters.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Write a function that converts camelCase or PascalCase variable names into idiomatic PEP 8 snake_case."
+          },
+          "code": "def to_snake_case(name: str) -> str:\n    # YOUR CODE HERE\n    pass\n\nprint(to_snake_case('modelTrainingLoss'))\nprint(to_snake_case('NeuralNetworkModel'))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Iterate through each character. If it is uppercase, append '_' and the lowercase character; otherwise append the character as-is. Strip any leading underscore.",
+                "code": "def to_snake_case(name: str) -> str:\n    res = []\n    for char in name:\n        if char.isupper():\n            res.append(f'_{char.lower()}')\n        else:\n            res.append(char)\n    return ''.join(res).lstrip('_')\n\nprint(to_snake_case('modelTrainingLoss'))\nprint(to_snake_case('NeuralNetworkModel'))",
+                "timeComplexity": "O(N)",
+                "spaceComplexity": "O(N)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Iterate through each character. If it is uppercase, append '_' and the lowercase character; otherwise append the character as-is. Strip any leading underscore.",
+            "code": "def to_snake_case(name: str) -> str:\n    res = []\n    for char in name:\n        if char.isupper():\n            res.append(f'_{char.lower()}')\n        else:\n            res.append(char)\n    return ''.join(res).lstrip('_')\n\nprint(to_snake_case('modelTrainingLoss'))\nprint(to_snake_case('NeuralNetworkModel'))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(N)"
+          }
+        },
+        {
+          "id": 9,
+          "section": "1. Learn the Basics",
+          "topic": "Basic Syntax & PEP 8",
+          "step": "1.0-P2",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Practice 2",
+          "question": "Practice 2: 4-Space Indentation Linter Checker",
+          "explanation": {
+            "points": [
+              "**Challenge**: Check if each indented line in a code snippet uses valid 4-space multiples and contains zero forbidden tabs ('\\t').",
+              "**Example**: Input: '    def hello():\\n        return True' -> Output: True",
+              "**Constraints**: Return False if any line contains a tab or non-multiple of 4 leading spaces.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Check if each indented line in a code snippet uses valid 4-space multiples and contains zero forbidden tabs ('\\t')."
+          },
+          "code": "def validate_indentation(code: str) -> bool:\n    # YOUR CODE HERE\n    pass\n\nprint(validate_indentation('    x = 10\\n        y = 20'))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Split string by newlines. For each line, check if '\\t' is present. Count leading spaces with len(line) - len(line.lstrip(' ')). Verify leading_spaces % 4 == 0.",
+                "code": "def validate_indentation(code: str) -> bool:\n    for line in code.splitlines():\n        if '\\t' in line: return False\n        leading = len(line) - len(line.lstrip(' '))\n        if leading % 4 != 0: return False\n    return True\n\nprint('Valid 4-space:', validate_indentation('    x = 10\\n        y = 20'))\nprint('Invalid 2-space:', validate_indentation('  x = 10'))",
+                "timeComplexity": "O(Lines)",
+                "spaceComplexity": "O(1)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Split string by newlines. For each line, check if '\\t' is present. Count leading spaces with len(line) - len(line.lstrip(' ')). Verify leading_spaces % 4 == 0.",
+            "code": "def validate_indentation(code: str) -> bool:\n    for line in code.splitlines():\n        if '\\t' in line: return False\n        leading = len(line) - len(line.lstrip(' '))\n        if leading % 4 != 0: return False\n    return True\n\nprint('Valid 4-space:', validate_indentation('    x = 10\\n        y = 20'))\nprint('Invalid 2-space:', validate_indentation('  x = 10'))",
+            "timeComplexity": "O(Lines)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 10,
+          "section": "1. Learn the Basics",
+          "topic": "Basic Syntax & PEP 8",
+          "step": "1.0-L3",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "LeetCode: LeetCode #125",
+          "question": "LeetCode #125: Valid Palindrome (Clean Alphanumeric)",
+          "explanation": {
+            "points": [
+              "**Challenge**: A phrase is a palindrome if, after converting all uppercase letters to lowercase and removing all non-alphanumeric characters, it reads the same forward and backward.",
+              "**Example**: Input: s = 'A man, a plan, a canal: Panama' -> Output: True",
+              "**Constraints**: 1 <= s.length <= 2 * 10^5",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "A phrase is a palindrome if, after converting all uppercase letters to lowercase and removing all non-alphanumeric characters, it reads the "
+          },
+          "code": "def is_palindrome(s: str) -> bool:\n    # YOUR CODE HERE\n    pass\n\nprint(is_palindrome('A man, a plan, a canal: Panama'))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Two-pointer approach: left = 0, right = len-1. Skip non-alphanumeric characters using .isalnum(). Compare lowercase characters. Runs in O(1) extra space.",
+                "code": "def is_palindrome(s: str) -> bool:\n    left, right = 0, len(s) - 1\n    while left < right:\n        while left < right and not s[left].isalnum(): left += 1\n        while left < right and not s[right].isalnum(): right -= 1\n        if s[left].lower() != s[right].lower(): return False\n        left += 1; right -= 1\n    return True\n\nprint(is_palindrome('A man, a plan, a canal: Panama'))\nprint(is_palindrome('race a car'))",
+                "timeComplexity": "O(N)",
+                "spaceComplexity": "O(1)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Two-pointer approach: left = 0, right = len-1. Skip non-alphanumeric characters using .isalnum(). Compare lowercase characters. Runs in O(1) extra space.",
+            "code": "def is_palindrome(s: str) -> bool:\n    left, right = 0, len(s) - 1\n    while left < right:\n        while left < right and not s[left].isalnum(): left += 1\n        while left < right and not s[right].isalnum(): right -= 1\n        if s[left].lower() != s[right].lower(): return False\n        left += 1; right -= 1\n    return True\n\nprint(is_palindrome('A man, a plan, a canal: Panama'))\nprint(is_palindrome('race a car'))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 11,
+          "section": "1. Learn the Basics",
+          "topic": "Basic Syntax & PEP 8",
+          "step": "1.0-L4",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "LeetCode: LeetCode #58",
+          "question": "LeetCode #58: Length of Last Word",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given a string `s` consisting of words and spaces, return the length of the last word in the string.",
+              "**Example**: Input: s = '   fly me   to   the moon  ' -> Output: 4 ('moon')",
+              "**Constraints**: 1 <= s.length <= 10^4",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given a string `s` consisting of words and spaces, return the length of the last word in the string."
+          },
+          "code": "def length_of_last_word(s: str) -> int:\n    # YOUR CODE HERE\n    pass\n\nprint(length_of_last_word('   fly me   to   the moon  '))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Strip trailing whitespace with rstrip(). Traverse backward until space or start of string.",
+                "code": "def length_of_last_word(s: str) -> int:\n    s = s.rstrip()\n    length = 0\n    for char in reversed(s):\n        if char == ' ': break\n        length += 1\n    return length\n\nprint(length_of_last_word('   fly me   to   the moon  '))\nprint(length_of_last_word('Hello World'))",
+                "timeComplexity": "O(N)",
+                "spaceComplexity": "O(1)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Strip trailing whitespace with rstrip(). Traverse backward until space or start of string.",
+            "code": "def length_of_last_word(s: str) -> int:\n    s = s.rstrip()\n    length = 0\n    for char in reversed(s):\n        if char == ' ': break\n        length += 1\n    return length\n\nprint(length_of_last_word('   fly me   to   the moon  '))\nprint(length_of_last_word('Hello World'))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 12,
+          "section": "1. Learn the Basics",
+          "topic": "Basic Syntax & PEP 8",
+          "step": "1.0-R5",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Real-World: Docstring Validator",
+          "question": "Real-Time Scenario: PEP 257 Docstring Compliance Checker",
+          "explanation": {
+            "points": [
+              "**Challenge**: Validate whether a given Python function string includes a PEP 257 compliant docstring.",
+              "**Example**: Input with docstring immediately following `def` header returns `True`.",
+              "**Constraints**: Check using Python's `ast` parser (or robust triple-quote delimiters across lines).",
+              "**Hint**: `ast.parse()` and `ast.get_docstring()` provide bulletproof AST extraction."
+            ],
+            "highlight": "Inspect a Python function's string definition to ensure it has a valid multi-line docstring starting and ending with triple quotes."
+          },
+          "code": "def has_valid_docstring(func_str: str) -> bool:\n    # YOUR CODE HERE\n    pass\n\ncode_sample = 'def add(a, b):\\n    \"\"\"Adds two numbers.\"\"\"\\n    return a + b'\nprint(has_valid_docstring(code_sample))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Check if the first indented line immediately following the 'def ...:' header starts and ends with triple quotes ('\"\"\"' or \"'''\").",
+                "code": "def has_valid_docstring(func_str: str) -> bool:\n    lines = [line.strip() for line in func_str.splitlines() if line.strip()]\n    if len(lines) < 2:\n        return False\n    second_line = lines[1]\n    return second_line.startswith(('\"\"\"', \"'''\"))\n\ncode_valid = 'def add(a, b):\\n    \"\"\"Adds two numbers.\"\"\"\\n    return a + b'\ncode_invalid = 'def sub(a, b):\\n    return a - b'\nprint('Valid:', has_valid_docstring(code_valid))\nprint('Invalid:', has_valid_docstring(code_invalid))",
+                "timeComplexity": "O(Lines)",
+                "spaceComplexity": "O(1)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Parse the function code with ast.parse() and check ast.get_docstring() on the FunctionDef node, or check opening and closing triple quotes.",
+            "code": "import ast\n\ndef has_valid_docstring(func_str: str) -> bool:\n    try:\n        tree = ast.parse(func_str)\n        for node in ast.walk(tree):\n            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):\n                return ast.get_docstring(node) is not None\n        return False\n    except SyntaxError:\n        lines = [l.strip() for l in func_str.splitlines() if l.strip()]\n        if len(lines) < 2: return False\n        body = \"\\n\".join(lines[1:])\n        return (body.startswith('\"\"\"') and '\"\"\"' in body[3:]) or (body.startswith(\"'''\") and \"'''\" in body[3:])\n\ncode_valid = '''def add(a, b):\n    \"\"\"Adds two numbers.\"\"\"\n    return a + b'''\ncode_invalid = '''def sub(a, b):\n    return a - b'''\nprint('Valid:', has_valid_docstring(code_valid))\nprint('Invalid:', has_valid_docstring(code_invalid))",
+            "timeComplexity": "O(Lines)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 13,
+          "section": "1. Learn the Basics",
+          "topic": "Basic Syntax & PEP 8",
+          "step": "1.0-R6",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Real-World: Config Env Parser",
+          "question": "Real-Time Scenario: .env Configuration File Parser with Comments",
+          "explanation": {
+            "points": [
+              "**Challenge**: Parse lines from a `.env` file ignoring comments (#) and blank lines. Cast booleans ('true'/'false') and integers appropriately.",
+              "**Example**: Input: '# DB Config\\nPORT=8080\\nDEBUG=true' -> Output: {'PORT': 8080, 'DEBUG': True}",
+              "**Constraints**: Handle whitespace around '=' cleanly.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Parse lines from a `.env` file ignoring comments (#) and blank lines. Cast booleans ('true'/'false') and integers appropriately."
+          },
+          "code": "def parse_env_file(raw_env: str) -> dict:\n    # YOUR CODE HERE\n    pass\n\nenv_text = '# Database\\nPORT=8080\\nDEBUG=true\\nHOST=localhost'\nprint(parse_env_file(env_text))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Split into lines. Skip empty or lines starting with '#'. Split on '=' into key, val. Cast 'true'/'false' to bool, numeric strings to int, and others to string.",
+                "code": "def parse_env_file(raw_env: str) -> dict:\n    config = {}\n    for line in raw_env.splitlines():\n        line = line.strip()\n        if not line or line.startswith('#'): continue\n        if '=' in line:\n            k, v = line.split('=', 1)\n            k, v = k.strip(), v.strip()\n            if v.lower() == 'true': config[k] = True\n            elif v.lower() == 'false': config[k] = False\n            elif v.isdigit(): config[k] = int(v)\n            else: config[k] = v.strip('\"\\'')\n    return config\n\nenv_text = '# Database\\nPORT=8080\\nDEBUG=true\\nHOST=\"localhost\"'\nprint(parse_env_file(env_text))",
+                "timeComplexity": "O(Lines)",
+                "spaceComplexity": "O(Keys)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Parse lines, ignore '#' comments. Split on '='. Strip quotes. Safely convert booleans, negative/positive integers, floats, or keep as string using try/except ValueError.",
+            "code": "def parse_env_file(raw_env: str) -> dict:\n    config = {}\n    for line in raw_env.splitlines():\n        line = line.strip()\n        if not line or line.startswith('#'): continue\n        if '=' in line:\n            k, v = line.split('=', 1)\n            k, v = k.strip(), v.strip().strip('\"\\'')\n            if v.lower() == 'true':\n                config[k] = True\n            elif v.lower() == 'false':\n                config[k] = False\n            else:\n                try:\n                    config[k] = int(v)\n                except ValueError:\n                    try:\n                        config[k] = float(v)\n                    except ValueError:\n                        config[k] = v\n    return config\n\nenv_text = '''# Database Configuration\nPORT=8080\nTIMEOUT=-5\nLEARNING_RATE=0.001\nDEBUG=true\nHOST=\"localhost\"'''\nprint(parse_env_file(env_text))",
+            "timeComplexity": "O(Lines)",
+            "spaceComplexity": "O(Keys)"
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Variables & Data Types",
+      "slides": [
+        {
+          "section": "1. Learn the Basics",
+          "topic": "Variables & Data Types",
+          "step": "1.1-DT",
+          "category": "basics",
+          "categoryLabel": "Types",
+          "tag": "Data Types Taxonomy",
+          "question": "What are all the core Built-In Data Types in Python and how do you inspect them?",
+          "explanation": {
+            "points": [
+              "Python is dynamically typed but strongly typed: every value has a concrete type in memory.",
+              "**Numeric Types**: `int` (arbitrary precision integers), `float` (64-bit IEEE 754), `complex` (`3 + 4j`).",
+              "**Sequence Types**: `str` (immutable text), `list` (mutable array), `tuple` (immutable record).",
+              "**Mapping & Set Types**: `dict` (key-value hash table), `set` (unique unordered elements).",
+              "**Boolean & Special**: `bool` (`True`, `False`), `NoneType` (`None` representing absence of value)."
+            ]
+          },
+          "code": "# Comprehensive Python Data Types Showcase\ndata_samples = {\n    \"Integer (int)\"       : 42,\n    \"Floating-Point (float)\" : 3.14159,\n    \"Complex (complex)\"   : 2 + 5j,\n    \"String (str)\"        : \"PyLearn AI\",\n    \"Boolean (bool)\"      : True,\n    \"None (NoneType)\"     : None,\n    \"List (list)\"         : [1, 2, \"three\"],\n    \"Tuple (tuple)\"       : (10, 20),\n    \"Dictionary (dict)\"   : {\"user\": \"Alice\", \"role\": \"admin\"},\n    \"Set (set)\"           : {1, 2, 3, 3}  # duplicates auto-removed\n}\n\nprint(f\"{'Data Type':<24} | {'Sample Value':<24} | {'Type Class'}\")\nprint(\"-\" * 65)\nfor label, val in data_samples.items():\n    print(f\"{label:<24} | {str(val):<24} | {type(val).__name__}\")",
+          "tip": "Always remind students that collections like list and dict are mutable (can change), whereas tuple, str, int, and float are immutable.",
+          "viz": {
+            "type": "type-inspector",
+            "data": {}
+          },
+          "id": 14
+        },
+        {
+          "id": 15,
+          "section": "1. Learn the Basics",
+          "topic": "Variables & Data Types",
+          "step": "1.1",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Variables & Memory",
+          "question": "What is a Variable and Data Type in Python?",
+          "explanation": {
+            "points": [
+              "A **variable** is a named reference stored in memory pointing to an object.",
+              "Python is **dynamically typed**: you don't need to declare types upfront; the interpreter infers them at runtime.",
+              "Key primitive types: `str` (text), `int` (whole numbers), `float` (decimals), and `bool` (`True`/`False`).",
+              "Variables in Python are **pointers to heap objects**, not fixed memory boxes."
+            ]
+          },
+          "code": "# 1. Declaring Variables\nname = \"Alice\"         # String (str)\nage = 28               # Integer (int)\nheight = 1.75          # Float (float)\nis_developer = True    # Boolean (bool)\n\n# 2. Type Inspection\nprint(\"Name type:\", type(name))\nprint(\"Age type:\", type(age))\n\n# 3. Dynamic Rebinding (name points to an int now)\nname = 42\nprint(\"Rebound name:\", name, type(name))",
+          "tip": "Click 'Play Animation' in the visual below to watch how Python creates pointers from variable names to memory objects on the heap.",
+          "viz": {
+            "type": "type-inspector",
+            "data": {}
+          }
+        },
+        {
+          "id": 16,
+          "section": "1. Learn the Basics",
+          "topic": "Variables & Data Types",
+          "step": "1.1-P1",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Practice 1",
+          "question": "Practice 1: Swap Two Variables Without a Temp Variable",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given two variables `a` and `b`, swap their values without using a third temporary variable.",
+              "**Example**: Input: a = 5, b = 10 -> Output: a = 10, b = 5",
+              "**Constraints**: Must use Python tuple unpacking in O(1) space.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given two variables `a` and `b`, swap their values without using a third temporary variable."
+          },
+          "code": "def swap_variables(a, b):\n    # YOUR CODE HERE\n    pass\n\n# Test\na, b = 5, 10\na, b = swap_variables(a, b)\nprint(f'Swapped: a={a}, b={b}')",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Python evaluates the right-hand side of an assignment first, creating a temporary tuple (b, a) in memory, and then unpacks it into the left-hand side targets. This eliminates the need for temporary variables or arithmetic tricks.",
+                "code": "def swap_variables(a, b):\n    # Pythonic tuple unpacking\n    a, b = b, a\n    return a, b\n\na, b = 5, 10\na, b = swap_variables(a, b)\nprint(f'Swapped: a={a}, b={b}')",
+                "timeComplexity": "O(1)",
+                "spaceComplexity": "O(1)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Python evaluates the right-hand side of an assignment first, creating a temporary tuple (b, a) in memory, and then unpacks it into the left-hand side targets. This eliminates the need for temporary variables or arithmetic tricks.",
+            "code": "def swap_variables(a, b):\n    # Pythonic tuple unpacking\n    a, b = b, a\n    return a, b\n\na, b = 5, 10\na, b = swap_variables(a, b)\nprint(f'Swapped: a={a}, b={b}')",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 17,
+          "section": "1. Learn the Basics",
+          "topic": "Variables & Data Types",
+          "step": "1.1-P2",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Practice 2",
+          "question": "Practice 2: Convert Celsius to Fahrenheit and Kelvin",
+          "explanation": {
+            "points": [
+              "**Challenge**: Write a function that accepts temperature in Celsius and returns both Fahrenheit and Kelvin rounded to 2 decimal places.",
+              "**Example**: Input: 25 -> Output: (77.0, 298.15)",
+              "**Constraints**: Formula: F = (C * 9/5) + 32, K = C + 273.15",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Write a function that accepts temperature in Celsius and returns both Fahrenheit and Kelvin rounded to 2 decimal places."
+          },
+          "code": "def convert_temp(celsius: float):\n    # YOUR CODE HERE\n    pass\n\nprint('25C in F and K:', convert_temp(25.0))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Apply the standard thermodynamic formulas using floating-point arithmetic. Use round(val, 2) to maintain precision.",
+                "code": "def convert_temp(celsius: float):\n    fahrenheit = round((celsius * 9 / 5) + 32, 2)\n    kelvin = round(celsius + 273.15, 2)\n    return fahrenheit, kelvin\n\nprint('25C in F and K:', convert_temp(25.0))\nprint('0C in F and K:', convert_temp(0.0))",
+                "timeComplexity": "O(1)",
+                "spaceComplexity": "O(1)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Apply the standard thermodynamic formulas using floating-point arithmetic. Use round(val, 2) to maintain precision.",
+            "code": "def convert_temp(celsius: float):\n    fahrenheit = round((celsius * 9 / 5) + 32, 2)\n    kelvin = round(celsius + 273.15, 2)\n    return fahrenheit, kelvin\n\nprint('25C in F and K:', convert_temp(25.0))\nprint('0C in F and K:', convert_temp(0.0))",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 18,
+          "section": "1. Learn the Basics",
+          "topic": "Variables & Data Types",
+          "step": "1.1-L3",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "LeetCode: LeetCode #13",
+          "question": "LeetCode #13: Roman to Integer",
+          "explanation": {
+            "points": [
+              "**Challenge**: Convert a Roman numeral string (I, V, X, L, C, D, M) to an integer. If a smaller numeral appears before a larger one, subtract it (e.g., IV = 4).",
+              "**Example**: Input: s = 'MCMXCIV' -> Output: 1994",
+              "**Constraints**: 1 <= s.length <= 15, s contains only valid Roman numerals.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Convert a Roman numeral string (I, V, X, L, C, D, M) to an integer. If a smaller numeral appears before a larger one, subtract it (e.g., IV "
+          },
+          "code": "def roman_to_int(s: str) -> int:\n    # YOUR CODE HERE\n    pass\n\nprint('MCMXCIV ->', roman_to_int('MCMXCIV'))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Store Roman numeral values in a dictionary. Traverse the string from left to right. If the current value is less than the next value, subtract current value; otherwise, add it.",
+                "code": "def roman_to_int(s: str) -> int:\n    values = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}\n    total = 0\n    n = len(s)\n    for i in range(n):\n        if i + 1 < n and values[s[i]] < values[s[i + 1]]:\n            total -= values[s[i]]\n        else:\n            total += values[s[i]]\n    return total\n\nprint('MCMXCIV ->', roman_to_int('MCMXCIV'))\nprint('LVIII ->', roman_to_int('LVIII'))",
+                "timeComplexity": "O(N)",
+                "spaceComplexity": "O(1)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Store Roman numeral values in a dictionary. Traverse the string from left to right. If the current value is less than the next value, subtract current value; otherwise, add it.",
+            "code": "def roman_to_int(s: str) -> int:\n    values = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}\n    total = 0\n    n = len(s)\n    for i in range(n):\n        if i + 1 < n and values[s[i]] < values[s[i + 1]]:\n            total -= values[s[i]]\n        else:\n            total += values[s[i]]\n    return total\n\nprint('MCMXCIV ->', roman_to_int('MCMXCIV'))\nprint('LVIII ->', roman_to_int('LVIII'))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 19,
+          "section": "1. Learn the Basics",
+          "topic": "Variables & Data Types",
+          "step": "1.1-L4",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "LeetCode: LeetCode #258",
+          "question": "LeetCode #258: Add Digits (Digital Root)",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given an integer `num`, repeatedly add all its digits until the result has only one single digit, and return it.",
+              "**Example**: Input: num = 38 -> Output: 2 (3 + 8 = 11 -> 1 + 1 = 2)",
+              "**Constraints**: 0 <= num <= 2^31 - 1. Can you do it in O(1) runtime without a loop?",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given an integer `num`, repeatedly add all its digits until the result has only one single digit, and return it."
+          },
+          "code": "def add_digits(num: int) -> int:\n    # YOUR CODE HERE\n    pass\n\nprint('Add digits 38 ->', add_digits(38))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Iterative approach sums digits using num % 10 and num // 10. Mathematical O(1) approach uses digital root formula: if num == 0 return 0, else 1 + (num - 1) % 9.",
+                "code": "def add_digits(num: int) -> int:\n    if num == 0:\n        return 0\n    # Mathematical O(1) formula for Digital Root\n    return 1 + (num - 1) % 9\n\nprint('38 ->', add_digits(38))\nprint('12345 ->', add_digits(12345))",
+                "timeComplexity": "O(1)",
+                "spaceComplexity": "O(1)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Iterative approach sums digits using num % 10 and num // 10. Mathematical O(1) approach uses digital root formula: if num == 0 return 0, else 1 + (num - 1) % 9.",
+            "code": "def add_digits(num: int) -> int:\n    if num == 0:\n        return 0\n    # Mathematical O(1) formula for Digital Root\n    return 1 + (num - 1) % 9\n\nprint('38 ->', add_digits(38))\nprint('12345 ->', add_digits(12345))",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 20,
+          "section": "1. Learn the Basics",
+          "topic": "Variables & Data Types",
+          "step": "1.1-R5",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Real-World: Session Token Parser",
+          "question": "Real-Time Scenario: JWT Session Token Payload Extractor",
+          "explanation": {
+            "points": [
+              "**Challenge**: Parse a mock JWT authorization token string formatted as 'header.payload.signature', decode the payload, and return a typed dictionary with user credentials.",
+              "**Example**: Input: 'eyJhbGci.eyJ1c2VyIjoiQWxpY2UiLCJyb2xlIjoiYWRtaW4ifQ.xyz' -> Output: {'user': 'Alice', 'role': 'admin'}",
+              "**Constraints**: Validate token structure (must have 3 parts separated by dots). Use json and base64 parsing.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Parse a mock JWT authorization token string formatted as 'header.payload.signature', decode the payload, and return a typed dictionary with "
+          },
+          "code": "import json, base64\n\ndef parse_jwt_payload(token: str):\n    # YOUR CODE HERE\n    pass\n\nmock_token = 'header.' + base64.b64encode(json.dumps({'user': 'Alice', 'role': 'admin'}).encode()).decode() + '.signature'\nprint('Decoded payload:', parse_jwt_payload(mock_token))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Split token by '.' into 3 parts. Pad the base64 payload if necessary, decode base64 bytes to utf-8 string, and parse with json.loads.",
+                "code": "import json, base64\n\ndef parse_jwt_payload(token: str):\n    parts = token.split('.')\n    if len(parts) != 3:\n        raise ValueError('Invalid JWT format')\n    payload_b64 = parts[1]\n    # Add padding if needed\n    payload_b64 += '=' * (-len(payload_b64) % 4)\n    decoded_bytes = base64.b64decode(payload_b64)\n    return json.loads(decoded_bytes.decode('utf-8'))\n\nmock_token = 'header.' + base64.b64encode(json.dumps({'user': 'Alice', 'role': 'admin'}).encode()).decode() + '.sig'\nprint('Decoded session:', parse_jwt_payload(mock_token))",
+                "timeComplexity": "O(N)",
+                "spaceComplexity": "O(N)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Split token by '.' into 3 parts. Pad the URL-safe base64 payload (- and _) with '=' modulo 4, decode with base64.urlsafe_b64decode, and parse with json.loads.",
+            "code": "import json, base64\n\ndef parse_jwt_payload(token: str):\n    parts = token.split('.')\n    if len(parts) != 3:\n        raise ValueError('Invalid JWT format')\n    payload_b64 = parts[1]\n    # Add proper base64 padding for urlsafe payload\n    payload_b64 += '=' * (-len(payload_b64) % 4)\n    decoded_bytes = base64.urlsafe_b64decode(payload_b64.encode('utf-8'))\n    return json.loads(decoded_bytes.decode('utf-8'))\n\n# Sample JWT with urlsafe chars\nheader = base64.urlsafe_b64encode(b'{\"alg\":\"HS256\"}').decode().rstrip('=')\npayload = base64.urlsafe_b64encode(b'{\"user\":\"Alice\",\"role\":\"admin\"}').decode().rstrip('=')\nmock_token = f\"{header}.{payload}.sample_signature\"\nprint('Decoded JWT Payload:', parse_jwt_payload(mock_token))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(N)"
+          }
+        },
+        {
+          "id": 27,
+          "section": "1. Learn the Basics",
+          "topic": "Variables & Data Types",
+          "step": "1.1-R6",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Real-World: Telemetry Normalizer",
+          "question": "Real-Time Scenario: IoT Sensor Telemetry Normalizer",
+          "explanation": {
+            "points": [
+              "**Challenge**: Ingest raw IoT sensor strings like 'sensor_id=A902;temp=28.5C;humidity=65%;status=OK', cast the numeric values to floats, and return a clean dictionary.",
+              "**Example**: Input: 'sensor_id=A902;temp=28.5C;humidity=65%;status=OK' -> Output: {'sensor_id': 'A902', 'temp_c': 28.5, 'humidity_pct': 65.0, 'status': 'OK'}",
+              "**Constraints**: Handle missing fields and strip non-numeric units ('C', '%').",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Ingest raw IoT sensor strings like 'sensor_id=A902;temp=28.5C;humidity=65%;status=OK', cast the numeric values to floats, and return a clean"
+          },
+          "code": "def parse_telemetry(raw: str) -> dict:\n    # YOUR CODE HERE\n    pass\n\nraw_data = 'sensor_id=A902;temp=28.5C;humidity=65%;status=OK'\nprint(parse_telemetry(raw_data))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Split the string by ';' into key=value pairs. Parse each pair, remove unit characters ('C', '%') from numbers, and convert to appropriate data types.",
+                "code": "def parse_telemetry(raw: str) -> dict:\n    data = {}\n    for item in raw.split(';'):\n        if '=' in item:\n            k, v = item.split('=', 1)\n            k, v = k.strip(), v.strip()\n            if k == 'temp':\n                data['temp_c'] = float(v.replace('C', ''))\n            elif k == 'humidity':\n                data['humidity_pct'] = float(v.replace('%', ''))\n            else:\n                data[k] = v\n    return data\n\nraw_data = 'sensor_id=A902;temp=28.5C;humidity=65%;status=OK'\nprint(parse_telemetry(raw_data))",
+                "timeComplexity": "O(N)",
+                "spaceComplexity": "O(K)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Split the string by ';' into key=value pairs. Parse each pair, remove unit characters ('C', '%') from numbers, and convert to appropriate data types.",
+            "code": "def parse_telemetry(raw: str) -> dict:\n    data = {}\n    for item in raw.split(';'):\n        if '=' in item:\n            k, v = item.split('=', 1)\n            k, v = k.strip(), v.strip()\n            if k == 'temp':\n                data['temp_c'] = float(v.replace('C', ''))\n            elif k == 'humidity':\n                data['humidity_pct'] = float(v.replace('%', ''))\n            else:\n                data[k] = v\n    return data\n\nraw_data = 'sensor_id=A902;temp=28.5C;humidity=65%;status=OK'\nprint(parse_telemetry(raw_data))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(K)"
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Operators & Expressions",
+      "slides": [
+        {
+          "section": "1. Learn the Basics",
+          "topic": "Operators & Expressions",
+          "step": "1.3-OP1",
+          "category": "basics",
+          "categoryLabel": "Operators",
+          "tag": "Arithmetic & Walrus",
+          "question": "How do Arithmetic and Compound Assignment Operators work in Python?",
+          "explanation": {
+            "points": [
+              "**Arithmetic**: `+` (add), `-` (sub), `*` (mul), `/` (true float div), `//` (floor div), `%` (modulo), `**` (power).",
+              "**Floor Division (`//`)**: Always truncates towards negative infinity (`7 // 2 = 3`, `-7 // 2 = -4`).",
+              "**Compound Assignment**: `+=`, `-=`, `*=`, `/=`, `**=` modify variables in-place.",
+              "**Walrus Operator (`:=`)**: Introduced in Python 3.8, assigns values to variables *inside an expression* (e.g., `if (n := len(items)) > 0:`)."
+            ]
+          },
+          "code": "# Arithmetic and Floor Division\na, b = 17, 5\nprint(f\"Standard Division (17 / 5)  = {a / b}\")   # 3.4\nprint(f\"Floor Division    (17 // 5) = {a // b}\")  # 3\nprint(f\"Modulo Remainder  (17 % 5)  = {a % b}\")   # 2\nprint(f\"Exponentiation    (2 ** 8)  = {2 ** 8}\")   # 256\n\n# Walrus Operator (:=) in action\nsample_text = \"Python 3.12 Deep Learning\"\nif (length := len(sample_text)) > 10:\n    print(f\"\\nWalrus captured length: {length} characters (exceeds threshold 10)\")",
+          "tip": "The walrus operator saves computation by avoiding having to calculate and store a value on separate lines before an if-condition.",
+          "viz": {
+            "type": "arithmetic-engine",
+            "data": {}
+          },
+          "id": 21
+        },
+        {
+          "section": "1. Learn the Basics",
+          "topic": "Operators & Expressions",
+          "step": "1.3-OP2",
+          "category": "basics",
+          "categoryLabel": "Operators",
+          "tag": "Comparison & Identity",
+          "question": "What is the crucial difference between Equality (==) and Identity (is) in Python?",
+          "explanation": {
+            "points": [
+              "**Equality (`==`)**: Checks if two objects hold the **same value** (`[1, 2] == [1, 2]` is `True`).",
+              "**Identity (`is`)**: Checks if two variables point to the **exact same memory address** (`id(a) == id(b)`).",
+              "**Logical Operators**: `and` (both true), `or` (at least one true), `not` (invert boolean).",
+              "**Short-Circuiting**: In `A and B`, if `A` is false, `B` is never evaluated; in `A or B`, if `A` is true, `B` is skipped."
+            ]
+          },
+          "code": "# Value Equality (==) vs Object Identity (is)\nlist_a = [1, 2, 3]\nlist_b = [1, 2, 3]       # Separate object in memory\nlist_c = list_a          # Reference to the exact same object\n\nprint(f\"list_a == list_b : {list_a == list_b}  (Same values)\")\nprint(f\"list_a is list_b : {list_a is list_b} (Different RAM addresses!)\")\nprint(f\"list_a is list_c : {list_a is list_c}  (Identical RAM address)\")\nprint(f\"Address A: {hex(id(list_a))}, Address B: {hex(id(list_b))}\")\n\n# Always use 'is' when checking for None or booleans\nstatus = None\nif status is None:\n    print(\"Correct idiomatic check: 'status is None'\")",
+          "tip": "Never write 'if val == None'. Always use 'if val is None' because None is a singleton in Python.",
+          "viz": {
+            "type": "equality-identity",
+            "data": {}
+          },
+          "id": 22
+        },
+        {
+          "section": "1. Learn the Basics",
+          "topic": "Operators & Expressions",
+          "step": "1.3-OP3",
+          "category": "basics",
+          "categoryLabel": "Operators",
+          "tag": "Membership & Bitwise",
+          "question": "How do Membership (`in`) and Bitwise Operators operate in Python?",
+          "explanation": {
+            "points": [
+              "**Membership (`in`, `not in`)**: Tests whether a sequence contains a given value in strings, lists, tuples, or checks keys in dicts.",
+              "**Bitwise Operators**: Perform binary operations at the bit level: `&` (AND), `|` (OR), `^` (XOR), `~` (NOT), `<<` (left shift), `>>` (right shift).",
+              "Bitwise operations are fundamental in low-level systems, cryptography, permissions, and network masking."
+            ]
+          },
+          "code": "# 1. Membership Operator (in)\nallowed_roles = [\"admin\", \"developer\", \"maintainer\"]\nuser_role = \"developer\"\nprint(f\"Is '{user_role}' authorized? {user_role in allowed_roles}\")\n\n# Dict membership checks keys in O(1) time\nconfig = {\"host\": \"localhost\", \"port\": 8080}\nprint(f\"Has 'host' key? {'host' in config}\")\n\n# 2. Bitwise Operators (Binary Flag Masks)\nREAD_FLAG    = 0b0001  # 1\nWRITE_FLAG   = 0b0010  # 2\nEXECUTE_FLAG = 0b0100  # 4\n\nuser_perms = READ_FLAG | WRITE_FLAG  # 0b0011 (3)\nhas_write = (user_perms & WRITE_FLAG) != 0\nhas_exec  = (user_perms & EXECUTE_FLAG) != 0\n\nprint(f\"User Permissions: {bin(user_perms)} | Can Write: {has_write} | Can Exec: {has_exec}\")",
+          "tip": "Explain that 'key in dict' runs in O(1) constant time, while 'item in list' requires an O(N) linear scan.",
+          "viz": {
+            "type": "bitwise",
+            "data": {}
+          },
+          "id": 23
+        }
+      ]
+    },
+    {
+      "topic": "User Input & Scripts",
+      "slides": [
+        {
+          "section": "1. Learn the Basics",
+          "topic": "User Input & Scripts",
+          "step": "1.3-IN",
+          "category": "basics",
+          "categoryLabel": "Input",
+          "tag": "User Input",
+          "question": "How do you accept and safely validate user input in Python scripts?",
+          "explanation": {
+            "points": [
+              "**`input(prompt)`**: Reads a line of text entered by the user from standard input (`sys.stdin`) and **always returns a `str`**.",
+              "**Type Conversion**: To perform mathematical operations, you must explicitly cast the input using `int(input())` or `float(input())`.",
+              "**Error Handling**: If a user enters non-numeric text into `int()`, Python raises `ValueError`. Always wrap input casts in `try / except`.",
+              "**Command-Line Arguments**: For production CLI tools, use `sys.argv` or the `argparse` module."
+            ]
+          },
+          "code": "# Simulating robust user input processing with validation\ndef parse_user_age(raw_input_str: str) -> int:\n    try:\n        age = int(raw_input_str.strip())\n        if age < 0 or age > 130:\n            raise ValueError(\"Age must be between 0 and 130\")\n        return age\n    except ValueError as err:\n        print(f\"❌ Invalid Input ('{raw_input_str}'): {err}\")\n        return 0\n\n# Test simulations\nprint(\"Valid input test   :\", parse_user_age(\"25\"))\nprint(\"Invalid string test:\", parse_user_age(\"twenty-five\"))\nprint(\"Out of range test  :\", parse_user_age(\"-4\"))",
+          "tip": "Remind students that input() always returns a string, so input() + input() will concatenate '5' + '5' into '55' instead of adding to 10!",
+          "viz": {
+            "type": "user-input-validation",
+            "data": {}
+          },
+          "id": 24
+        }
+      ]
+    },
+    {
+      "topic": "Strings: Indexing & Slicing",
+      "slides": [
+        {
+          "section": "1. Learn the Basics",
+          "topic": "Strings: Indexing & Slicing",
+          "step": "1.4-STR1",
+          "category": "basics",
+          "categoryLabel": "Strings",
+          "tag": "Indexing",
+          "question": "How does Positive and Negative String Indexing work in Python?",
+          "explanation": {
+            "points": [
+              "Strings in Python are **ordered, immutable sequences of Unicode characters**.",
+              "**Positive Indexing**: Starts from `0` at the beginning (`s[0]` is the first character).",
+              "**Negative Indexing**: Starts from `-1` at the end (`s[-1]` is the last character, `s[-2]` second to last).",
+              "**Immutability**: You cannot modify characters in-place (`s[0] = 'H'` raises `TypeError`). You must create a new string.",
+              "Accessing an index beyond `len(s) - 1` raises `IndexError: string index out of range`."
+            ]
+          },
+          "code": "language = \"PYTHON\"\n\nprint(f\"Length of '{language}': {len(language)} characters\\n\")\n\n# Positive Indexing (from left)\nfor i in range(len(language)):\n    print(f\"Index [{i}]  -> '{language[i]}'\")\n\nprint(\"\\nNegative Indexing (from right):\")\n# Negative Indexing (from right)\nfor i in range(-1, -len(language) - 1, -1):\n    print(f\"Index [{i}] -> '{language[i]}'\")\n\n# Demonstration of immutability\ntry:\n    language[0] = \"J\" # TypeError!\nexcept TypeError as e:\n    print(f\"\\nCaught Immutability Error: {e}\")",
+          "tip": "Negative indexing (s[-1]) eliminates the need to write verbose 's[len(s) - 1]' like in C or Java.",
+          "viz": {
+            "type": "string-indexing",
+            "data": {}
+          },
+          "id": 25
+        },
+        {
+          "section": "1. Learn the Basics",
+          "topic": "Strings: Indexing & Slicing",
+          "step": "1.4-STR2",
+          "category": "basics",
+          "categoryLabel": "Strings",
+          "tag": "Slicing",
+          "question": "How do you master String Slicing with [start:stop:step] and string reversal?",
+          "explanation": {
+            "points": [
+              "**Slicing Syntax**: `string[start:stop:step]`.",
+              "**Half-Open Interval**: `start` is inclusive, `stop` is exclusive (`[0:4]` extracts characters at indices 0, 1, 2, 3).",
+              "**Default Values**: `start` defaults to `0`, `stop` defaults to `len(string)`, `step` defaults to `1`.",
+              "**Reversal**: `string[::-1]` reverses the entire string by taking step `-1` from right to left.",
+              "Unlike indexing, **slicing never raises an IndexError** if indices are out of bounds; it gracefully clamps."
+            ]
+          },
+          "code": "phrase = \"Artificial Intelligence\"\n\n# Slicing Examples\nprint(\"Original String      :\", phrase)\nprint(\"First 10 characters  :\", phrase[:10])          # 'Artificial'\nprint(\"Characters 11 to end :\", phrase[11:])          # 'Intelligence'\nprint(\"Every 2nd character  :\", phrase[::2])           # Step 2\nprint(\"Reversed String      :\", phrase[::-1])          # Reverse\n\n# Clean Palindrome Checker using Slicing\ndef is_palindrome(text: str) -> bool:\n    clean = \"\".join(ch.lower() for ch in text if ch.isalnum())\n    return clean == clean[::-1]\n\nprint(\"\\nPalindrome Tests:\")\nprint(\"  'racecar'       ->\", is_palindrome(\"racecar\"))\nprint(\"  'A man a plan'  ->\", is_palindrome(\"A man, a plan, a canal: Panama!\"))",
+          "tip": "Slicing never throws an IndexError! 'python'[0:100] cleanly returns 'python' without crashing.",
+          "viz": {
+            "type": "string-slicing",
+            "data": {}
+          },
+          "id": 26
+        }
+      ]
+    },
+    {
+      "topic": "Type Casting",
+      "slides": [
+        {
+          "id": 28,
+          "section": "1. Learn the Basics",
+          "topic": "Type Casting",
+          "step": "1.2",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Type Conversion",
+          "question": "How does Type Casting convert data between types?",
+          "explanation": {
+            "points": [
+              "**Type casting** explicitly converts an object from one data type to another using built-in constructors (`int()`, `float()`, `str()`, `bool()`).",
+              "**Implicit conversion** occurs automatically (e.g. `3 + 2.5` becomes float `5.5`).",
+              "Converting user input: `input()` always returns a string, so math requires `int()` or `float()`.",
+              "**Truthiness**: empty containers `[]`, `\"\"`, `0`, and `None` evaluate to `False`; non-empty values evaluate to `True`."
+            ]
+          },
+          "code": "# 1. Explicit String to Integer Casting\nraw_input = \"42\"\ncount = int(raw_input)\nprint(\"Multiplied by 2:\", count * 2)\n\n# 2. Float to Integer Truncation\npi = 3.99\nprint(\"Truncated int:\", int(pi))  # Output: 3 (not rounded!)\n\n# 3. Truthiness conversion\nprint(\"bool('Hello'):\", bool(\"Hello\"))\nprint(\"bool(''):\", bool(\"\"))\nprint(\"bool([1, 2]):\", bool([1, 2]))\nprint(\"bool([]):\", bool([]))",
+          "tip": "Show the interactive casting pipeline in the visualization to highlight how 0 and empty strings convert to False while non-zero values become True.",
+          "viz": {
+            "type": "type-casting",
+            "data": {
+              "initial": "42",
+              "availableTypes": [
+                "int",
+                "float",
+                "str",
+                "bool"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Conditionals: Branching",
+      "slides": [
+        {
+          "id": 29,
+          "section": "1. Learn the Basics",
+          "topic": "Conditionals: Branching",
+          "step": "2.1",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Conditionals",
+          "question": "What are Conditionals and how does Branching work?",
+          "explanation": {
+            "points": [
+              "Conditionals allow code to **make decisions** and take different execution branches based on Boolean evaluations.",
+              "Comparison operators: `==` (equality), `!=` (inequality), `>`, `<`, `>=`, `<=`, and identity operator `is`.",
+              "Logical operators: `and` (both true), `or` (either true), and `not` (inverts truth).",
+              "Python evaluates conditions from top to bottom and exits the block as soon as the first matching branch succeeds."
+            ]
+          },
+          "code": "temperature = 32\nis_raining = False\n\nif temperature > 30 and not is_raining:\n    print(\"☀️ Hot & Sunny: Wear sunglasses!\")\nelif temperature > 20:\n    print(\"🌤️ Pleasant weather: Perfect for a walk.\")\nelse:\n    print(\"🧥 Cold or rainy: Grab a jacket!\")",
+          "tip": "Explain how short-circuit evaluation works in Python: if the first operand of an 'or' is True, Python never even evaluates the second operand.",
+          "viz": {
+            "type": "conditionals-branching",
+            "data": {}
+          }
+        },
+        {
+          "id": 30,
+          "section": "1. Learn the Basics",
+          "topic": "Conditionals: Branching",
+          "step": "2.1-P1",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Practice 1",
+          "question": "Practice 1: Academic Grade Evaluator",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given an integer exam score (0-100), return letter grade: 'A' (>=90), 'B' (80-89), 'C' (70-79), 'D' (60-69), 'F' (<60). Raise ValueError for invalid scores.",
+              "**Example**: Input: 85 -> Output: 'B'",
+              "**Constraints**: Validate that 0 <= score <= 100.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given an integer exam score (0-100), return letter grade: 'A' (>=90), 'B' (80-89), 'C' (70-79), 'D' (60-69), 'F' (<60). Raise ValueError for"
+          },
+          "code": "def get_grade(score: int) -> str:\n    # YOUR CODE HERE\n    pass\n\nprint('Score 92:', get_grade(92))\nprint('Score 74:', get_grade(74))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "grade-evaluator",
+            "data": {}
+          },
+          "solution": {
+            "approach": "First check for invalid inputs out of range [0, 100]. Then use an if-elif-else cascade from highest to lowest score threshold.",
+            "code": "def get_grade(score: int) -> str:\n    if score < 0 or score > 100:\n        raise ValueError('Score must be between 0 and 100')\n    if score >= 90: return 'A'\n    elif score >= 80: return 'B'\n    elif score >= 70: return 'C'\n    elif score >= 60: return 'D'\n    else: return 'F'\n\nprint('Score 92:', get_grade(92))\nprint('Score 84:', get_grade(84))\nprint('Score 58:', get_grade(58))",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 31,
+          "section": "1. Learn the Basics",
+          "topic": "Conditionals: Branching",
+          "step": "2.1-P2",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Practice 2",
+          "question": "Practice 2: Leap Year Validator",
+          "explanation": {
+            "points": [
+              "**Challenge**: Determine if a given year is a leap year. A year is a leap year if divisible by 4, unless divisible by 100, unless also divisible by 400.",
+              "**Example**: Input: 2000 -> Output: True | Input: 1900 -> Output: False",
+              "**Constraints**: 1 <= year <= 9999",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Determine if a given year is a leap year. A year is a leap year if divisible by 4, unless divisible by 100, unless also divisible by 400."
+          },
+          "code": "def is_leap_year(year: int) -> bool:\n    # YOUR CODE HERE\n    pass\n\nprint('2024 is leap?', is_leap_year(2024))\nprint('1900 is leap?', is_leap_year(1900))\nprint('2000 is leap?', is_leap_year(2000))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "leap-year",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Use Python boolean logic: (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0).",
+            "code": "def is_leap_year(year: int) -> bool:\n    return (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0)\n\nprint('2024 is leap?', is_leap_year(2024))\nprint('1900 is leap?', is_leap_year(1900))\nprint('2000 is leap?', is_leap_year(2000))",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 32,
+          "section": "1. Learn the Basics",
+          "topic": "Conditionals: Branching",
+          "step": "2.1-L3",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "LeetCode: LeetCode #9",
+          "question": "LeetCode #9: Palindrome Number",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given an integer `x`, return true if `x` is a palindrome (reads same forward and backward), and false otherwise.",
+              "**Example**: Input: x = 121 -> Output: True | Input: x = -121 -> Output: False",
+              "**Constraints**: -2^31 <= x <= 2^31 - 1. Solve without converting integer to string.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given an integer `x`, return true if `x` is a palindrome (reads same forward and backward), and false otherwise."
+          },
+          "code": "def is_palindrome(x: int) -> bool:\n    # YOUR CODE HERE\n    pass\n\nprint('121 is palindrome?', is_palindrome(121))\nprint('-121 is palindrome?', is_palindrome(-121))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "conditionals-branching",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Negative numbers and numbers ending in 0 (except 0 itself) cannot be palindromes. Revert the second half of the number by extracting digits with % 10 and comparing.",
+            "code": "def is_palindrome(x: int) -> bool:\n    if x < 0 or (x % 10 == 0 and x != 0):\n        return False\n    reversed_half = 0\n    while x > reversed_half:\n        reversed_half = reversed_half * 10 + x % 10\n        x //= 10\n    # x is equal to reversed_half (even length) or reversed_half // 10 (odd length)\n    return x == reversed_half or x == reversed_half // 10\n\nprint('121 ->', is_palindrome(121))\nprint('1221 ->', is_palindrome(1221))\nprint('10 ->', is_palindrome(10))",
+            "timeComplexity": "O(log10(N))",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 33,
+          "section": "1. Learn the Basics",
+          "topic": "Conditionals: Branching",
+          "step": "2.1-L4",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "LeetCode: LeetCode #14",
+          "question": "LeetCode #14: Longest Common Prefix",
+          "explanation": {
+            "points": [
+              "**Challenge**: Find the longest common prefix string amongst an array of strings. If there is no common prefix, return empty string \"\".",
+              "**Example**: Input: strs = ['flower','flow','flight'] -> Output: 'fl'",
+              "**Constraints**: 1 <= strs.length <= 200, 0 <= strs[i].length <= 200.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Find the longest common prefix string amongst an array of strings. If there is no common prefix, return empty string \"\"."
+          },
+          "code": "def longest_common_prefix(strs: list[str]) -> str:\n    # YOUR CODE HERE\n    pass\n\nprint('Prefix of [flower, flow, flight]:', longest_common_prefix(['flower','flow','flight']))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "conditionals-branching",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Take the first string as prefix candidate. Iterate through remaining strings and shorten candidate using slicing until str.startswith(candidate).",
+            "code": "def longest_common_prefix(strs: list[str]) -> str:\n    if not strs: return ''\n    prefix = strs[0]\n    for s in strs[1:]:\n        while not s.startswith(prefix):\n            prefix = prefix[:-1]\n            if not prefix: return ''\n    return prefix\n\nprint(longest_common_prefix(['flower','flow','flight']))\nprint(longest_common_prefix(['dog','racecar','car']))",
+            "timeComplexity": "O(S)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 34,
+          "section": "1. Learn the Basics",
+          "topic": "Conditionals: Branching",
+          "step": "2.1-R5",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Real-World: RBAC Gateway",
+          "question": "Real-Time Scenario: Role-Based Access Control (RBAC) Gateway",
+          "explanation": {
+            "points": [
+              "**Challenge**: Validate if a user role ('SUPERADMIN', 'ADMIN', 'EDITOR', 'VIEWER') has authorization to perform an action ('DELETE', 'WRITE', 'READ').",
+              "**Example**: Input: role='EDITOR', action='DELETE' -> Output: False | role='ADMIN', action='WRITE' -> Output: True",
+              "**Constraints**: SUPERADMIN has all permissions. VIEWER can only READ. Handle unrecognized roles gracefully.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Validate if a user role ('SUPERADMIN', 'ADMIN', 'EDITOR', 'VIEWER') has authorization to perform an action ('DELETE', 'WRITE', 'READ')."
+          },
+          "code": "def check_rbac_permission(role: str, action: str) -> bool:\n    # YOUR CODE HERE\n    pass\n\nprint('Admin DELETE:', check_rbac_permission('ADMIN', 'DELETE'))\nprint('Editor DELETE:', check_rbac_permission('EDITOR', 'DELETE'))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "conditionals-branching",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Map roles to sets of allowed actions. Check membership in O(1) time using role permission dictionary.",
+            "code": "def check_rbac_permission(role: str, action: str) -> bool:\n    role = role.upper()\n    action = action.upper()\n    PERMISSIONS = {\n        'SUPERADMIN': {'READ', 'WRITE', 'DELETE', 'MANAGE_USERS'},\n        'ADMIN': {'READ', 'WRITE', 'DELETE'},\n        'EDITOR': {'READ', 'WRITE'},\n        'VIEWER': {'READ'}\n    }\n    return action in PERMISSIONS.get(role, set())\n\nprint('Admin DELETE:', check_rbac_permission('ADMIN', 'DELETE'))\nprint('Editor DELETE:', check_rbac_permission('EDITOR', 'DELETE'))\nprint('Viewer READ:', check_rbac_permission('VIEWER', 'READ'))",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 35,
+          "section": "1. Learn the Basics",
+          "topic": "Conditionals: Branching",
+          "step": "2.1-R6",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Real-World: Discount Engine",
+          "question": "Real-Time Scenario: E-Commerce Tiered Discount & Promo Engine",
+          "explanation": {
+            "points": [
+              "**Challenge**: Calculate order total given cart value, user tier ('VIP', 'GOLD', 'REGULAR'), and optional coupon code ('SUMMER20' for 20% off, 'FLAT10' for $10 off). VIPs get 15% base off; GOLD gets 10%.",
+              "**Example**: Input: cart=100, tier='VIP', coupon='FLAT10' -> Output: 75.0 (15% off = $85, then $10 coupon = $75)",
+              "**Constraints**: Discounts cannot reduce total below $0.00.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Calculate order total given cart value, user tier ('VIP', 'GOLD', 'REGULAR'), and optional coupon code ('SUMMER20' for 20% off, 'FLAT10' for"
+          },
+          "code": "def calculate_discount(cart_total: float, tier: str, coupon: str = None) -> float:\n    # YOUR CODE HERE\n    pass\n\nprint('Order Total:', calculate_discount(100.0, 'VIP', 'FLAT10'))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "conditionals-branching",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Calculate tier percentage discount first. Then deduct coupon discount (percentage or flat). Apply max(0.0, total) to prevent negative charges.",
+            "code": "def calculate_discount(cart_total: float, tier: str, coupon: str = None) -> float:\n    tier_discounts = {'VIP': 0.15, 'GOLD': 0.10, 'REGULAR': 0.0}\n    rate = tier_discounts.get(tier.upper(), 0.0)\n    current_total = cart_total * (1.0 - rate)\n    \n    if coupon == 'SUMMER20':\n        current_total *= 0.80\n    elif coupon == 'FLAT10':\n        current_total -= 10.0\n        \n    return max(0.0, round(current_total, 2))\n\nprint('VIP + FLAT10 on $100:', calculate_discount(100.0, 'VIP', 'FLAT10'))\nprint('GOLD + SUMMER20 on $200:', calculate_discount(200.0, 'GOLD', 'SUMMER20'))",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(1)"
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Conditionals: if Gate",
+      "slides": [
+        {
+          "id": 36,
+          "section": "1. Learn the Basics",
+          "topic": "Conditionals: if Gate",
+          "step": "2.2",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Conditionals",
+          "question": "How does the 'if' statement allow access when a condition is met?",
+          "explanation": {
+            "points": [
+              "The `if` statement evaluates a single Boolean expression.",
+              "If `True`, the indented block runs; if `False`, Python skips the block entirely.",
+              "Think of it as an automated security barrier: bad badge = gate stays shut; valid badge = gate opens."
+            ]
+          },
+          "code": "has_valid_badge = True\n\nprint(\"Approaching security barrier...\")\nif has_valid_badge:\n    print(\"🟢 ACCESS GRANTED: Welcome to the AI Lab!\")\n\nprint(\"Security inspection complete.\")",
+          "tip": "Toggle the badge switch in the security gate visual to show how the barrier opens when True and blocks entry when False.",
+          "viz": {
+            "type": "conditionals-branching",
+            "data": {}
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Conditionals: if-else",
+      "slides": [
+        {
+          "id": 37,
+          "section": "1. Learn the Basics",
+          "topic": "Conditionals: if-else",
+          "step": "2.3",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Conditionals",
+          "question": "How does 'if-else' provide an alternative path (Office vs Canteen)?",
+          "explanation": {
+            "points": [
+              "`if-else` provides an **either-or** guarantee: exactly one of the two blocks will execute.",
+              "If the condition is `True`, Branch A runs; otherwise, Branch B runs as a fallback.",
+              "Analogy: If badge type is 'OFFICE', route to Executive Office; else, route to Employee Canteen."
+            ]
+          },
+          "code": "destination = \"OFFICE\"\n\nif destination == \"OFFICE\":\n    print(\"🏢 Route to Main Office: Door 1 unlocked\")\nelse:\n    print(\"☕ Route to Canteen: Free snacks available!\")",
+          "tip": "Switch between Office and Canteen buttons in the interactive gate visual to show physical path redirection.",
+          "viz": {
+            "type": "branching-tree",
+            "data": {}
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Conditionals: if-elif-else",
+      "slides": [
+        {
+          "id": 38,
+          "section": "1. Learn the Basics",
+          "topic": "Conditionals: if-elif-else",
+          "step": "2.4",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Conditionals",
+          "question": "How does 'if-elif-else' handle multi-lane tiered access?",
+          "explanation": {
+            "points": [
+              "`elif` (short for 'else if') allows chaining **multiple conditional checks** in sequential order.",
+              "Only the **first** branch that evaluates to `True` runs; remaining branches are skipped even if their conditions are true.",
+              "The final `else` catches anything that didn't match previous tiers."
+            ]
+          },
+          "code": "role = \"VIP\"\n\nif role == \"VIP\":\n    print(\"🌟 VIP Suite: Fast-track priority access\")\nelif role == \"STAFF\":\n    print(\"💼 Staff Workspace: Access to workstations\")\nelif role == \"GUEST\":\n    print(\"🏷️ Visitor Lounge: Supervised access only\")\nelse:\n    print(\"❌ Access Denied: Unknown credential\")",
+          "tip": "Click VIP, Staff, Guest in the visual to show multi-lane barrier routing.",
+          "viz": {
+            "type": "branching-tree",
+            "data": {}
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Loops & Iteration: for",
+      "slides": [
+        {
+          "id": 39,
+          "section": "1. Learn the Basics",
+          "topic": "Loops & Iteration: for",
+          "step": "3.1",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Loops",
+          "question": "How do for loops iterate through collections & sequences?",
+          "explanation": {
+            "points": [
+              "A `for` loop iterates over items of any iterable (lists, tuples, strings, ranges).",
+              "`range(start, stop, step)` generates a sequence of numbers on the fly without storing all in RAM.",
+              "`enumerate()` yields both the zero-based index and the element at the same time."
+            ]
+          },
+          "code": "# 1. Iterating through a list with enumerate\nmodels = [\"GPT-4o\", \"Claude-3.5\", \"Gemini-1.5\"]\nfor idx, model in enumerate(models, start=1):\n    print(f\"Model #{idx}: {model}\")\n\n# 2. range() step iteration\nprint(\"\\nCounting even numbers:\")\nfor num in range(2, 11, 2):\n    print(num, end=\" \")\nprint()",
+          "tip": "Explain that Python for loops are actually 'for-each' iterators, walking over iterables until StopIteration is raised.",
+          "viz": {
+            "type": "loop-control",
+            "data": {}
+          }
+        },
+        {
+          "id": 40,
+          "section": "1. Learn the Basics",
+          "topic": "Loops & Iteration: for",
+          "step": "3.1-P1",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Practice 1",
+          "question": "Practice 1: Formatted Multiplication Table",
+          "explanation": {
+            "points": [
+              "**Challenge**: Generate a multiplication table for integer `n` from 1 to `up_to` as a list of formatted strings.",
+              "**Example**: Input: n = 7, up_to = 3 -> Output: ['7 x 1 = 7', '7 x 2 = 14', '7 x 3 = 21']",
+              "**Constraints**: 1 <= n <= 100, 1 <= up_to <= 50.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Generate a multiplication table for integer `n` from 1 to `up_to` as a list of formatted strings."
+          },
+          "code": "def multiplication_table(n: int, up_to: int = 10) -> list[str]:\n    # YOUR CODE HERE\n    pass\n\nfor line in multiplication_table(5, 5):\n    print(line)",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "loop-control",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Use a for loop with range(1, up_to + 1) and format strings using f-strings.",
+            "code": "def multiplication_table(n: int, up_to: int = 10) -> list[str]:\n    return [f'{n} x {i} = {n * i}' for i in range(1, up_to + 1)]\n\nfor line in multiplication_table(7, 5):\n    print(line)",
+            "timeComplexity": "O(K)",
+            "spaceComplexity": "O(K)"
+          }
+        },
+        {
+          "id": 41,
+          "section": "1. Learn the Basics",
+          "topic": "Loops & Iteration: for",
+          "step": "3.1-P2",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Practice 2",
+          "question": "Practice 2: Sum of Digits of an Integer",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given an integer, return the sum of its individual digits. Handle negative integers by treating them as positive.",
+              "**Example**: Input: 492 -> Output: 15 (4 + 9 + 2)",
+              "**Constraints**: -10^9 <= n <= 10^9",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given an integer, return the sum of its individual digits. Handle negative integers by treating them as positive."
+          },
+          "code": "def sum_of_digits(n: int) -> int:\n    # YOUR CODE HERE\n    pass\n\nprint('Sum of digits 492:', sum_of_digits(492))\nprint('Sum of digits -81:', sum_of_digits(-81))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "loop-control",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Use abs(n) to handle negatives. Loop with while n > 0 adding n % 10 and updating n //= 10, or convert to string and iterate digits.",
+            "code": "def sum_of_digits(n: int) -> int:\n    n = abs(n)\n    total = 0\n    while n > 0:\n        total += n % 10\n        n //= 10\n    return total\n\nprint('492 ->', sum_of_digits(492))\nprint('987654 ->', sum_of_digits(987654))",
+            "timeComplexity": "O(log10(N))",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 42,
+          "section": "1. Learn the Basics",
+          "topic": "Loops & Iteration: for",
+          "step": "3.1-L3",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "LeetCode: LeetCode #70",
+          "question": "LeetCode #70: Climbing Stairs",
+          "explanation": {
+            "points": [
+              "**Challenge**: You are climbing a staircase. It takes `n` steps to reach the top. Each time you can climb either 1 or 2 steps. How many distinct ways can you reach the top?",
+              "**Example**: Input: n = 3 -> Output: 3 (1+1+1, 1+2, 2+1)",
+              "**Constraints**: 1 <= n <= 45",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "You are climbing a staircase. It takes `n` steps to reach the top. Each time you can climb either 1 or 2 steps. How many distinct ways can y"
+          },
+          "code": "def climb_stairs(n: int) -> int:\n    # YOUR CODE HERE\n    pass\n\nprint('Ways for 4 stairs:', climb_stairs(4))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "loop-control",
+            "data": {}
+          },
+          "solution": {
+            "approach": "This is equivalent to the Fibonacci sequence: ways(n) = ways(n-1) + ways(n-2). Keep track of the last two step counts iteratively in O(1) space.",
+            "code": "def climb_stairs(n: int) -> int:\n    if n <= 2: return n\n    one_step_before = 2\n    two_steps_before = 1\n    for _ in range(3, n + 1):\n        current = one_step_before + two_steps_before\n        two_steps_before = one_step_before\n        one_step_before = current\n    return one_step_before\n\nprint('Ways for 5 stairs:', climb_stairs(5))\nprint('Ways for 10 stairs:', climb_stairs(10))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 43,
+          "section": "1. Learn the Basics",
+          "topic": "Loops & Iteration: for",
+          "step": "3.1-L4",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "LeetCode: LeetCode #283",
+          "question": "LeetCode #283: Move Zeroes",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given an integer array `nums`, move all 0's to the end of it while maintaining the relative order of the non-zero elements. Must do this in-place without copying array.",
+              "**Example**: Input: nums = [0,1,0,3,12] -> Output: [1,3,12,0,0]",
+              "**Constraints**: 1 <= nums.length <= 10^4",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given an integer array `nums`, move all 0's to the end of it while maintaining the relative order of the non-zero elements. Must do this in-"
+          },
+          "code": "def move_zeroes(nums: list[int]) -> None:\n    # Modify in-place\n    pass\n\narr = [0, 1, 0, 3, 12]\nmove_zeroes(arr)\nprint('Moved zeroes:', arr)",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "loop-control",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Use a two-pointer approach. Pointer `insert_pos` tracks where the next non-zero element belongs. Iterate through array; swap non-zero elements into `insert_pos`.",
+            "code": "def move_zeroes(nums: list[int]) -> None:\n    insert_pos = 0\n    for i in range(len(nums)):\n        if nums[i] != 0:\n            nums[insert_pos], nums[i] = nums[i], nums[insert_pos]\n            insert_pos += 1\n\narr = [0, 1, 0, 3, 12]\nmove_zeroes(arr)\nprint('Moved zeroes:', arr)",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 44,
+          "section": "1. Learn the Basics",
+          "topic": "Loops & Iteration: for",
+          "step": "3.1-R5",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Real-World: Retry Backoff",
+          "question": "Real-Time Scenario: Network API Retry with Exponential Backoff",
+          "explanation": {
+            "points": [
+              "**Challenge**: Simulate an unreliable API call with retries. If the call fails, wait exponentially (2^attempt * 0.1s) up to max_retries before raising RuntimeError.",
+              "**Example**: Attempt 1 failed -> wait 0.1s -> Attempt 2 failed -> wait 0.2s -> Attempt 3 succeeded!",
+              "**Constraints**: Must use loop and break on success.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Simulate an unreliable API call with retries. If the call fails, wait exponentially (2^attempt * 0.1s) up to max_retries before raising Runt"
+          },
+          "code": "import random\n\ndef call_api_with_retry(max_retries: int = 4):\n    # YOUR CODE HERE\n    pass\n\nprint(call_api_with_retry(3))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "exponential-backoff",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Loop through attempt range. In a try block call the endpoint. If exception occurs, calculate backoff delay 2**attempt * base_delay and continue; otherwise return success.",
+            "code": "import random, time\n\ndef call_api_with_retry(max_retries: int = 4):\n    for attempt in range(1, max_retries + 1):\n        # Simulate 70% chance of failure on early attempts\n        success = attempt >= 3\n        if success:\n            return f'✅ Request succeeded on attempt #{attempt}'\n        delay = (2 ** attempt) * 0.02  # Scaled for demo\n        print(f'⚠️ Attempt #{attempt} failed. Backing off for {delay:.3f}s...')\n        time.sleep(delay)\n    raise RuntimeError('Max retries exceeded')",
+            "timeComplexity": "O(Retries)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 45,
+          "section": "1. Learn the Basics",
+          "topic": "Loops & Iteration: for",
+          "step": "3.1-R6",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Real-World: Log Analyzer",
+          "question": "Real-Time Scenario: Production Log Stream Error Window Counter",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given an array of server log strings with timestamps and log levels (e.g. '2026-10-29 10:00:01 [ERROR] DB Timeout'), count occurrences of ERROR and CRITICAL and compute error rate %.",
+              "**Example**: Input: 100 logs with 5 ERRORs -> Output: {'error_count': 5, 'error_rate_pct': 5.0}",
+              "**Constraints**: Handle empty log lists without division by zero.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given an array of server log strings with timestamps and log levels (e.g. '2026-10-29 10:00:01 [ERROR] DB Timeout'), count occurrences of ER"
+          },
+          "code": "def analyze_logs(logs: list[str]) -> dict:\n    # YOUR CODE HERE\n    pass\n\nmock_logs = [\n    '10:00:01 [INFO] Server started',\n    '10:00:05 [ERROR] Connection reset',\n    '10:00:10 [INFO] Request OK',\n    '10:00:12 [CRITICAL] Out of Memory'\n]\nprint(analyze_logs(mock_logs))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "loop-control",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Iterate through logs with a for loop. Check if '[ERROR]' or '[CRITICAL]' is present in each entry. Compute percentage safely.",
+            "code": "def analyze_logs(logs: list[str]) -> dict:\n    if not logs:\n        return {'total': 0, 'error_count': 0, 'error_rate_pct': 0.0}\n    error_count = sum(1 for line in logs if '[ERROR]' in line or '[CRITICAL]' in line)\n    rate = (error_count / len(logs)) * 100\n    return {\n        'total': len(logs),\n        'error_count': error_count,\n        'error_rate_pct': round(rate, 2)\n    }\n\nmock_logs = [\n    '10:00:01 [INFO] Server started',\n    '10:00:05 [ERROR] Connection reset',\n    '10:00:10 [INFO] Request OK',\n    '10:00:12 [CRITICAL] Out of Memory'\n]\nprint(analyze_logs(mock_logs))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(1)"
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Loops & Iteration: while & control",
+      "slides": [
+        {
+          "id": 46,
+          "section": "1. Learn the Basics",
+          "topic": "Loops & Iteration: while & control",
+          "step": "3.2",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Loops",
+          "question": "How do while loops, break, and continue control repetition?",
+          "explanation": {
+            "points": [
+              "A `while` loop continues executing as long as its condition remains `True`.",
+              "`break` immediately terminates the nearest enclosing loop.",
+              "`continue` skips the rest of the current iteration and jumps directly to the next one.",
+              "Python loops feature an optional `else:` clause that executes only when the loop completes normally without hitting a `break`."
+            ]
+          },
+          "code": "# 1. While loop countdown with condition\ncountdown = 5\nwhile countdown > 0:\n    print(f\"T-minus {countdown}...\")\n    countdown -= 1\nprint(\"🚀 Liftoff!\\n\")\n\n# 2. break and continue\nfor n in range(1, 10):\n    if n == 3:\n        continue  # Skip 3\n    if n == 7:\n        print(\"Target 7 found, breaking!\")\n        break     # Terminate loop\n    print(\"Processing:\", n)",
+          "tip": "Warn viewers about accidental infinite loops if the loop variable isn't updated inside the while body.",
+          "viz": {
+            "type": "loop-control",
+            "data": {}
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Exceptions: try & except",
+      "slides": [
+        {
+          "id": 47,
+          "section": "1. Learn the Basics",
+          "topic": "Exceptions: try & except",
+          "step": "4.1",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Exceptions",
+          "question": "How do try / except blocks catch errors and prevent crashes?",
+          "explanation": {
+            "points": [
+              "Uncaught runtime errors trigger exceptions that terminate program execution.",
+              "`try / except` wraps risky code and handles specific exceptions gracefully without crashing.",
+              "Common standard exceptions: `ZeroDivisionError`, `ValueError`, `KeyError`, `IndexError`, `TypeError`.",
+              "Avoid bare `except:` without an exception class because it catches keyboard interrupts (`Ctrl+C`)."
+            ]
+          },
+          "code": "def safe_divide(numerator: float, denominator: float):\n    try:\n        result = numerator / denominator\n        print(f\"{numerator} / {denominator} = {result}\")\n    except ZeroDivisionError:\n        print(f\"⚠️ Error: Cannot divide {numerator} by zero!\")\n    except TypeError as err:\n        print(f\"⚠️ Type error: {err}\")\n\nsafe_divide(10, 2)\nsafe_divide(10, 0)\nsafe_divide(10, \"two\")",
+          "tip": "Explain the EAFP philosophy in Python: 'Easier to Ask for Forgiveness than Permission' vs checking conditions beforehand.",
+          "viz": {
+            "type": "exception-flow",
+            "data": {}
+          }
+        },
+        {
+          "id": 48,
+          "section": "1. Learn the Basics",
+          "topic": "Exceptions: try & except",
+          "step": "4.1-P1",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Practice 1",
+          "question": "Practice 1: Resilient Float Parser with Fallback Default",
+          "explanation": {
+            "points": [
+              "**Challenge**: Write a function `safe_float(val, default=0.0)` that attempts to convert any input to a float, returning `default` if ValueError or TypeError occurs.",
+              "**Example**: safe_float('3.14') -> 3.14 | safe_float('invalid') -> 0.0 | safe_float(None, -1.0) -> -1.0",
+              "**Constraints**: Never raise an uncaught exception.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Write a function `safe_float(val, default=0.0)` that attempts to convert any input to a float, returning `default` if ValueError or TypeErro"
+          },
+          "code": "def safe_float(val, default: float = 0.0) -> float:\n    # YOUR CODE HERE\n    pass\n\nprint(safe_float('42.5'))\nprint(safe_float('not_a_number', -1.0))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "exception-flow",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Wrap float(val) in a try block. Catch (ValueError, TypeError) and return default.",
+            "code": "def safe_float(val, default: float = 0.0) -> float:\n    try:\n        return float(val)\n    except (ValueError, TypeError):\n        return default\n\nprint(safe_float('42.5'))\nprint(safe_float('invalid', default=-1.0))\nprint(safe_float(None, default=0.0))",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 49,
+          "section": "1. Learn the Basics",
+          "topic": "Exceptions: try & except",
+          "step": "4.1-P2",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Practice 2",
+          "question": "Practice 2: Deep Dictionary Safe Key Path Lookup",
+          "explanation": {
+            "points": [
+              "**Challenge**: Retrieve nested dictionary keys given a dotted path string (e.g. 'database.pool.max_conn'). Catch KeyError and return None if key path does not exist.",
+              "**Example**: safe_get({'a': {'b': 42}}, 'a.b') -> 42 | safe_get({'a': 1}, 'a.b.c') -> None",
+              "**Constraints**: Handle missing intermediate keys and non-dict values gracefully.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Retrieve nested dictionary keys given a dotted path string (e.g. 'database.pool.max_conn'). Catch KeyError and return None if key path does "
+          },
+          "code": "def safe_get(d: dict, path: str, default=None):\n    # YOUR CODE HERE\n    pass\n\nprint(safe_get({'db': {'port': 5432}}, 'db.port'))\nprint(safe_get({'db': {'port': 5432}}, 'db.user'))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "exception-flow",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Traverse path keys using EAFP (Easier to Ask Forgiveness than Permission). Catch KeyError, TypeError, and IndexError to safely return default value.",
+            "code": "def safe_get(d: dict, path: str, default=None):\n    curr = d\n    for key in path.split('.'):\n        try:\n            curr = curr[key]\n        except (KeyError, TypeError, IndexError):\n            return default\n    return curr\n\nconf = {'db': {'credentials': {'user': 'postgres'}, 'port': 5432}}\nprint(safe_get(conf, 'db.credentials.user'))\nprint(safe_get(conf, 'db.credentials.password', default='N/A'))\nprint(safe_get(conf, 'db.port.unreachable', default=None))",
+            "timeComplexity": "O(Depth)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 50,
+          "section": "1. Learn the Basics",
+          "topic": "Exceptions: try & except",
+          "step": "4.1-L3",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "LeetCode: LeetCode #67",
+          "question": "LeetCode #67: Add Binary Strings with Input Validation Exception Handling",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given two binary strings `a` and `b`, return their sum as a binary string.",
+              "**Example**: Input: a = '11', b = '1' -> Output: '100'",
+              "**Constraints**: 1 <= a.length, b.length <= 10^4",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given two binary strings `a` and `b`, return their sum as a binary string."
+          },
+          "code": "def add_binary(a: str, b: str) -> str:\n    # YOUR CODE HERE\n    pass\n\nprint(add_binary('11', '1'))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "exception-flow",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Validate that both strings contain valid binary representations using try / except ValueError when parsing with int(x, 2), then sum and return binary slice.",
+            "code": "def add_binary(a: str, b: str) -> str:\n    try:\n        val_a = int(a, 2)\n        val_b = int(b, 2)\n    except ValueError as err:\n        raise ValueError(f\"Invalid non-binary digit passed: {err}\")\n    return bin(val_a + val_b)[2:]\n\nprint(\"11 + 1 =\", add_binary('11', '1'))\nprint(\"1010 + 1011 =\", add_binary('1010', '1011'))\ntry:\n    add_binary('102', '1')\nexcept ValueError as e:\n    print(\"Caught expected validation error:\", e)",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(N)"
+          }
+        },
+        {
+          "id": 51,
+          "section": "1. Learn the Basics",
+          "topic": "Exceptions: try & except",
+          "step": "4.1-L4",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "LeetCode: LeetCode #415",
+          "question": "LeetCode #415: Add Strings (Arbitrary Large Integers)",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given two non-negative integers `num1` and `num2` represented as strings, return the sum without converting the inputs to integers directly (preventing integer overflow).",
+              "**Example**: Input: num1 = '11', num2 = '123' -> Output: '134'",
+              "**Constraints**: 1 <= num1.length, num2.length <= 10^4",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given two non-negative integers `num1` and `num2` represented as strings, return the sum without converting the inputs to integers directly "
+          },
+          "code": "def add_strings(num1: str, num2: str) -> str:\n    # YOUR CODE HERE\n    pass\n\nprint(add_strings('456', '77'))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "exception-flow",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Two pointers from the end: p1 = len(num1)-1, p2 = len(num2)-1. Carry = 0. Extract digits with ord(char) - ord('0'). Add carry and digits; prepend result % 10.",
+            "code": "def add_strings(num1: str, num2: str) -> str:\n    res = []\n    p1, p2 = len(num1) - 1, len(num2) - 1\n    carry = 0\n    while p1 >= 0 or p2 >= 0 or carry:\n        d1 = ord(num1[p1]) - ord('0') if p1 >= 0 else 0\n        d2 = ord(num2[p2]) - ord('0') if p2 >= 0 else 0\n        total = d1 + d2 + carry\n        carry = total // 10\n        res.append(str(total % 10))\n        p1 -= 1; p2 -= 1\n    return ''.join(reversed(res))\n\nprint(add_strings('456', '77'))\nprint(add_strings('999', '1'))",
+            "timeComplexity": "O(Max(N, M))",
+            "spaceComplexity": "O(Max(N, M))"
+          }
+        },
+        {
+          "id": 52,
+          "section": "1. Learn the Basics",
+          "topic": "Exceptions: try & except",
+          "step": "4.1-R5",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Real-World: Custom Business Exception",
+          "question": "Real-Time Scenario: Payment Transaction Validation Exception Class",
+          "explanation": {
+            "points": [
+              "**Challenge**: Create a custom exception hierarchy: `PaymentError(Exception)`, with subclasses `InsufficientBalanceError` and `FraudDetectedError`. Raise and handle them in a payment simulator.",
+              "**Example**: balance=50, charge=100 -> raises InsufficientBalanceError.",
+              "**Constraints**: Subclasses store error code and amount.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Create a custom exception hierarchy: `PaymentError(Exception)`, with subclasses `InsufficientBalanceError` and `FraudDetectedError`. Raise a"
+          },
+          "code": "class PaymentError(Exception): pass\n# Define subclasses and charge function",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "exception-flow",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Subclass Exception. Store custom attributes in __init__ (amount, message). Catch specific subclasses before catching base PaymentError.",
+            "code": "class PaymentError(Exception):\n    \"\"\"Base exception for payments.\"\"\"\n    pass\n\nclass InsufficientBalanceError(PaymentError):\n    def __init__(self, balance, charge):\n        super().__init__(f'Cannot charge ${charge} with balance ${balance}')\n        self.balance = balance\n        self.charge = charge\n\ndef process_transaction(balance: float, charge: float):\n    try:\n        if charge > balance:\n            raise InsufficientBalanceError(balance, charge)\n        return balance - charge\n    except InsufficientBalanceError as err:\n        print('❌ Transaction Failed:', err)\n        return balance\n\nprint('Remaining:', process_transaction(50.0, 100.0))",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 53,
+          "section": "1. Learn the Basics",
+          "topic": "Exceptions: try & except",
+          "step": "4.1-R6",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Real-World: DB Connection Guard",
+          "question": "Real-Time Scenario: Database Connection Pool Exhaustion Circuit Breaker",
+          "explanation": {
+            "points": [
+              "**Challenge**: Simulate a connection pool with capacity 3. If a 4th connection is requested without an available socket, raise `PoolExhaustedError` and trigger fallback cache read.",
+              "**Example**: Acquire 3 sockets -> 4th request catches PoolExhaustedError and falls back to Read-Only Replica.",
+              "**Constraints**: Always release connections in a finally block.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Simulate a connection pool with capacity 3. If a 4th connection is requested without an available socket, raise `PoolExhaustedError` and tri"
+          },
+          "code": "class PoolExhaustedError(Exception): pass\n# Implement connection simulator",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "exception-flow",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Track active connection count. Raise error if count >= max_size. Use try-finally in caller to guarantee connection release.",
+            "code": "class PoolExhaustedError(Exception): pass\n\nclass DBPool:\n    def __init__(self, max_conns=2):\n        self.max_conns = max_conns\n        self.active = 0\n    def acquire(self):\n        if self.active >= self.max_conns:\n            raise PoolExhaustedError('All DB connections active')\n        self.active += 1\n        return f'Conn-{self.active}'\n    def release(self):\n        self.active = max(0, self.active - 1)\n\npool = DBPool(2)\nconns = [pool.acquire(), pool.acquire()]\ntry:\n    pool.acquire()  # Exhausted!\nexcept PoolExhaustedError:\n    print('⚡ Switched to read-only Redis replica cache!')\nfinally:\n    pool.release()\n    print('Socket returned to pool.')",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(1)"
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Exceptions: finally & Custom Errors",
+      "slides": [
+        {
+          "id": 54,
+          "section": "1. Learn the Basics",
+          "topic": "Exceptions: finally & Custom Errors",
+          "step": "4.2",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Exceptions",
+          "question": "How does finally ensure cleanup & how do you create Custom Exceptions?",
+          "explanation": {
+            "points": [
+              "`finally` always executes regardless of whether an exception occurred or not (perfect for closing files/sockets).",
+              "`else` executes only when the `try` block succeeded with zero exceptions.",
+              "Custom exceptions subclass `Exception` to give domain-specific error handling for enterprise apps.",
+              "`raise` explicitly triggers an exception."
+            ]
+          },
+          "code": "class InsufficientBalanceError(Exception):\n    \"\"\"Raised when transaction exceeds available funds.\"\"\"\n    pass\n\ndef withdraw(balance: float, amount: float) -> float:\n    try:\n        if amount > balance:\n            raise InsufficientBalanceError(f\"Cannot withdraw ${amount} from ${balance}\")\n        balance -= amount\n        return balance\n    except InsufficientBalanceError as err:\n        print(\"🚨 Transaction Rejected:\", err)\n        return balance\n    finally:\n        print(\"🔒 Security Audit: Session logged to disk.\\n\")\n\nbal = withdraw(100.0, 50.0)\nbal = withdraw(bal, 80.0)",
+          "tip": "Mention that finally will even run before return statements inside the try block!",
+          "viz": {
+            "type": "exception-flow",
+            "data": {}
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Functions & Scope",
+      "slides": [
+        {
+          "id": 55,
+          "section": "1. Learn the Basics",
+          "topic": "Functions & Scope",
+          "step": "5.1",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Functions",
+          "question": "How do Functions, parameters, and return values make code modular?",
+          "explanation": {
+            "points": [
+              "Functions package reusable logic using the `def` keyword.",
+              "Python supports default arguments (e.g. `precision: int = 2`).",
+              "Variable scope follows the **LEGB Rule**: **L**ocal, **E**nclosing, **G**lobal, **B**uilt-in.",
+              "Functions are **first-class citizens** in Python: they can be assigned to variables, passed into other functions, and returned."
+            ]
+          },
+          "code": "# 1. Function with default arguments and docstring\ndef calculate_discount(price: float, discount_rate: float = 0.10) -> float:\n    \"\"\"Calculates final price after applying discount.\"\"\"\n    savings = price * discount_rate\n    return round(price - savings, 2)\n\nprint(\"Standard (10%):\", calculate_discount(100.0))\nprint(\"VIP Promo (25%):\", calculate_discount(100.0, 0.25))\n\n# 2. Scope demonstration\nglobal_val = \"GLOBAL\"\ndef check_scope():\n    local_val = \"LOCAL\"\n    print(f\"Inside function: {local_val} and {global_val}\")\n\ncheck_scope()",
+          "tip": "Warn viewers about the classic Python trap: never use a mutable object like a list [] as a default parameter value!",
+          "viz": {
+            "type": "function",
+            "data": {
+              "name": "calculate_discount",
+              "args": [
+                "price",
+                "discount_rate"
+              ],
+              "returnValue": "final_price"
+            }
+          }
+        },
+        {
+          "id": 56,
+          "section": "1. Learn the Basics",
+          "topic": "Functions & Scope",
+          "step": "5.1-P1",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Practice 1",
+          "question": "Practice 1: Optimized Prime Number Checker",
+          "explanation": {
+            "points": [
+              "**Challenge**: Write a function `is_prime(n)` that returns True if integer `n` is prime and False otherwise. Optimize to check divisors only up to sqrt(n).",
+              "**Example**: is_prime(17) -> True | is_prime(4) -> False | is_prime(1) -> False",
+              "**Constraints**: Run in O(sqrt(n)) time.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Write a function `is_prime(n)` that returns True if integer `n` is prime and False otherwise. Optimize to check divisors only up to sqrt(n)."
+          },
+          "code": "def is_prime(n: int) -> bool:\n    # YOUR CODE HERE\n    pass\n\nprint('17 is prime?', is_prime(17))\nprint('15 is prime?', is_prime(15))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Numbers <= 1 are not prime. 2 and 3 are prime. If divisible by 2 or 3, return False. Check odd divisors from 5 up to int(n**0.5) with step 6 (6k +/- 1).",
+                "code": "def is_prime(n: int) -> bool:\n    if n <= 1: return False\n    if n <= 3: return True\n    if n % 2 == 0 or n % 3 == 0: return False\n    i = 5\n    while i * i <= n:\n        if n % i == 0 or n % (i + 2) == 0: return False\n        i += 6\n    return True\n\nprint('17 is prime?', is_prime(17))\nprint('97 is prime?', is_prime(97))\nprint('100 is prime?', is_prime(100))",
+                "timeComplexity": "O(sqrt(N))",
+                "spaceComplexity": "O(1)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Numbers <= 1 are not prime. 2 and 3 are prime. If divisible by 2 or 3, return False. Check odd divisors from 5 up to int(n**0.5) with step 6 (6k +/- 1).",
+            "code": "def is_prime(n: int) -> bool:\n    if n <= 1: return False\n    if n <= 3: return True\n    if n % 2 == 0 or n % 3 == 0: return False\n    i = 5\n    while i * i <= n:\n        if n % i == 0 or n % (i + 2) == 0: return False\n        i += 6\n    return True\n\nprint('17 is prime?', is_prime(17))\nprint('97 is prime?', is_prime(97))\nprint('100 is prime?', is_prime(100))",
+            "timeComplexity": "O(sqrt(N))",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 57,
+          "section": "1. Learn the Basics",
+          "topic": "Functions & Scope",
+          "step": "5.1-P2",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Practice 2",
+          "question": "Practice 2: Multi-Operation Calculator with *args and **kwargs",
+          "explanation": {
+            "points": [
+              "**Challenge**: Build a function `calculate(op, *numbers, round_to=2)` supporting 'sum', 'prod', 'avg'. Return the rounded result.",
+              "**Example**: calculate('avg', 10, 20, 30) -> 20.0 | calculate('prod', 2, 3, 4) -> 24.0",
+              "**Constraints**: Handle empty numbers gracefully.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Build a function `calculate(op, *numbers, round_to=2)` supporting 'sum', 'prod', 'avg'. Return the rounded result."
+          },
+          "code": "def calculate(op: str, *numbers, **options):\n    # YOUR CODE HERE\n    pass\n\nprint(calculate('avg', 10, 20, 30, round_to=1))\nprint(calculate('prod', 2, 3, 4, scale=2))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Unpack *numbers. If op=='sum': sum(). If op=='prod': reduce/multiply. If op=='avg': sum()/len(). Round result.",
+                "code": "def calculate(op: str, *numbers, round_to: int = 2):\n    if not numbers: return 0.0\n    if op == 'sum': val = sum(numbers)\n    elif op == 'avg': val = sum(numbers) / len(numbers)\n    elif op == 'prod':\n        val = 1\n        for n in numbers: val *= n\n    else: raise ValueError(f'Unknown operation: {op}')\n    return round(float(val), round_to)\n\nprint('Average:', calculate('avg', 10, 15, 20))\nprint('Product:', calculate('prod', 2, 3, 4, 5))",
+                "timeComplexity": "O(N)",
+                "spaceComplexity": "O(1)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Unpack *numbers for calculations. Inspect **options kwargs for parameters like 'round_to' and 'scale'.",
+            "code": "def calculate(op: str, *numbers, **options):\n    if not numbers: return 0.0\n    if op == 'sum': val = sum(numbers)\n    elif op == 'avg': val = sum(numbers) / len(numbers)\n    elif op == 'prod':\n        val = 1\n        for n in numbers: val *= n\n    else: raise ValueError(f'Unknown operation: {op}')\n    \n    # Process **kwargs options\n    scale = options.get('scale', 1.0)\n    round_to = options.get('round_to', 2)\n    val *= scale\n    return round(float(val), round_to)\n\nprint('Average (round 1):', calculate('avg', 10, 15, 20, round_to=1))\nprint('Scaled Product:', calculate('prod', 2, 3, 4, scale=10))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 58,
+          "section": "1. Learn the Basics",
+          "topic": "Functions & Scope",
+          "step": "5.1-L3",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "LeetCode: LeetCode #217",
+          "question": "LeetCode #217: Contains Duplicate",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given an integer array `nums`, return true if any value appears at least twice in the array, and return false if every element is distinct.",
+              "**Example**: Input: nums = [1,2,3,1] -> Output: True | Input: nums = [1,2,3,4] -> Output: False",
+              "**Constraints**: 1 <= nums.length <= 10^5",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given an integer array `nums`, return true if any value appears at least twice in the array, and return false if every element is distinct."
+          },
+          "code": "def contains_duplicate(nums: list[int]) -> bool:\n    # YOUR CODE HERE\n    pass\n\nprint(contains_duplicate([1,2,3,1]))\nprint(contains_duplicate([1,2,3,4]))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Compare len(nums) with len(set(nums)) in O(N) time and O(N) space, or use an early exit hash set traversal.",
+                "code": "def contains_duplicate(nums: list[int]) -> bool:\n    seen = set()\n    for n in nums:\n        if n in seen: return True\n        seen.add(n)\n    return False\n\nprint(contains_duplicate([1, 2, 3, 1]))\nprint(contains_duplicate([1, 2, 3, 4]))",
+                "timeComplexity": "O(N)",
+                "spaceComplexity": "O(N)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Compare len(nums) with len(set(nums)) in O(N) time and O(N) space, or use an early exit hash set traversal.",
+            "code": "def contains_duplicate(nums: list[int]) -> bool:\n    seen = set()\n    for n in nums:\n        if n in seen: return True\n        seen.add(n)\n    return False\n\nprint(contains_duplicate([1, 2, 3, 1]))\nprint(contains_duplicate([1, 2, 3, 4]))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(N)"
+          }
+        },
+        {
+          "id": 59,
+          "section": "1. Learn the Basics",
+          "topic": "Functions & Scope",
+          "step": "5.1-L4",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "LeetCode: LeetCode #242",
+          "question": "LeetCode #242: Valid Anagram",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given two strings `s` and `t`, return true if `t` is an anagram of `s`, and false otherwise.",
+              "**Example**: Input: s = 'anagram', t = 'nagaram' -> Output: True",
+              "**Constraints**: 1 <= s.length, t.length <= 5 * 10^4",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given two strings `s` and `t`, return true if `t` is an anagram of `s`, and false otherwise."
+          },
+          "code": "def is_anagram(s: str, t: str) -> bool:\n    # YOUR CODE HERE\n    pass\n\nprint(is_anagram('anagram', 'nagaram'))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "If lengths differ, return False. Use collections.Counter(s) == collections.Counter(t).",
+                "code": "from collections import Counter\n\ndef is_anagram(s: str, t: str) -> bool:\n    if len(s) != len(t): return False\n    return Counter(s) == Counter(t)\n\nprint(is_anagram('anagram', 'nagaram'))\nprint(is_anagram('rat', 'car'))",
+                "timeComplexity": "O(N)",
+                "spaceComplexity": "O(1) (26 chars)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "If lengths differ, return False. Use collections.Counter(s) == collections.Counter(t).",
+            "code": "from collections import Counter\n\ndef is_anagram(s: str, t: str) -> bool:\n    if len(s) != len(t): return False\n    return Counter(s) == Counter(t)\n\nprint(is_anagram('anagram', 'nagaram'))\nprint(is_anagram('rat', 'car'))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(1) (26 chars)"
+          }
+        },
+        {
+          "id": 60,
+          "section": "1. Learn the Basics",
+          "topic": "Functions & Scope",
+          "step": "5.1-R5",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Real-World: Memoize Cache",
+          "question": "Real-Time Scenario: In-Memory Function Memoizer Decorator",
+          "explanation": {
+            "points": [
+              "**Challenge**: Write a pure function memoizer using Python closures that caches the return values of expensive function computations.",
+              "**Example**: fib(35) takes 2s without cache; 0.0001s with memoizer.",
+              "**Constraints**: Keys must be serializable tuple of args.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Write a pure function memoizer using Python closures that caches the return values of expensive function computations."
+          },
+          "code": "def memoize(func):\n    # YOUR CODE HERE\n    pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Create a dictionary `cache = {}` inside enclosing scope. The wrapper function checks if args are in cache; if not, computes and stores.",
+                "code": "def memoize(func):\n    cache = {}\n    def wrapper(*args):\n        if args not in cache:\n            cache[args] = func(*args)\n        return cache[args]\n    return wrapper\n\n@memoize\ndef expensive_fib(n):\n    if n <= 1: return n\n    return expensive_fib(n - 1) + expensive_fib(n - 2)\n\nprint('Fib(20):', expensive_fib(20))\nprint('Fib(30):', expensive_fib(30))",
+                "timeComplexity": "O(N)",
+                "spaceComplexity": "O(N)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Create a dictionary cache = {} in enclosing decorator closure. Checks if args key is present; returns cached result in O(1) or computes and stores.",
+            "code": "def memoize(func):\n    cache = {}\n    def wrapper(*args):\n        if args not in cache:\n            cache[args] = func(*args)\n        return cache[args]\n    return wrapper\n\n@memoize\ndef expensive_fib(n):\n    if n <= 1: return n\n    return expensive_fib(n - 1) + expensive_fib(n - 2)\n\nprint('Fib(20):', expensive_fib(20))\nprint('Fib(30):', expensive_fib(30))",
+            "timeComplexity": "O(1) lookup per call (O(N) for fib(N))",
+            "spaceComplexity": "O(N) cache entries"
+          }
+        },
+        {
+          "id": 61,
+          "section": "1. Learn the Basics",
+          "topic": "Functions & Scope",
+          "step": "5.1-R6",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Real-World: Header Sanitizer",
+          "question": "Real-Time Scenario: HTTP Request Header Sanitizer",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given incoming request headers as kwargs, lowercase all keys, strip whitespace, and inject default security headers ('X-Frame-Options', 'Content-Type').",
+              "**Example**: sanitize_headers(AUTHORIZATION='Bearer xyz') -> {'authorization': 'Bearer xyz', 'x-frame-options': 'DENY'}",
+              "**Constraints**: Do not overwrite existing values.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given incoming request headers as kwargs, lowercase all keys, strip whitespace, and inject default security headers ('X-Frame-Options', 'Con"
+          },
+          "code": "def sanitize_headers(**headers) -> dict:\n    # YOUR CODE HERE\n    pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Normalize keys with k.lower().strip(). Set default security headers using dict.setdefault().",
+                "code": "def sanitize_headers(**headers) -> dict:\n    clean = {k.lower().strip(): v.strip() if isinstance(v, str) else v for k, v in headers.items()}\n    clean.setdefault('x-frame-options', 'DENY')\n    clean.setdefault('content-type', 'application/json')\n    return clean\n\nprint(sanitize_headers(AUTHORIZATION=' Bearer token123 ', USER_AGENT='Python-SDK'))",
+                "timeComplexity": "O(Headers)",
+                "spaceComplexity": "O(Headers)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Normalize keys with k.lower().strip(). Set default security headers using dict.setdefault().",
+            "code": "def sanitize_headers(**headers) -> dict:\n    clean = {k.lower().strip(): v.strip() if isinstance(v, str) else v for k, v in headers.items()}\n    clean.setdefault('x-frame-options', 'DENY')\n    clean.setdefault('content-type', 'application/json')\n    return clean\n\nprint(sanitize_headers(AUTHORIZATION=' Bearer token123 ', USER_AGENT='Python-SDK'))",
+            "timeComplexity": "O(Headers)",
+            "spaceComplexity": "O(Headers)"
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Functions: *args, **kwargs & Builtins",
+      "slides": [
+        {
+          "id": 62,
+          "section": "1. Learn the Basics",
+          "topic": "Functions: *args, **kwargs & Builtins",
+          "step": "5.2",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Functions",
+          "question": "How do *args, **kwargs, zip(), and map() work?",
+          "explanation": {
+            "points": [
+              "`*args` collects any number of positional arguments into a `tuple`.",
+              "`**kwargs` collects any number of keyword arguments into a `dict`.",
+              "Essential built-ins: `zip()` pairs elements from multiple sequences together; `map()` applies a function; `filter()` extracts matching items; `all()` and `any()` evaluate collections."
+            ]
+          },
+          "code": "# 1. Flexible argument handling\ndef log_metrics(model_name: str, *scores, **metadata):\n    avg_score = sum(scores) / len(scores) if scores else 0\n    print(f\"Model: {model_name} | Avg Score: {avg_score:.2f}\")\n    print(\"Metadata:\", metadata)\n\nlog_metrics(\"Transformer-V1\", 0.91, 0.95, 0.88, optimizer=\"AdamW\", lr=1e-4)\n\n# 2. zip() built-in\nnames = [\"Alice\", \"Bob\", \"Charlie\"]\nscores = [95, 82, 88]\nfor name, score in zip(names, scores):\n    print(f\"{name} scored {score}\")",
+          "tip": "Show how *args and **kwargs make decorators and API wrapper functions possible in modern frameworks like FastAPI.",
+          "viz": {
+            "type": "function",
+            "data": {
+              "name": "log_metrics",
+              "args": [
+                "model_name",
+                "*scores",
+                "**metadata"
+              ],
+              "returnValue": "None"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Lists & Operations: Indexing",
+      "slides": [
+        {
+          "id": 63,
+          "section": "1. Learn the Basics",
+          "topic": "Lists & Operations: Indexing",
+          "step": "6.1",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Data Structures",
+          "question": "How does Python store and index items in a List?",
+          "explanation": {
+            "points": [
+              "A Python `list` is an **ordered, mutable sequence** stored as a dynamic array of pointers.",
+              "Zero-based positive indexing starts at `0` from the front: `[0, 1, 2, ...]`.",
+              "Negative indexing accesses elements from the end: `[-1]` is the last item, `[-2]` is second to last.",
+              "Slicing syntax `list[start:stop:step]` returns a new shallow copy of the sub-array."
+            ]
+          },
+          "code": "fruits = [\"🍎 Apple\", \"🍌 Banana\", \"🍊 Orange\", \"🍇 Grapes\", \"🍉 Melon\"]\n\n# Positive & Negative Indexing\nprint(\"First fruit [0]:\", fruits[0])\nprint(\"Last fruit [-1]:\", fruits[-1])\n\n# Slicing: [start:stop] (stop is exclusive)\nprint(\"First three fruits [0:3]:\", fruits[0:3])\n\n# Step slicing & reverse\nprint(\"Every second fruit [::2]:\", fruits[::2])\nprint(\"Reversed list [::-1]:\", fruits[::-1])",
+          "tip": "Use the supermarket shopping cart visualization below to test positive and negative indexing.",
+          "viz": {
+            "type": "list",
+            "data": {
+              "items": [
+                "Apple",
+                "Banana",
+                "Orange",
+                "Grapes"
+              ]
+            }
+          }
+        },
+        {
+          "id": 64,
+          "section": "1. Learn the Basics",
+          "topic": "Lists & Operations: Indexing",
+          "step": "6.1-P1",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Practice 1",
+          "question": "Practice 1: Find the Second Largest Number in a List",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given a list of integers, find the second distinct largest element without sorting the array.",
+              "**Example**: Input: [12, 35, 1, 10, 34, 1] -> Output: 34",
+              "**Constraints**: Must run in single pass O(N) time and O(1) space.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given a list of integers, find the second distinct largest element without sorting the array."
+          },
+          "code": "def find_second_largest(nums: list[int]):\n    # YOUR CODE HERE\n    pass\n\nprint('Second largest:', find_second_largest([12, 35, 1, 10, 34, 1]))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Maintain two variables: `first` and `second` initialized to negative infinity. Iterate through the array; if current element > first, update second = first and first = current. If element is between first and second, update second.",
+                "code": "def find_second_largest(nums: list[int]):\n    first = second = float('-inf')\n    for n in nums:\n        if n > first:\n            second = first\n            first = n\n        elif first > n > second:\n            second = n\n    return second if second != float('-inf') else None\n\nprint('Second largest:', find_second_largest([12, 35, 1, 10, 34, 1]))",
+                "timeComplexity": "O(N)",
+                "spaceComplexity": "O(1)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Maintain two variables: `first` and `second` initialized to negative infinity. Iterate through the array; if current element > first, update second = first and first = current. If element is between first and second, update second.",
+            "code": "def find_second_largest(nums: list[int]):\n    first = second = float('-inf')\n    for n in nums:\n        if n > first:\n            second = first\n            first = n\n        elif first > n > second:\n            second = n\n    return second if second != float('-inf') else None\n\nprint('Second largest:', find_second_largest([12, 35, 1, 10, 34, 1]))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 65,
+          "section": "1. Learn the Basics",
+          "topic": "Lists & Operations: Indexing",
+          "step": "6.1-P2",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Practice 2",
+          "question": "Practice 2: Rotate Array to the Right by K Steps",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given an integer array `nums`, rotate the array to the right by `k` steps.",
+              "**Example**: Input: nums = [1,2,3,4,5,6,7], k = 3 -> Output: [5,6,7,1,2,3,4]",
+              "**Constraints**: k >= 0. Must handle k > len(nums).",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given an integer array `nums`, rotate the array to the right by `k` steps."
+          },
+          "code": "def rotate_list(nums: list[int], k: int) -> list[int]:\n    # YOUR CODE HERE\n    pass\n\nprint(rotate_list([1, 2, 3, 4, 5, 6, 7], 3))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Calculate effective rotation k = k % len(nums). Use Python slice concatenation: nums[-k:] + nums[:-k].",
+                "code": "def rotate_list(nums: list[int], k: int) -> list[int]:\n    if not nums: return nums\n    k = k % len(nums)\n    return nums[-k:] + nums[:-k]\n\nprint(rotate_list([1, 2, 3, 4, 5, 6, 7], 3))\nprint(rotate_list([-1, -100, 3, 99], 2))",
+                "timeComplexity": "O(N)",
+                "spaceComplexity": "O(N)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Guard against empty list. Calculate effective rotation k = k % len(nums). Use slice concatenation: nums[-k:] + nums[:-k]. (Note: returns new list in O(N) auxiliary space; for LeetCode in-place O(1) space, reverse list 3 times).",
+            "code": "def rotate_list(nums: list[int], k: int) -> list[int]:\n    if not nums:\n        return []\n    k = k % len(nums)\n    if k == 0:\n        return list(nums)\n    return nums[-k:] + nums[:-k]\n\nprint(rotate_list([1, 2, 3, 4, 5, 6, 7], 3))\nprint(rotate_list([-1, -100, 3, 99], 2))\nprint('Empty list test:', rotate_list([], 5))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(N)"
+          }
+        },
+        {
+          "id": 66,
+          "section": "1. Learn the Basics",
+          "topic": "Lists & Operations: Indexing",
+          "step": "6.1-L3",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "LeetCode: LeetCode #121",
+          "question": "LeetCode #121: Best Time to Buy and Sell Stock",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given an array `prices` where `prices[i]` is stock price on the ith day, find maximum profit from choosing one day to buy and a future day to sell.",
+              "**Example**: Input: prices = [7,1,5,3,6,4] -> Output: 5 (Buy at 1, sell at 6)",
+              "**Constraints**: 1 <= prices.length <= 10^5. Single transaction only.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given an array `prices` where `prices[i]` is stock price on the ith day, find maximum profit from choosing one day to buy and a future day t"
+          },
+          "code": "def max_profit(prices: list[int]) -> int:\n    # YOUR CODE HERE\n    pass\n\nprint('Max profit [7,1,5,3,6,4]:', max_profit([7,1,5,3,6,4]))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Track the lowest buying price seen so far (`min_price`) and max profit. In one pass, calculate profit = price - min_price and update max_profit.",
+                "code": "def max_profit(prices: list[int]) -> int:\n    min_price = float('inf')\n    max_profit = 0\n    for p in prices:\n        if p < min_price:\n            min_price = p\n        elif p - min_price > max_profit:\n            max_profit = p - min_price\n    return max_profit\n\nprint('Max profit [7,1,5,3,6,4]:', max_profit([7,1,5,3,6,4]))\nprint('Max profit [7,6,4,3,1]:', max_profit([7,6,4,3,1]))",
+                "timeComplexity": "O(N)",
+                "spaceComplexity": "O(1)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Track the lowest buying price seen so far (`min_price`) and max profit. In one pass, calculate profit = price - min_price and update max_profit.",
+            "code": "def max_profit(prices: list[int]) -> int:\n    min_price = float('inf')\n    max_profit = 0\n    for p in prices:\n        if p < min_price:\n            min_price = p\n        elif p - min_price > max_profit:\n            max_profit = p - min_price\n    return max_profit\n\nprint('Max profit [7,1,5,3,6,4]:', max_profit([7,1,5,3,6,4]))\nprint('Max profit [7,6,4,3,1]:', max_profit([7,6,4,3,1]))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 67,
+          "section": "1. Learn the Basics",
+          "topic": "Lists & Operations: Indexing",
+          "step": "6.1-L4",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "LeetCode: LeetCode #53",
+          "question": "LeetCode #53: Maximum Subarray (Kadane's Algorithm)",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given an integer array `nums`, find the contiguous subarray which has the largest sum and return its sum.",
+              "**Example**: Input: nums = [-2,1,-3,4,-1,2,1,-5,4] -> Output: 6 (Subarray [4,-1,2,1])",
+              "**Constraints**: 1 <= nums.length <= 10^5",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given an integer array `nums`, find the contiguous subarray which has the largest sum and return its sum."
+          },
+          "code": "def max_sub_array(nums: list[int]) -> int:\n    # YOUR CODE HERE\n    pass\n\nprint('Max subarray sum:', max_sub_array([-2,1,-3,4,-1,2,1,-5,4]))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Kadane's Algorithm: at each index, decide whether to add current element to existing subarray or start a fresh subarray: current_sum = max(num, current_sum + num).",
+                "code": "def max_sub_array(nums: list[int]) -> int:\n    max_sum = current_sum = nums[0]\n    for n in nums[1:]:\n        current_sum = max(n, current_sum + n)\n        max_sum = max(max_sum, current_sum)\n    return max_sum\n\nprint('Max subarray sum:', max_sub_array([-2,1,-3,4,-1,2,1,-5,4]))\nprint('Max subarray sum single negative:', max_sub_array([-1]))",
+                "timeComplexity": "O(N)",
+                "spaceComplexity": "O(1)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Kadane's Algorithm: at each index, decide whether to add current element to existing subarray or start a fresh subarray: current_sum = max(num, current_sum + num).",
+            "code": "def max_sub_array(nums: list[int]) -> int:\n    max_sum = current_sum = nums[0]\n    for n in nums[1:]:\n        current_sum = max(n, current_sum + n)\n        max_sum = max(max_sum, current_sum)\n    return max_sum\n\nprint('Max subarray sum:', max_sub_array([-2,1,-3,4,-1,2,1,-5,4]))\nprint('Max subarray sum single negative:', max_sub_array([-1]))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 68,
+          "section": "1. Learn the Basics",
+          "topic": "Lists & Operations: Indexing",
+          "step": "6.1-R5",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Real-World: Moving Average",
+          "question": "Real-Time Scenario: Financial Stock Ticker Moving Average",
+          "explanation": {
+            "points": [
+              "**Challenge**: Compute a Simple Moving Average (SMA) of window size `k` over a real-time stream of incoming financial prices.",
+              "**Example**: Input: prices = [10, 11, 12, 13, 14], k = 3 -> Output: [11.0, 12.0, 13.0]",
+              "**Constraints**: Efficiently update running sum in O(1) per step without re-summing entire window.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Compute a Simple Moving Average (SMA) of window size `k` over a real-time stream of incoming financial prices."
+          },
+          "code": "def moving_average(prices: list[float], k: int) -> list[float]:\n    # YOUR CODE HERE\n    pass\n\nprint(moving_average([10.0, 11.0, 12.0, 13.0, 14.0], 3))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Sliding window technique: maintain window sum. When sliding right, add the incoming element and subtract the outgoing element.",
+                "code": "def moving_average(prices: list[float], k: int) -> list[float]:\n    if len(prices) < k:\n        return []\n    window_sum = sum(prices[:k])\n    averages = [round(window_sum / k, 2)]\n    for i in range(k, len(prices)):\n        window_sum += prices[i] - prices[i - k]\n        averages.append(round(window_sum / k, 2))\n    return averages\n\nprint('SMA (k=3):', moving_average([10.0, 11.0, 12.0, 13.0, 14.0], 3))",
+                "timeComplexity": "O(N)",
+                "spaceComplexity": "O(N)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Sliding window technique: maintain window sum. When sliding right, add the incoming element and subtract the outgoing element.",
+            "code": "def moving_average(prices: list[float], k: int) -> list[float]:\n    if len(prices) < k:\n        return []\n    window_sum = sum(prices[:k])\n    averages = [round(window_sum / k, 2)]\n    for i in range(k, len(prices)):\n        window_sum += prices[i] - prices[i - k]\n        averages.append(round(window_sum / k, 2))\n    return averages\n\nprint('SMA (k=3):', moving_average([10.0, 11.0, 12.0, 13.0, 14.0], 3))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(N)"
+          }
+        },
+        {
+          "id": 69,
+          "section": "1. Learn the Basics",
+          "topic": "Lists & Operations: Indexing",
+          "step": "6.1-R6",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Real-World: Pagination Slicer",
+          "question": "Real-Time Scenario: Database Query Results Paginator",
+          "explanation": {
+            "points": [
+              "**Challenge**: Implement API pagination taking an item list, page number (1-indexed), and page_size. Return items, total_pages, has_next, and has_prev.",
+              "**Example**: Input: 25 items, page=2, page_size=10 -> Output: items[10:20], total_pages=3, has_next=True, has_prev=True",
+              "**Constraints**: Handle edge cases like page out of bounds.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Implement API pagination taking an item list, page number (1-indexed), and page_size. Return items, total_pages, has_next, and has_prev."
+          },
+          "code": "def paginate(items: list, page: int, page_size: int) -> dict:\n    # YOUR CODE HERE\n    pass\n\ndata = list(range(1, 26))\nprint(paginate(data, 2, 10))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Calculate total_pages with math.ceil(len(items)/page_size). Slice with start = (page-1)*page_size and end = start + page_size.",
+                "code": "import math\n\ndef paginate(items: list, page: int, page_size: int) -> dict:\n    total = len(items)\n    total_pages = max(1, math.ceil(total / page_size))\n    page = max(1, min(page, total_pages))\n    start = (page - 1) * page_size\n    end = start + page_size\n    return {\n        'items': items[start:end],\n        'page': page,\n        'page_size': page_size,\n        'total_items': total,\n        'total_pages': total_pages,\n        'has_next': page < total_pages,\n        'has_prev': page > 1\n    }\n\nprint(paginate(list(range(1, 26)), 2, 10))",
+                "timeComplexity": "O(PageSize)",
+                "spaceComplexity": "O(PageSize)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Calculate total_pages with math.ceil(len(items)/page_size). Slice with start = (page-1)*page_size and end = start + page_size.",
+            "code": "import math\n\ndef paginate(items: list, page: int, page_size: int) -> dict:\n    total = len(items)\n    total_pages = max(1, math.ceil(total / page_size))\n    page = max(1, min(page, total_pages))\n    start = (page - 1) * page_size\n    end = start + page_size\n    return {\n        'items': items[start:end],\n        'page': page,\n        'page_size': page_size,\n        'total_items': total,\n        'total_pages': total_pages,\n        'has_next': page < total_pages,\n        'has_prev': page > 1\n    }\n\nprint(paginate(list(range(1, 26)), 2, 10))",
+            "timeComplexity": "O(PageSize)",
+            "spaceComplexity": "O(PageSize)"
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Lists & Operations: Mutating",
+      "slides": [
+        {
+          "id": 70,
+          "section": "1. Learn the Basics",
+          "topic": "Lists & Operations: Mutating",
+          "step": "6.2",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Data Structures",
+          "question": "How do append, insert, extend, pop, and remove modify lists?",
+          "explanation": {
+            "points": [
+              "`.append(x)` adds an element to the end in amortized **O(1)** time.",
+              "`.insert(index, x)` inserts an element at a specific index in **O(n)** time (elements must shift).",
+              "`.extend(iterable)` unpacks and adds all elements from another collection.",
+              "`.pop(index)` removes and returns an item (default is last item O(1); middle is O(n)).",
+              "`.remove(value)` searches for the first occurrence of a value and deletes it."
+            ]
+          },
+          "code": "cart = [\"Milk\", \"Bread\"]\n\n# 1. append & insert\ncart.append(\"Eggs\")\ncart.insert(1, \"Butter\")\nprint(\"After append and insert:\", cart)\n\n# 2. extend multiple items\ncart.extend([\"Coffee\", \"Cheese\"])\nprint(\"After extend:\", cart)\n\n# 3. pop and remove\nremoved_item = cart.pop()  # removes Cheese\nprint(f\"Popped '{removed_item}', Remaining:\", cart)\n\ncart.remove(\"Bread\")\nprint(\"After removing Bread:\", cart)",
+          "tip": "Try all 5 buttons (.append, .insert, .extend, .pop, .remove) in the interactive supermarket cart below!",
+          "viz": {
+            "type": "list",
+            "data": {
+              "items": [
+                "Milk",
+                "Butter",
+                "Bread",
+                "Eggs",
+                "Coffee"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Tuples & Immutability",
+      "slides": [
+        {
+          "id": 71,
+          "section": "1. Learn the Basics",
+          "topic": "Tuples & Immutability",
+          "step": "7.1",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Data Structures",
+          "question": "What is a Tuple and why is Immutability important?",
+          "explanation": {
+            "points": [
+              "A `tuple` is an **ordered, immutable sequence** defined with parentheses `(a, b)`.",
+              "Once created, elements **cannot be added, removed, or reassigned**.",
+              "Because they are immutable, tuples are **hashable** and can be used as dictionary keys and set members.",
+              "Tuples use less memory and have faster iteration speed than lists."
+            ]
+          },
+          "code": "# 1. Creating a Tuple\nserver_config = (\"192.168.1.1\", 8080, \"HTTPS\")\nprint(\"Host:\", server_config[0])\nprint(\"Port:\", server_config[1])\n\n# 2. Tuple Unpacking\nhost, port, protocol = server_config\nprint(f\"Unpacked: Connecting to {protocol}://{host}:{port}\")\n\n# 3. Immutability guarantee (Attempting to modify raises TypeError)\ntry:\n    server_config[1] = 9000  # Raises TypeError!\nexcept TypeError as err:\n    print(\"🔒 Security lock:\", err)",
+          "tip": "Show how tuple unpacking makes returning multiple values from a function elegant: def get_pos(): return (x, y).",
+          "viz": {
+            "type": "tuple",
+            "data": {
+              "elements": [
+                "192.168.1.1",
+                "8080",
+                "HTTPS"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Sets & Uniqueness",
+      "slides": [
+        {
+          "id": 72,
+          "section": "1. Learn the Basics",
+          "topic": "Sets & Uniqueness",
+          "step": "7.2",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Data Structures",
+          "question": "What is a Set and how does it guarantee Uniqueness?",
+          "explanation": {
+            "points": [
+              "A `set` is an **unordered collection of unique, hashable elements** defined with `{}` or `set()`.",
+              "Duplicate items are **automatically discarded** upon insertion.",
+              "Membership testing `x in my_set` runs in **O(1) average time** (vs O(n) for lists).",
+              "Supports mathematical set theory operations: Union `|`, Intersection `&`, Difference `-`, Symmetric Difference `^`."
+            ]
+          },
+          "code": "# 1. Automatic Deduplication\nraw_tags = [\"python\", \"ai\", \"python\", \"fastapi\", \"ai\", \"pytorch\"]\nunique_tags = set(raw_tags)\nprint(\"Unique tags:\", unique_tags)\n\n# 2. Set Operations (AI Engineer Skills vs DevOps Skills)\nai_skills = {\"Python\", \"PyTorch\", \"FastAPI\", \"Docker\"}\ndevops_skills = {\"Docker\", \"Kubernetes\", \"Terraform\", \"Python\"}\n\nprint(\"Both skills (Intersection &):\", ai_skills & devops_skills)\nprint(\"All skills (Union |):\", ai_skills | devops_skills)\nprint(\"AI only (Difference -):\", ai_skills - devops_skills)",
+          "tip": "Show the interactive set deduplication visual below to demonstrate video tag deduplication live.",
+          "viz": {
+            "type": "set",
+            "data": {
+              "items": [
+                "python",
+                "ai",
+                "fastapi",
+                "pytorch"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Dictionaries: Key-Value Mappings",
+      "slides": [
+        {
+          "id": 73,
+          "section": "1. Learn the Basics",
+          "topic": "Dictionaries: Key-Value Mappings",
+          "step": "8.1",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Data Structures",
+          "question": "How do Dictionaries store Key-Value mappings in O(1) time?",
+          "explanation": {
+            "points": [
+              "A `dict` stores associative mappings of **unique keys to values** using an internal hash table.",
+              "Key lookups, inserts, and deletes execute in **O(1) average time**.",
+              "Keys must be **hashable** (strings, numbers, tuples); values can be any object.",
+              "Safe lookup: use `.get(key, default)` to avoid `KeyError` exceptions when keys might be missing."
+            ]
+          },
+          "code": "# 1. Defining a Dictionary\nuser_profile = {\n    \"username\": \"nijanthan\",\n    \"role\": \"AI Architect\",\n    \"years_exp\": 6,\n    \"skills\": [\"Python\", \"PyTorch\", \"FastAPI\"]\n}\n\n# 2. Accessing & Updating\nprint(\"Role:\", user_profile[\"role\"])\nuser_profile[\"active\"] = True\n\n# 3. Safe retrieval with .get()\nlocation = user_profile.get(\"location\", \"Remote / Global\")\nprint(\"Location:\", location)\n\n# 4. Iterating keys and values\nfor key, val in user_profile.items():\n    print(f\"  {key} ➔ {val}\")",
+          "tip": "Point out that since Python 3.7+, dictionaries officially preserve insertion order in the standard language specification.",
+          "viz": {
+            "type": "dict",
+            "data": {
+              "entries": [
+                {
+                  "key": "username",
+                  "value": "\"nijanthan\""
+                },
+                {
+                  "key": "role",
+                  "value": "\"AI Architect\""
+                },
+                {
+                  "key": "years_exp",
+                  "value": "6"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 74,
+          "section": "1. Learn the Basics",
+          "topic": "Dictionaries: Key-Value Mappings",
+          "step": "8.1-P1",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Practice 1",
+          "question": "Practice 1: Word Frequency Counter",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given a sentence string, return a dictionary containing frequency count of each case-insensitive word (ignoring punctuation).",
+              "**Example**: Input: 'Python is fast. Python is cool!' -> Output: {'python': 2, 'is': 2, 'fast': 1, 'cool': 1}",
+              "**Constraints**: Remove punctuation and convert to lowercase.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given a sentence string, return a dictionary containing frequency count of each case-insensitive word (ignoring punctuation)."
+          },
+          "code": "def word_frequency(text: str) -> dict:\n    # YOUR CODE HERE\n    pass\n\nprint(word_frequency('Python is fast. Python is cool!'))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Strip punctuation using string methods or regex, split text into words, and tally counts with a dict or collections.Counter.",
+                "code": "import string\n\ndef word_frequency(text: str) -> dict:\n    clean = text.translate(str.maketrans('', '', string.punctuation)).lower()\n    counts = {}\n    for word in clean.split():\n        counts[word] = counts.get(word, 0) + 1\n    return counts\n\nprint(word_frequency('Python is fast. Python is cool!'))",
+                "timeComplexity": "O(N)",
+                "spaceComplexity": "O(U)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Strip punctuation using string methods or regex, split text into words, and tally counts with a dict or collections.Counter.",
+            "code": "import string\n\ndef word_frequency(text: str) -> dict:\n    clean = text.translate(str.maketrans('', '', string.punctuation)).lower()\n    counts = {}\n    for word in clean.split():\n        counts[word] = counts.get(word, 0) + 1\n    return counts\n\nprint(word_frequency('Python is fast. Python is cool!'))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(U)"
+          }
+        },
+        {
+          "id": 75,
+          "section": "1. Learn the Basics",
+          "topic": "Dictionaries: Key-Value Mappings",
+          "step": "8.1-P2",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Practice 2",
+          "question": "Practice 2: Invert Dictionary (Keys to Values)",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given a dictionary where values may duplicate, return a new dictionary where original values become keys, and original keys become lists of values.",
+              "**Example**: Input: {'a': 1, 'b': 2, 'c': 1} -> Output: {1: ['a', 'c'], 2: ['b']}",
+              "**Constraints**: Handle duplicate values by appending to a list.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given a dictionary where values may duplicate, return a new dictionary where original values become keys, and original keys become lists of "
+          },
+          "code": "def invert_dict(d: dict) -> dict:\n    # YOUR CODE HERE\n    pass\n\nprint(invert_dict({'a': 1, 'b': 2, 'c': 1}))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Iterate through items (k, v) and use dict.setdefault(v, []).append(k).",
+                "code": "def invert_dict(d: dict) -> dict:\n    inverted = {}\n    for k, v in d.items():\n        inverted.setdefault(v, []).append(k)\n    return inverted\n\nprint(invert_dict({'a': 1, 'b': 2, 'c': 1}))",
+                "timeComplexity": "O(N)",
+                "spaceComplexity": "O(N)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Iterate through items (k, v) and use dict.setdefault(v, []).append(k).",
+            "code": "def invert_dict(d: dict) -> dict:\n    inverted = {}\n    for k, v in d.items():\n        inverted.setdefault(v, []).append(k)\n    return inverted\n\nprint(invert_dict({'a': 1, 'b': 2, 'c': 1}))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(N)"
+          }
+        },
+        {
+          "id": 76,
+          "section": "1. Learn the Basics",
+          "topic": "Dictionaries: Key-Value Mappings",
+          "step": "8.1-L3",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "LeetCode: LeetCode #1",
+          "question": "LeetCode #1: Two Sum",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.",
+              "**Example**: Input: nums = [2,7,11,15], target = 9 -> Output: [0, 1]",
+              "**Constraints**: Each input has exactly one solution. Cannot use same element twice. Solve in O(N) time.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`."
+          },
+          "code": "def two_sum(nums: list[int], target: int) -> list[int]:\n    # YOUR CODE HERE\n    pass\n\nprint('Two sum [2,7,11,15] target 9:', two_sum([2,7,11,15], 9))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Use a hash map to store seen numbers and their indices: {number: index}. For each element x, compute complement = target - x. If complement is in hash map, return [hash_map[complement], current_index].",
+                "code": "def two_sum(nums: list[int], target: int) -> list[int]:\n    seen = {}\n    for i, num in enumerate(nums):\n        complement = target - num\n        if complement in seen:\n            return [seen[complement], i]\n        seen[num] = i\n    return []\n\nprint('Indices for target 9:', two_sum([2, 7, 11, 15], 9))\nprint('Indices for target 6:', two_sum([3, 2, 4], 6))",
+                "timeComplexity": "O(N)",
+                "spaceComplexity": "O(N)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Use a hash map to store seen numbers and their indices: {number: index}. For each element x, compute complement = target - x. If complement is in hash map, return [hash_map[complement], current_index].",
+            "code": "def two_sum(nums: list[int], target: int) -> list[int]:\n    seen = {}\n    for i, num in enumerate(nums):\n        complement = target - num\n        if complement in seen:\n            return [seen[complement], i]\n        seen[num] = i\n    return []\n\nprint('Indices for target 9:', two_sum([2, 7, 11, 15], 9))\nprint('Indices for target 6:', two_sum([3, 2, 4], 6))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(N)"
+          }
+        },
+        {
+          "id": 77,
+          "section": "1. Learn the Basics",
+          "topic": "Dictionaries: Key-Value Mappings",
+          "step": "8.1-L4",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "LeetCode: LeetCode #49",
+          "question": "LeetCode #49: Group Anagrams",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given an array of strings `strs`, group the anagrams together. You can return the answer in any order.",
+              "**Example**: Input: strs = ['eat','tea','tan','ate','nat','bat'] -> Output: [['bat'],['nat','tan'],['ate','eat','tea']]",
+              "**Constraints**: 1 <= strs.length <= 10^4",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given an array of strings `strs`, group the anagrams together. You can return the answer in any order."
+          },
+          "code": "def group_anagrams(strs: list[str]) -> list[list[str]]:\n    # YOUR CODE HERE\n    pass\n\nprint(group_anagrams(['eat','tea','tan','ate','nat','bat']))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Sort the characters of each string to use as the canonical dictionary key: tuple(sorted(s)) or ''.join(sorted(s)). Group words under their matching sorted key.",
+                "code": "from collections import defaultdict\n\ndef group_anagrams(strs: list[str]) -> list[list[str]]:\n    groups = defaultdict(list)\n    for s in strs:\n        sorted_key = ''.join(sorted(s))\n        groups[sorted_key].append(s)\n    return list(groups.values())\n\nprint(group_anagrams(['eat','tea','tan','ate','nat','bat']))",
+                "timeComplexity": "O(N * K log K)",
+                "spaceComplexity": "O(N * K)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Sort the characters of each string to use as the canonical dictionary key: tuple(sorted(s)) or ''.join(sorted(s)). Group words under their matching sorted key.",
+            "code": "from collections import defaultdict\n\ndef group_anagrams(strs: list[str]) -> list[list[str]]:\n    groups = defaultdict(list)\n    for s in strs:\n        sorted_key = ''.join(sorted(s))\n        groups[sorted_key].append(s)\n    return list(groups.values())\n\nprint(group_anagrams(['eat','tea','tan','ate','nat','bat']))",
+            "timeComplexity": "O(N * K log K)",
+            "spaceComplexity": "O(N * K)"
+          }
+        },
+        {
+          "id": 78,
+          "section": "1. Learn the Basics",
+          "topic": "Dictionaries: Key-Value Mappings",
+          "step": "8.1-R5",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Real-World: TTL Cache",
+          "question": "Real-Time Scenario: In-Memory Cache with Time-To-Live (TTL)",
+          "explanation": {
+            "points": [
+              "**Challenge**: Build an in-memory key-value cache class where entries expire after a specified duration (in seconds). Implement `set(key, val, ttl)` and `get(key)`.",
+              "**Example**: cache.set('user:1', {'name': 'Alice'}, ttl=1.0) -> cache.get('user:1') returns Alice -> wait 1.5s -> returns None",
+              "**Constraints**: Clean up expired entries lazily upon get().",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Build an in-memory key-value cache class where entries expire after a specified duration (in seconds). Implement `set(key, val, ttl)` and `g"
+          },
+          "code": "import time\n\nclass TTLCache:\n    def __init__(self):\n        pass\n    def set(self, key, value, ttl: float):\n        pass\n    def get(self, key):\n        pass\n\nc = TTLCache()\nc.set('token', 'abc123xyz', ttl=0.1)\nprint('Immediate:', c.get('token'))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Store tuples in dict: self.store[key] = (value, expiry_timestamp). On get(key), check if current time > expiry_timestamp; if so, delete and return None.",
+                "code": "import time\n\nclass TTLCache:\n    def __init__(self):\n        self.store = {}\n    def set(self, key, value, ttl: float):\n        expire_at = time.time() + ttl\n        self.store[key] = (value, expire_at)\n    def get(self, key):\n        if key not in self.store:\n            return None\n        val, expire_at = self.store[key]\n        if time.time() > expire_at:\n            del self.store[key]  # Lazy eviction\n            return None\n        return val\n\nc = TTLCache()\nc.set('user_session', {'id': 42}, ttl=0.05)\nprint('Immediate get:', c.get('user_session'))\ntime.sleep(0.06)\nprint('Expired get:', c.get('user_session'))",
+                "timeComplexity": "O(1)",
+                "spaceComplexity": "O(N)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Store tuples in dict: self.store[key] = (value, expiry_timestamp) using time.monotonic() to prevent wall-clock shifts. Lazily evict expired entries upon get().",
+            "code": "import time\n\nclass TTLCache:\n    def __init__(self):\n        self.store = {}\n    def set(self, key, value, ttl: float):\n        # time.monotonic() guarantees steady progression without NTP clock jumps\n        expire_at = time.monotonic() + ttl\n        self.store[key] = (value, expire_at)\n    def get(self, key):\n        if key not in self.store:\n            return None\n        val, expire_at = self.store[key]\n        if time.monotonic() > expire_at:\n            del self.store[key]  # Lazy eviction\n            return None\n        return val\n\nc = TTLCache()\nc.set('user_session', {'id': 42}, ttl=0.05)\nprint('Immediate get:', c.get('user_session'))\ntime.sleep(0.06)\nprint('Expired get:', c.get('user_session'))",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(N)"
+          }
+        },
+        {
+          "id": 79,
+          "section": "1. Learn the Basics",
+          "topic": "Dictionaries: Key-Value Mappings",
+          "step": "8.1-R6",
+          "category": "basics",
+          "categoryLabel": "Basics",
+          "tag": "Real-World: API Response Transformer",
+          "question": "Real-Time Scenario: External API JSON Schema Flattener",
+          "explanation": {
+            "points": [
+              "**Challenge**: Flatten nested JSON responses from legacy microservices into a clean flat dictionary suitable for database ingestion.",
+              "**Example**: Input: {'user': {'profile': {'name': 'Alice', 'geo': {'city': 'SF'}}}} -> Output: {'user_profile_name': 'Alice', 'user_profile_geo_city': 'SF'}",
+              "**Constraints**: Handle arbitrary nesting depth recursively.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Flatten nested JSON responses from legacy microservices into a clean flat dictionary suitable for database ingestion."
+          },
+          "code": "def flatten_json(d: dict, parent_key: str = '', sep: str = '_') -> dict:\n    # YOUR CODE HERE\n    pass\n\nnested = {'user': {'profile': {'name': 'Alice', 'city': 'SF'}}}\nprint(flatten_json(nested))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "solution",
+            "data": {
+              "solution": {
+                "approach": "Use recursion: iterate over keys and values. If value is a dict, recurse with updated prefix parent_key + sep + k; otherwise assign to result.",
+                "code": "def flatten_json(d: dict, parent_key: str = '', sep: str = '_') -> dict:\n    items = []\n    for k, v in d.items():\n        new_key = f'{parent_key}{sep}{k}' if parent_key else k\n        if isinstance(v, dict):\n            items.extend(flatten_json(v, new_key, sep=sep).items())\n        else:\n            items.append((new_key, v))\n    return dict(items)\n\nnested = {'user': {'id': 101, 'profile': {'name': 'Alice', 'geo': {'city': 'SF'}}}}\nprint(flatten_json(nested))",
+                "timeComplexity": "O(TotalKeys)",
+                "spaceComplexity": "O(Depth)"
+              }
+            }
+          },
+          "solution": {
+            "approach": "Use recursion: iterate over keys and values. If value is a dict, recurse with updated prefix parent_key + sep + k; otherwise assign to result.",
+            "code": "def flatten_json(d: dict, parent_key: str = '', sep: str = '_') -> dict:\n    items = []\n    for k, v in d.items():\n        new_key = f'{parent_key}{sep}{k}' if parent_key else k\n        if isinstance(v, dict):\n            items.extend(flatten_json(v, new_key, sep=sep).items())\n        else:\n            items.append((new_key, v))\n    return dict(items)\n\nnested = {'user': {'id': 101, 'profile': {'name': 'Alice', 'geo': {'city': 'SF'}}}}\nprint(flatten_json(nested))",
+            "timeComplexity": "O(TotalKeys)",
+            "spaceComplexity": "O(Depth)"
+          }
+        }
+      ]
+    }
+  ]
+}

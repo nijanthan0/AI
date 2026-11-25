@@ -1,0 +1,1063 @@
+{
+  "section": "2. SQL Basics",
+  "order": 2,
+  "topics": [
+    {
+      "topic": "SELECT Fundamentals",
+      "slides": [
+        {
+          "id": "sql-6",
+          "language": "sql",
+          "section": "2. SQL Basics",
+          "topic": "SELECT Fundamentals",
+          "step": "2.1",
+          "category": "sql",
+          "categoryLabel": "SQL Basics",
+          "tag": "Lesson",
+          "question": "How does the SELECT statement retrieve columns and rows from a database table?",
+          "explanation": {
+            "points": [
+              "The **`SELECT`** statement is the cornerstone of SQL queries.",
+              "Use **`SELECT *`** to retrieve every column in the table, or specify explicit column names (e.g. `SELECT title, price`) for better performance and clarity.",
+              "In production applications, avoid `SELECT *` because fetching unnecessary columns wastes memory and prevents index-only scans.",
+              "The **`FROM`** clause identifies the source table from which rows are read."
+            ],
+            "highlight": "Specify explicit column names in SELECT to save bandwidth and enable index-only query optimizations."
+          },
+          "code": "-- 1. Explicit column projection (Recommended for production)\nSELECT id, title, price, stock\nFROM books;\n\n-- 2. Wildcard projection (Exploration only)\nSELECT * FROM authors;",
+          "tip": "Demonstrate how explicit column names prevent breaking changes when database columns are added or removed in migrations.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "books (Projected Columns)",
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "INTEGER",
+                  "isPk": true
+                },
+                {
+                  "name": "title",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "price",
+                  "type": "REAL"
+                },
+                {
+                  "name": "stock",
+                  "type": "INTEGER"
+                }
+              ],
+              "rows": [
+                [
+                  1,
+                  "Clean Code",
+                  32.5,
+                  45
+                ],
+                [
+                  2,
+                  "Designing Data-Intensive Applications",
+                  45.0,
+                  80
+                ],
+                [
+                  3,
+                  "Machine Learning Yearning",
+                  29.99,
+                  30
+                ],
+                [
+                  4,
+                  "System Design Interview Vol 1",
+                  39.99,
+                  120
+                ]
+              ],
+              "note": "Output restricted to 4 requested columns"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Aliases and Constants",
+      "slides": [
+        {
+          "id": "sql-7",
+          "language": "sql",
+          "section": "2. SQL Basics",
+          "topic": "Aliases and Constants",
+          "step": "2.2",
+          "category": "sql",
+          "categoryLabel": "SQL Basics",
+          "tag": "Lesson",
+          "question": "How do column aliases (AS) and literal constants format query results?",
+          "explanation": {
+            "points": [
+              "Use the **`AS`** keyword to rename a column or computed expression in the returned result set.",
+              "Aliases make column headers readable for frontend consumers and reports (e.g., `price AS unit_cost_usd`).",
+              "You can include **literal constants** (numbers, strings) directly in the SELECT clause.",
+              "Double quotes `\"My Column\"` are used for aliases with spaces; single quotes `'value'` are for string literals."
+            ],
+            "highlight": "Use AS to provide human-readable column names and incorporate fixed constants into result sets."
+          },
+          "code": "-- Using column aliases and literal constants\nSELECT \n  title AS book_title,\n  price AS retail_price_usd,\n  'In Stock' AS availability_status,\n  stock\nFROM books\nWHERE stock > 50;",
+          "tip": "Warn students never to confuse single quotes (string values) with double quotes or backticks (column identifiers).",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "Aliased Results",
+              "columns": [
+                {
+                  "name": "book_title",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "retail_price_usd",
+                  "type": "REAL"
+                },
+                {
+                  "name": "availability_status",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "stock",
+                  "type": "INTEGER"
+                }
+              ],
+              "rows": [
+                [
+                  "Designing Data-Intensive Applications",
+                  45.0,
+                  "In Stock",
+                  80
+                ],
+                [
+                  "System Design Interview Vol 1",
+                  39.99,
+                  "In Stock",
+                  120
+                ],
+                [
+                  "System Design Interview Vol 2",
+                  42.0,
+                  "In Stock",
+                  95
+                ],
+                [
+                  "Designing Machine Learning Systems",
+                  38.5,
+                  "In Stock",
+                  60
+                ]
+              ],
+              "note": "Aliases replace physical column names in the returned tabular output"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Expressions in SELECT",
+      "slides": [
+        {
+          "id": "sql-8",
+          "language": "sql",
+          "section": "2. SQL Basics",
+          "topic": "Expressions in SELECT",
+          "step": "2.3",
+          "category": "sql",
+          "categoryLabel": "SQL Basics",
+          "tag": "Lesson",
+          "question": "How can arithmetic and scalar mathematical expressions be evaluated in SELECT?",
+          "explanation": {
+            "points": [
+              "SQL can evaluate arithmetic expressions directly on columns: addition `+`, subtraction `-`, multiplication `*`, and division `/`.",
+              "You can calculate business metrics like total valuation (`price * stock`) on the fly.",
+              "Parentheses `(...)` enforce operator precedence just like in algebra.",
+              "SQLite supports the string concatenation operator `||` to merge text columns."
+            ],
+            "highlight": "Compute derived metrics directly in SQL using arithmetic operators and concatenation."
+          },
+          "code": "-- Calculate total inventory value and discount pricing\nSELECT \n  title,\n  price,\n  stock,\n  (price * stock) AS total_inventory_value,\n  ROUND(price * 0.85, 2) AS discounted_price_15pct\nFROM books;",
+          "tip": "Demonstrate how offloading basic math to the database reduces CPU overhead on backend web servers.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "Computed Expressions",
+              "columns": [
+                {
+                  "name": "title",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "price",
+                  "type": "REAL"
+                },
+                {
+                  "name": "stock",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "total_inventory_value",
+                  "type": "REAL"
+                },
+                {
+                  "name": "discounted_price_15pct",
+                  "type": "REAL"
+                }
+              ],
+              "rows": [
+                [
+                  "Clean Code",
+                  32.5,
+                  45,
+                  1462.5,
+                  27.63
+                ],
+                [
+                  "Designing Data-Intensive Applications",
+                  45.0,
+                  80,
+                  3600.0,
+                  38.25
+                ],
+                [
+                  "Machine Learning Yearning",
+                  29.99,
+                  30,
+                  899.7,
+                  25.49
+                ]
+              ],
+              "note": "Dynamically computed financial columns"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Selecting DISTINCT Values",
+      "slides": [
+        {
+          "id": "sql-9",
+          "language": "sql",
+          "section": "2. SQL Basics",
+          "topic": "Selecting DISTINCT Values",
+          "step": "2.4",
+          "category": "sql",
+          "categoryLabel": "SQL Basics",
+          "tag": "Lesson",
+          "question": "How does the DISTINCT keyword eliminate duplicate rows from query results?",
+          "explanation": {
+            "points": [
+              "The **`DISTINCT`** keyword filters out duplicate tuples so that each row in the result set is unique.",
+              "When applied to a single column (`SELECT DISTINCT category`), it produces a list of unique categories.",
+              "When applied across multiple columns (`SELECT DISTINCT country, status`), it returns unique combinations of all listed columns.",
+              "Under the hood, `DISTINCT` requires a sorting or hashing step, so only use it when duplicates are expected."
+            ],
+            "highlight": "DISTINCT removes duplicate rows from the query output across all selected columns."
+          },
+          "code": "-- Find all distinct book categories and distinct customer countries\nSELECT DISTINCT category \nFROM books\nORDER BY category;\n\nSELECT DISTINCT country \nFROM customers\nORDER BY country;",
+          "tip": "Explain that DISTINCT operates on the entire row tuple being returned, not just the first column.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "Distinct Categories",
+              "columns": [
+                {
+                  "name": "category",
+                  "type": "TEXT"
+                }
+              ],
+              "rows": [
+                [
+                  "AI & Data"
+                ],
+                [
+                  "Distributed Systems"
+                ],
+                [
+                  "Software Engineering"
+                ],
+                [
+                  "System Design"
+                ]
+              ],
+              "note": "Duplicates collapsed into a unique set"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Filtering with WHERE",
+      "slides": [
+        {
+          "id": "sql-10",
+          "language": "sql",
+          "section": "2. SQL Basics",
+          "topic": "Filtering with WHERE",
+          "step": "2.5",
+          "category": "sql",
+          "categoryLabel": "SQL Basics",
+          "tag": "Lesson",
+          "question": "How does the WHERE clause filter records based on boolean conditions?",
+          "explanation": {
+            "points": [
+              "The **`WHERE`** clause filters rows before any grouping or projection happens.",
+              "Comparison operators: `=`, `!=` (or `<>`), `>`, `<`, `>=`, `<=`, `BETWEEN ... AND ...`.",
+              "List membership: `IN ('USA', 'Canada', 'UK')`.",
+              "Pattern matching: `LIKE '%System%'` (`%` matches any number of characters, `_` matches one character).",
+              "Compound logic: Combine expressions using `AND`, `OR`, and `NOT`."
+            ],
+            "highlight": "The WHERE clause evaluates row-by-row boolean conditions to filter records before returning results."
+          },
+          "code": "-- Complex filtering with WHERE\nSELECT title, category, price, rating\nFROM books\nWHERE (category = 'System Design' OR category = 'Distributed Systems')\n  AND price <= 45.00\n  AND rating >= 4.8;",
+          "tip": "Highlight that AND has higher operator precedence than OR, so always wrap OR conditions in parentheses.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "Filtered Books",
+              "columns": [
+                {
+                  "name": "title",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "category",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "price",
+                  "type": "REAL"
+                },
+                {
+                  "name": "rating",
+                  "type": "REAL"
+                }
+              ],
+              "rows": [
+                [
+                  "Designing Data-Intensive Applications",
+                  "Distributed Systems",
+                  45.0,
+                  4.9
+                ],
+                [
+                  "System Design Interview Vol 1",
+                  "System Design",
+                  39.99,
+                  4.8
+                ],
+                [
+                  "System Design Interview Vol 2",
+                  "System Design",
+                  42.0,
+                  4.9
+                ]
+              ],
+              "note": "Only rows satisfying all boolean conditions returned"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "SQL Basics Quiz",
+      "slides": [
+        {
+          "id": "sql-11",
+          "language": "sql",
+          "section": "2. SQL Basics",
+          "topic": "SQL Basics Quiz",
+          "step": "2.6",
+          "category": "sql",
+          "categoryLabel": "SQL Basics",
+          "tag": "Quiz",
+          "question": "Module 2 Quiz: Test your grasp of SELECT, WHERE, Aliases, and Expressions",
+          "explanation": {
+            "points": [
+              "Verify your knowledge of foundational query syntax.",
+              "Test operator precedence, DISTINCT behavior, and filter expressions.",
+              "Select your answers in the interactive quiz card on the left."
+            ],
+            "highlight": "Score 4/4 to demonstrate complete mastery of foundational SQL querying."
+          },
+          "code": "-- Interactive quiz slide.\n-- Answer questions in the visual panel on the left.\nSELECT 'Test your SQL Basics knowledge.' AS status;",
+          "tip": "Encourage learners to review WHY incorrect options fail in relational databases.",
+          "viz": {
+            "type": "sql-quiz",
+            "data": {
+              "quizTitle": "Module 2: SQL Basics Quiz",
+              "questions": [
+                {
+                  "question": "Which clause is evaluated first in a standard SQL query: SELECT or WHERE?",
+                  "options": [
+                    "SELECT is evaluated before WHERE",
+                    "WHERE is evaluated before SELECT",
+                    "Both are evaluated simultaneously",
+                    "ORDER BY is evaluated before WHERE"
+                  ],
+                  "answer": 1,
+                  "explanation": "Logical query processing order evaluates FROM first, then WHERE to filter rows, and only then SELECT to project columns."
+                },
+                {
+                  "question": "What does the expression 'WHERE price BETWEEN 20 AND 40' include?",
+                  "options": [
+                    "Values strictly greater than 20 and strictly less than 40",
+                    "Values greater than or equal to 20 and less than or equal to 40 (inclusive)",
+                    "Only the two discrete numbers 20 and 40",
+                    "Values outside the range 20 to 40"
+                  ],
+                  "answer": 1,
+                  "explanation": "The BETWEEN operator in SQL is inclusive of both boundary endpoints."
+                },
+                {
+                  "question": "Which operator performs wildcard pattern matching in SQL strings?",
+                  "options": [
+                    "CONTAINS",
+                    "MATCHES",
+                    "LIKE",
+                    "REGEXP_FIND"
+                  ],
+                  "answer": 2,
+                  "explanation": "The LIKE operator uses '%' for any string of characters and '_' for a single character."
+                },
+                {
+                  "question": "If a table has 10 rows with duplicate categories, what will 'SELECT DISTINCT category' return?",
+                  "options": [
+                    "An error because categories must be unique",
+                    "Only the categories that appear exactly once",
+                    "A list of unique category names with all duplicates removed",
+                    "All 10 rows without changes"
+                  ],
+                  "answer": 2,
+                  "explanation": "DISTINCT eliminates duplicate rows from the projected result set."
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Sorting with ORDER BY",
+      "slides": [
+        {
+          "id": "sql-12",
+          "language": "sql",
+          "section": "2. SQL Basics",
+          "topic": "Sorting with ORDER BY",
+          "step": "2.7",
+          "category": "sql",
+          "categoryLabel": "SQL Basics",
+          "tag": "Lesson",
+          "question": "How does ORDER BY sort query results ascending (ASC) and descending (DESC)?",
+          "explanation": {
+            "points": [
+              "Relational tables are unordered sets by definition. Without **`ORDER BY`**, row order is non-deterministic.",
+              "Use **`ASC`** for ascending order (smallest to largest, A-Z) — this is the default.",
+              "Use **`DESC`** for descending order (largest to smallest, Z-A).",
+              "You can sort by **multiple columns**: `ORDER BY category ASC, price DESC` sorts primarily by category, breaking ties by price."
+            ],
+            "highlight": "Relational tables have no inherent order; always specify ORDER BY if output order matters."
+          },
+          "code": "-- Multi-column sorting: First by category ASC, then by price DESC\nSELECT title, category, price, rating\nFROM books\nORDER BY category ASC, price DESC;",
+          "tip": "Emphasize that databases execute ORDER BY near the very end of query processing.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "Ordered Results",
+              "columns": [
+                {
+                  "name": "title",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "category",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "price",
+                  "type": "REAL"
+                },
+                {
+                  "name": "rating",
+                  "type": "REAL"
+                }
+              ],
+              "rows": [
+                [
+                  "Designing Machine Learning Systems",
+                  "AI & Data",
+                  38.5,
+                  4.7
+                ],
+                [
+                  "Machine Learning Yearning",
+                  "AI & Data",
+                  29.99,
+                  4.8
+                ],
+                [
+                  "Designing Data-Intensive Applications",
+                  "Distributed Systems",
+                  45.0,
+                  4.9
+                ],
+                [
+                  "The Pragmatic Programmer",
+                  "Software Engineering",
+                  39.99,
+                  4.9
+                ],
+                [
+                  "Clean Architecture",
+                  "Software Engineering",
+                  35.0,
+                  4.6
+                ],
+                [
+                  "Clean Code",
+                  "Software Engineering",
+                  32.5,
+                  4.7
+                ],
+                [
+                  "System Design Interview Vol 2",
+                  "System Design",
+                  42.0,
+                  4.9
+                ],
+                [
+                  "System Design Interview Vol 1",
+                  "System Design",
+                  39.99,
+                  4.8
+                ]
+              ],
+              "note": "Sorted primarily by Category (A-Z), secondarily by Price (High to Low)"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Limiting Results with LIMIT",
+      "slides": [
+        {
+          "id": "sql-13",
+          "language": "sql",
+          "section": "2. SQL Basics",
+          "topic": "Limiting Results with LIMIT",
+          "step": "2.8",
+          "category": "sql",
+          "categoryLabel": "SQL Basics",
+          "tag": "Lesson",
+          "question": "How do LIMIT and OFFSET implement pagination for large datasets?",
+          "explanation": {
+            "points": [
+              "**`LIMIT n`** restricts the output to at most `n` records.",
+              "**`OFFSET m`** skips the first `m` records before returning the next batch.",
+              "Together, `LIMIT` and `OFFSET` power client-side table pagination (e.g., Page 2 with 5 items/page: `LIMIT 5 OFFSET 5`).",
+              "**Crucial rule**: Always pair `LIMIT` with an explicit `ORDER BY` to ensure consistent and predictable pages."
+            ],
+            "highlight": "Always pair LIMIT with ORDER BY to guarantee deterministic pagination across pages."
+          },
+          "code": "-- Get the top 3 most expensive books (Page 1)\nSELECT id, title, price, stock\nFROM books\nORDER BY price DESC\nLIMIT 3 OFFSET 0;\n\n-- Page 2: Next 3 books\nSELECT id, title, price, stock\nFROM books\nORDER BY price DESC\nLIMIT 3 OFFSET 3;",
+          "tip": "Warn students that OFFSET becomes slow on massive tables (deep pagination), where keyset pagination is preferred.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "Page 1: LIMIT 3 OFFSET 0",
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "INTEGER",
+                  "isPk": true
+                },
+                {
+                  "name": "title",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "price",
+                  "type": "REAL"
+                },
+                {
+                  "name": "stock",
+                  "type": "INTEGER"
+                }
+              ],
+              "rows": [
+                [
+                  2,
+                  "Designing Data-Intensive Applications",
+                  45.0,
+                  80
+                ],
+                [
+                  5,
+                  "System Design Interview Vol 2",
+                  42.0,
+                  95
+                ],
+                [
+                  4,
+                  "System Design Interview Vol 1",
+                  39.99,
+                  120
+                ]
+              ],
+              "note": "Highest 3 priced titles in stock"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Handling Null Values",
+      "slides": [
+        {
+          "id": "sql-14",
+          "language": "sql",
+          "section": "2. SQL Basics",
+          "topic": "Handling Null Values",
+          "step": "2.9",
+          "category": "sql",
+          "categoryLabel": "SQL Basics",
+          "tag": "Lesson",
+          "question": "How does three-valued logic work with NULL, IS NULL, and COALESCE?",
+          "explanation": {
+            "points": [
+              "**`NULL`** represents missing, unknown, or inapplicable data. It is NOT equal to zero or an empty string.",
+              "In SQL, comparisons with `NULL` yield **`UNKNOWN`** (Three-Valued Logic: TRUE, FALSE, UNKNOWN).",
+              "Never check `column = NULL`! Always use **`IS NULL`** or **`IS NOT NULL`**.",
+              "Use **`COALESCE(val1, val2, default)`** to provide a fallback value for NULL records."
+            ],
+            "highlight": "Never use '= NULL'. Always use 'IS NULL' or 'COALESCE()' due to SQL's three-valued logic."
+          },
+          "code": "-- Inspect customers with and without referrers\nSELECT \n  id,\n  name,\n  referrer_id,\n  COALESCE(referrer_id, 0) AS safe_referrer_id,\n  CASE WHEN referrer_id IS NULL THEN 'Organic' ELSE 'Referred' END AS acquisition_channel\nFROM customers;",
+          "tip": "Demonstrate how WHERE referrer_id = NULL returns 0 rows, while WHERE referrer_id IS NULL returns the actual organic customers.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "Null Handling in Customers",
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "INTEGER",
+                  "isPk": true
+                },
+                {
+                  "name": "name",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "referrer_id",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "safe_referrer_id",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "acquisition_channel",
+                  "type": "TEXT"
+                }
+              ],
+              "rows": [
+                [
+                  1,
+                  "Alice Smith",
+                  null,
+                  0,
+                  "Organic"
+                ],
+                [
+                  2,
+                  "Bob Johnson",
+                  1,
+                  1,
+                  "Referred"
+                ],
+                [
+                  3,
+                  "Charlie Brown",
+                  1,
+                  1,
+                  "Referred"
+                ],
+                [
+                  4,
+                  "Diana Prince",
+                  2,
+                  2,
+                  "Referred"
+                ],
+                [
+                  5,
+                  "Ethan Hunt",
+                  null,
+                  0,
+                  "Organic"
+                ]
+              ],
+              "note": "COALESCE replaces NULL with 0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Comments",
+      "slides": [
+        {
+          "id": "sql-15",
+          "language": "sql",
+          "section": "2. SQL Basics",
+          "topic": "Comments",
+          "step": "2.10",
+          "category": "sql",
+          "categoryLabel": "SQL Basics",
+          "tag": "Lesson",
+          "question": "How are single-line and multi-line comments formatted in SQL?",
+          "explanation": {
+            "points": [
+              "Comments document complex query logic, index hints, and business formulas.",
+              "**Single-line comments** start with two hyphens: `-- This is a single line comment`.",
+              "**Multi-line comments** use C-style delimiters: `/* Multi-line comment block */`.",
+              "The database query parser completely ignores comments during syntax validation and execution."
+            ],
+            "highlight": "Document tricky join conditions and business metrics using '--' or '/* ... */' comments."
+          },
+          "code": "-- =============================================\n-- Author: Analytics Team\n-- Description: Active catalog inventory report\n-- =============================================\nSELECT \n  title,       -- Product title\n  price,       -- Retail MSRP in USD\n  stock        /* Current warehouse inventory level */\nFROM books\nWHERE stock > 0;",
+          "tip": "Encourage clean documentation above CTEs and complex subqueries in real production repos.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "Documented Query Output",
+              "columns": [
+                {
+                  "name": "title",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "price",
+                  "type": "REAL"
+                },
+                {
+                  "name": "stock",
+                  "type": "INTEGER"
+                }
+              ],
+              "rows": [
+                [
+                  "Clean Code",
+                  32.5,
+                  45
+                ],
+                [
+                  "Designing Data-Intensive Applications",
+                  45.0,
+                  80
+                ]
+              ],
+              "note": "Cleanly formatted result set"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Projection Challenge",
+      "slides": [
+        {
+          "id": "sql-16",
+          "language": "sql",
+          "section": "2. SQL Basics",
+          "topic": "Projection Challenge",
+          "step": "2.11",
+          "category": "sql",
+          "categoryLabel": "SQL Basics",
+          "tag": "Challenge",
+          "question": "Challenge: Project specific customer details for international marketing",
+          "explanation": {
+            "points": [
+              "**Task**: Write a query that selects only `name`, `email`, and `country` from the `customers` table.",
+              "**Condition**: Restrict rows to customers residing in `'USA'` or `'Canada'`.",
+              "**Order**: Sort the results alphabetically by `name` ASC.",
+              "Click **[ 💡 Reveal Solution & Explanation ]** if you need step-by-step guidance."
+            ],
+            "highlight": "Select customer name, email, and country for USA and Canada customers sorted by name."
+          },
+          "code": "-- WRITE YOUR QUERY HERE:\nSELECT \n  -- Columns here\nFROM customers\nWHERE country IN ('USA', 'Canada')\nORDER BY name ASC;",
+          "tip": "Have students compare using IN ('USA', 'Canada') versus country = 'USA' OR country = 'Canada'.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Use explicit column projection in SELECT, filter with IN operator on country, and sort using ORDER BY name ASC.",
+            "code": "SELECT name, email, country\nFROM customers\nWHERE country IN ('USA', 'Canada')\nORDER BY name ASC;",
+            "timeComplexity": "O(N log N) due to sorting (or O(N) if indexed on name)",
+            "spaceComplexity": "O(N) result set",
+            "explanationPoints": [
+              "We specify only the 3 requested columns in the SELECT clause.",
+              "`WHERE country IN ('USA', 'Canada')` is cleaner and faster to read than multiple OR statements.",
+              "`ORDER BY name ASC` sorts alphabetical order A to Z."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Select Expression",
+      "slides": [
+        {
+          "id": "sql-17",
+          "language": "sql",
+          "section": "2. SQL Basics",
+          "topic": "Select Expression",
+          "step": "2.12",
+          "category": "sql",
+          "categoryLabel": "SQL Basics",
+          "tag": "Challenge",
+          "question": "Challenge: Calculate total warehouse inventory valuation per book",
+          "explanation": {
+            "points": [
+              "**Task**: Calculate the total inventory value for each book by multiplying `price * stock`.",
+              "**Columns**: Return `title`, `price`, `stock`, and the computed column aliased as `inventory_valuation`.",
+              "**Filter**: Only include books with an `inventory_valuation` greater than `$2000`.",
+              "**Sorting**: Sort descending by `inventory_valuation`."
+            ],
+            "highlight": "Calculate (price * stock) AS inventory_valuation and filter records exceeding $2000."
+          },
+          "code": "-- WRITE YOUR QUERY HERE:\nSELECT \n  title,\n  price,\n  stock,\n  (price * stock) AS inventory_valuation\nFROM books\nWHERE (price * stock) > 2000\nORDER BY inventory_valuation DESC;",
+          "tip": "Remind students that standard SQL does not allow using column aliases in the WHERE clause, hence repeating (price * stock).",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Evaluate the arithmetic product in SELECT with an AS alias, duplicate the expression in WHERE because WHERE executes before SELECT, and sort DESC.",
+            "code": "SELECT \n  title,\n  price,\n  stock,\n  (price * stock) AS inventory_valuation\nFROM books\nWHERE (price * stock) > 2000\nORDER BY inventory_valuation DESC;",
+            "timeComplexity": "O(N log N) sorting output",
+            "spaceComplexity": "O(N)",
+            "explanationPoints": [
+              "Because SQL evaluates WHERE before SELECT, the alias `inventory_valuation` is not yet available in the WHERE clause.",
+              "Repeating `WHERE (price * stock) > 2000` satisfies standard SQL parsing.",
+              "ORDER BY executes after SELECT, so using the alias in ORDER BY is completely valid."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Select Unique",
+      "slides": [
+        {
+          "id": "sql-18",
+          "language": "sql",
+          "section": "2. SQL Basics",
+          "topic": "Select Unique",
+          "step": "2.13",
+          "category": "sql",
+          "categoryLabel": "SQL Basics",
+          "tag": "Challenge",
+          "question": "Challenge: Extract a deduplicated list of active book categories",
+          "explanation": {
+            "points": [
+              "**Task**: Retrieve all unique `category` values present in the `books` table.",
+              "**Format**: Return a single column named `unique_category`.",
+              "**Ordering**: Order alphabetically from A to Z.",
+              "Test your query against the live database."
+            ],
+            "highlight": "Extract a distinct list of book categories aliased as unique_category, sorted A-Z."
+          },
+          "code": "-- WRITE YOUR QUERY HERE:\nSELECT DISTINCT category AS unique_category\nFROM books\nORDER BY unique_category ASC;",
+          "tip": "Demonstrate how DISTINCT automatically deduplicates rows in the projection.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Use SELECT DISTINCT on the category column and order ascending.",
+            "code": "SELECT DISTINCT category AS unique_category\nFROM books\nORDER BY unique_category ASC;",
+            "timeComplexity": "O(N log N) for deduplication sorting",
+            "spaceComplexity": "O(U) where U is unique categories",
+            "explanationPoints": [
+              "`SELECT DISTINCT` collapses duplicate category rows into single distinct values.",
+              "The alias `unique_category` provides clear frontend labeling.",
+              "`ORDER BY unique_category ASC` ensures a clean alphabetical presentation."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Logical Operators",
+      "slides": [
+        {
+          "id": "sql-19",
+          "language": "sql",
+          "section": "2. SQL Basics",
+          "topic": "Logical Operators",
+          "step": "2.14",
+          "category": "sql",
+          "categoryLabel": "SQL Basics",
+          "tag": "Challenge",
+          "question": "Challenge: Compound filtering with AND, OR, and NOT",
+          "explanation": {
+            "points": [
+              "**Task**: Find all books that meet **BOTH** of these business criteria:",
+              "1. Category is either `'Software Engineering'` OR `'AI & Data'`.",
+              "2. Rating is at least `4.7` AND price is under `$40.00`.",
+              "Return `title`, `category`, `price`, and `rating`."
+            ],
+            "highlight": "Filter books using compound boolean logic with proper parenthesis grouping."
+          },
+          "code": "-- WRITE YOUR QUERY HERE:\nSELECT title, category, price, rating\nFROM books\nWHERE (category = 'Software Engineering' OR category = 'AI & Data')\n  AND rating >= 4.7\n  AND price < 40.00\nORDER BY rating DESC;",
+          "tip": "Explain how missing parentheses around the OR condition creates accidental logic bugs.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Group category comparisons in parentheses so the OR evaluation does not override the price and rating AND filters.",
+            "code": "SELECT title, category, price, rating\nFROM books\nWHERE category IN ('Software Engineering', 'AI & Data')\n  AND rating >= 4.7\n  AND price < 40.00\nORDER BY rating DESC;",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(N)",
+            "explanationPoints": [
+              "Using `category IN ('Software Engineering', 'AI & Data')` avoids operator precedence pitfalls with OR.",
+              "`rating >= 4.7` and `price < 40.00` enforce quality and affordability criteria.",
+              "`ORDER BY rating DESC` surfaces the highest rated books first."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Sorting Challenge",
+      "slides": [
+        {
+          "id": "sql-20",
+          "language": "sql",
+          "section": "2. SQL Basics",
+          "topic": "Sorting Challenge",
+          "step": "2.15",
+          "category": "sql",
+          "categoryLabel": "SQL Basics",
+          "tag": "Challenge",
+          "question": "Challenge: Rank company employees by salary and seniority",
+          "explanation": {
+            "points": [
+              "**Task**: List all records from the `employees` table.",
+              "**Ordering**: Sort primarily by `salary` descending (highest paid first).",
+              "**Tie-breaker**: If two employees have the exact same salary, sort by `hire_date` ascending (earlier hire dates first).",
+              "Return `name`, `department`, `salary`, and `hire_date`."
+            ],
+            "highlight": "Sort employees by salary DESC, breaking ties with hire_date ASC."
+          },
+          "code": "-- WRITE YOUR QUERY HERE:\nSELECT name, department, salary, hire_date\nFROM employees\nORDER BY salary DESC, hire_date ASC;",
+          "tip": "Multi-column sorting is fundamental for tie-breaking in business leaderboards.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Specify two column sorting expressions in ORDER BY separated by a comma.",
+            "code": "SELECT name, department, salary, hire_date\nFROM employees\nORDER BY salary DESC, hire_date ASC;",
+            "timeComplexity": "O(N log N)",
+            "spaceComplexity": "O(N)",
+            "explanationPoints": [
+              "The primary sorting key is `salary DESC`.",
+              "The secondary sorting key `hire_date ASC` is only evaluated when two salaries match identically.",
+              "Projecting specific columns avoids leaking internal primary key IDs."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Sorting and Limiting",
+      "slides": [
+        {
+          "id": "sql-21",
+          "language": "sql",
+          "section": "2. SQL Basics",
+          "topic": "Sorting and Limiting",
+          "step": "2.16",
+          "category": "sql",
+          "categoryLabel": "SQL Basics",
+          "tag": "Challenge",
+          "question": "Challenge: Find the top 3 highest-rated books with ample stock",
+          "explanation": {
+            "points": [
+              "**Task**: Find the **top 3** highest-rated books in our store.",
+              "**Constraint**: Only include books that have at least `50 units` in stock (`stock >= 50`).",
+              "**Output**: Return `title`, `rating`, `stock`, and `price`.",
+              "**Sorting**: Highest `rating` first; break ties by `price` ascending."
+            ],
+            "highlight": "Filter stock >= 50, sort by rating DESC, price ASC, and restrict to 3 rows using LIMIT."
+          },
+          "code": "-- WRITE YOUR QUERY HERE:\nSELECT title, rating, stock, price\nFROM books\nWHERE stock >= 50\nORDER BY rating DESC, price ASC\nLIMIT 3;",
+          "tip": "Show students how this pattern mirrors top-recommendation widgets on e-commerce sites.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Filter with WHERE stock >= 50, sort by rating DESC and price ASC, and cap results with LIMIT 3.",
+            "code": "SELECT title, rating, stock, price\nFROM books\nWHERE stock >= 50\nORDER BY rating DESC, price ASC\nLIMIT 3;",
+            "timeComplexity": "O(N log K) with top-K heap or O(N log N)",
+            "spaceComplexity": "O(1) memory for 3 rows",
+            "explanationPoints": [
+              "`WHERE stock >= 50` ensures out-of-stock or low-stock items are excluded.",
+              "`ORDER BY rating DESC, price ASC` favors high-quality and affordable titles.",
+              "`LIMIT 3` returns exactly the top 3 contenders."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Sorting and Filtering",
+      "slides": [
+        {
+          "id": "sql-22",
+          "language": "sql",
+          "section": "2. SQL Basics",
+          "topic": "Sorting and Filtering",
+          "step": "2.17",
+          "category": "sql",
+          "categoryLabel": "SQL Basics",
+          "tag": "Challenge",
+          "question": "Challenge: Identify modern mid-priced technical publications",
+          "explanation": {
+            "points": [
+              "**Task**: Find all books published in year `2018 or later` (`published_year >= 2018`).",
+              "**Price Range**: Price must be between `$35.00` and `$45.00` (inclusive).",
+              "**Sorting**: Order by `published_year` DESC, then `title` ASC.",
+              "Return `title`, `published_year`, `price`, and `category`."
+            ],
+            "highlight": "Combine BETWEEN for pricing, published_year filtering, and multi-column sorting."
+          },
+          "code": "-- WRITE YOUR QUERY HERE:\nSELECT title, published_year, price, category\nFROM books\nWHERE published_year >= 2018\n  AND price BETWEEN 35.00 AND 45.00\nORDER BY published_year DESC, title ASC;",
+          "tip": "Demonstrate how BETWEEN simplifies range filtering without redundant >= and <= pairs.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Combine published_year >= 2018 with price BETWEEN 35.00 AND 45.00, and sort by published_year DESC, title ASC.",
+            "code": "SELECT title, published_year, price, category\nFROM books\nWHERE published_year >= 2018\n  AND price BETWEEN 35.00 AND 45.00\nORDER BY published_year DESC, title ASC;",
+            "timeComplexity": "O(N log N)",
+            "spaceComplexity": "O(N)",
+            "explanationPoints": [
+              "`published_year >= 2018` limits search to modern technical books.",
+              "`price BETWEEN 35.00 AND 45.00` uses SQL's inclusive range operator.",
+              "`ORDER BY published_year DESC, title ASC` groups newer books first with alphabetical ordering."
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

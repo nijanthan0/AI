@@ -1,0 +1,152 @@
+{
+  "section": "6. Static Typing & Code Quality",
+  "order": 6,
+  "topics": [
+    {
+      "topic": "Static Typing: Type Hints & Checkers",
+      "slides": [
+        {
+          "id": 162,
+          "section": "6. Static Typing & Code Quality",
+          "topic": "Static Typing: Type Hints & Checkers",
+          "step": "26.1",
+          "category": "typing",
+          "categoryLabel": "Typing",
+          "tag": "Static Typing",
+          "question": "How do Type Hints, mypy, and pyright catch bugs before runtime?",
+          "explanation": {
+            "points": [
+              "Python added **Type Hints** (PEP 484) to annotate variable types, function parameters, and return types.",
+              "Type hints are **not enforced at runtime** by the interpreter (Python remains dynamically typed), but static analysis tools verify them.",
+              "**Static Type Checkers**: `mypy`, `pyright` (powers VS Code Pylance), and `pyre` analyze code without running it to catch bugs.",
+              "Advanced types in `typing` module: `Union`, `Optional`, `Callable`, `Literal`, `TypeVar`, `Protocol` (structural subtyping)."
+            ]
+          },
+          "code": "from typing import Optional, Union, Callable\n\n# 1. Type annotated function\ndef calculate_roi(investment: float, revenue: float) -> float:\n    return ((revenue - investment) / investment) * 100\n\n# 2. Optional and Union types\ndef fetch_user_avatar(user_id: int) -> Optional[str]:\n    if user_id > 0:\n        return f\"https://cdn.ai/avatars/{user_id}.png\"\n    return None  # None is valid because of Optional\n\n# 3. Modern Python 3.10+ pipe union syntax\nValueType = int | float | str\ndef parse_scalar(val: ValueType) -> str:\n    return f\"Processed: {val}\"\n\nprint(calculate_roi(1000.0, 1500.0))\nprint(fetch_user_avatar(42))\nprint(parse_scalar(3.14))",
+          "tip": "Emphasize that type hints dramatically improve IDE autocomplete, refactoring, and code self-documentation.",
+          "viz": {
+            "type": "function",
+            "data": {
+              "name": "calculate_roi",
+              "args": [
+                "investment: float",
+                "revenue: float"
+              ],
+              "returnValue": "float"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Runtime Validation with Pydantic",
+      "slides": [
+        {
+          "id": 163,
+          "section": "6. Static Typing & Code Quality",
+          "topic": "Runtime Validation with Pydantic",
+          "step": "26.2",
+          "category": "typing",
+          "categoryLabel": "Typing",
+          "tag": "Pydantic",
+          "question": "How does Pydantic enforce runtime data integrity and validation?",
+          "explanation": {
+            "points": [
+              "While `mypy` checks types statically, **Pydantic** enforces data schemas and type coercion **at runtime**.",
+              "Models subclass `pydantic.BaseModel` and define typed fields with optional constraints using `Field()`.",
+              "If incoming data (e.g. from JSON payload or user form) is malformed, Pydantic raises a detailed `ValidationError`.",
+              "The foundation of **FastAPI**, **LangChain**, and **Instructor** for structured LLM outputs."
+            ]
+          },
+          "code": "from pydantic import BaseModel, Field, EmailStr\n\nclass AgentConfig(BaseModel):\n    name: str = Field(min_length=2, max_length=50)\n    temperature: float = Field(default=0.7, ge=0.0, le=2.0)\n    max_tokens: int = Field(default=2048, gt=0)\n    is_active: bool = True\n\n# 1. Valid Initialization (Pydantic auto-coerces '0.9' string to float)\nvalid_agent = AgentConfig(name=\"Summarizer\", temperature=\"0.9\", max_tokens=1000)\nprint(\"Validated Agent:\", valid_agent.model_dump_json(indent=2))\n\n# 2. Invalid Data triggers ValidationError\ntry:\n    # Temperature 3.5 violates le=2.0 rule\n    bad_agent = AgentConfig(name=\"A\", temperature=3.5)\nexcept Exception as err:\n    print(\"\\n🚨 Caught Validation Error:\", err)",
+          "tip": "Test the live Pydantic validator visualizer below to see how invalid inputs trigger real-time error messages.",
+          "viz": {
+            "type": "pydantic",
+            "data": {
+              "modelName": "AgentConfig",
+              "fields": [
+                "name: str",
+                "temperature: float (0.0 - 2.0)",
+                "max_tokens: int (>0)"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Code Formatting & Linters",
+      "slides": [
+        {
+          "id": 164,
+          "section": "6. Static Typing & Code Quality",
+          "topic": "Code Formatting & Linters",
+          "step": "27.1",
+          "category": "tooling",
+          "categoryLabel": "Tooling",
+          "tag": "Code Quality",
+          "question": "Why has Ruff replaced Black, Flake8, and isort for Python Code Formatting?",
+          "explanation": {
+            "points": [
+              "**Linters** analyze source code for syntax errors, anti-patterns, unused imports, and style bugs.",
+              "**Formatters** enforce deterministic indentation, line length, and quote styles (e.g. `black`, `yapf`).",
+              "**Ruff**: An extremely fast linter and formatter written in Rust that is **10x to 100x faster** than legacy Python tools.",
+              "Ruff replaces `flake8`, `black`, `isort`, `pydocstyle`, and `pyupgrade` in a single tool.",
+              "Automates CI/CD checks: `ruff check . --fix` and `ruff format .`."
+            ]
+          },
+          "code": "# Common Terminal Commands for Code Quality\n\n# 1. Run Ruff linter and auto-fix issues\n# ruff check . --fix\n\n# 2. Format entire codebase adhering to Black style\n# ruff format .\n\n# 3. Flake8 / Black (legacy ecosystem)\n# black --line-length 88 .\n# flake8 .\n\ndef poorly_formatted_code( x,y ):\n    \"\"\"Ruff automatically cleans up spacing, unused imports, and indentation.\"\"\"\n    return x+y\n\nprint(\"Code quality tools keep open-source repositories clean and uniform!\")",
+          "tip": "Show viewers how Ruff formats thousands of files in milliseconds compared to seconds with Black.",
+          "viz": {
+            "type": "function",
+            "data": {
+              "name": "ruff_check",
+              "args": [
+                "ast_tree",
+                "rules"
+              ],
+              "returnValue": "Formatted Code"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Documentation & Sphinx",
+      "slides": [
+        {
+          "id": 165,
+          "section": "6. Static Typing & Code Quality",
+          "topic": "Documentation & Sphinx",
+          "step": "28.1",
+          "category": "tooling",
+          "categoryLabel": "Tooling",
+          "tag": "Documentation",
+          "question": "How do Docstrings and Sphinx generate professional documentation?",
+          "explanation": {
+            "points": [
+              "**Docstrings** (`\"\"\"...\"\"\"`) document modules, classes, and functions right where they are declared.",
+              "Popular docstring standards: **Google Style**, **NumPy Style**, and **Sphinx / reStructuredText**.",
+              "**Sphinx**: The industry standard documentation generator used by the official Python docs, Django, and Linux kernel.",
+              "`sphinx-autodoc` reads code docstrings and generates searchable HTML/PDF documentation sites automatically.",
+              "**MkDocs + mkdocstrings**: Modern Markdown-first alternative gaining massive popularity."
+            ]
+          },
+          "code": "def generate_embeddings(text: str, model: str = \"text-embedding-3\") -> list[float]:\n    \"\"\"Generates vector embeddings for a given input text.\n\n    Args:\n        text (str): The raw text sequence to vectorize.\n        model (str, optional): The embedding model ID. Defaults to 'text-embedding-3'.\n\n    Returns:\n        list[float]: A 1536-dimensional float vector.\n\n    Raises:\n        ValueError: If input text is empty.\n    \"\"\"\n    if not text.strip():\n        raise ValueError(\"Input text cannot be empty.\")\n    return [0.042, -0.128, 0.981]  # Simulated embedding vector\n\n# Accessing docstring programmatically at runtime\nprint(\"Docstring via __doc__:\")\nprint(generate_embeddings.__doc__)",
+          "tip": "Explain that writing proper docstrings enables IDE hover cards and automated docs sites with zero manual copying.",
+          "viz": {
+            "type": "function",
+            "data": {
+              "name": "generate_embeddings",
+              "args": [
+                "text: str",
+                "model: str"
+              ],
+              "returnValue": "list[float]"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

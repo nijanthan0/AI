@@ -1,0 +1,1139 @@
+{
+  "section": "2. Data Structures & Algorithms",
+  "order": 2,
+  "topics": [
+    {
+      "topic": "Arrays & Linked Lists",
+      "slides": [
+        {
+          "id": 80,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Arrays & Linked Lists",
+          "step": "9.1",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "Linked Lists",
+          "question": "What is a Linked List and how do Node pointers work?",
+          "explanation": {
+            "points": [
+              "Arrays allocate contiguous memory blocks; **Linked Lists** store elements in disjoint heap memory nodes linked via **pointers**.",
+              "Each `Node` object contains two fields: `data` (the payload) and `next` (a reference pointing to the next node).",
+              "Inserting or deleting at the **Head** runs in **O(1)** without shifting elements in memory.",
+              "Random indexing is **O(n)** because you must traverse pointers node by node starting from Head."
+            ]
+          },
+          "code": "class Node:\n    def __init__(self, data):\n        self.data = data\n        self.next = None\n\nclass LinkedList:\n    def __init__(self):\n        self.head = None\n        \n    def insert_at_head(self, data):\n        new_node = Node(data)\n        new_node.next = self.head\n        self.head = new_node\n        \n    def display(self):\n        curr = self.head\n        chain = []\n        while curr:\n            chain.append(str(curr.data))\n            curr = curr.next\n        print(\" -> \".join(chain) + \" -> None\")\n\nll = LinkedList()\nll.insert_at_head(30)\nll.insert_at_head(20)\nll.insert_at_head(10)\nll.display()",
+          "tip": "Use the interactive node pointer visualizer below to insert new nodes and watch the head pointer redirect in real time.",
+          "viz": {
+            "type": "linked-list",
+            "data": {}
+          }
+        },
+        {
+          "id": 81,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Arrays & Linked Lists",
+          "step": "9.1-P1",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "Practice 1",
+          "question": "Practice 1: Count Nodes and Search Value in Linked List",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given the head of a singly linked list, implement functions to count total nodes and search if a target value exists in the list.",
+              "**Example**: Input: 10 -> 20 -> 30 -> None, search 20 -> Output: Count: 3, Found: True",
+              "**Constraints**: Traverse iteratively in O(N) time without extra memory.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given the head of a singly linked list, implement functions to count total nodes and search if a target value exists in the list."
+          },
+          "code": "class Node:\n    def __init__(self, val, next=None):\n        self.val = val\n        self.next = next\n\ndef search_and_count(head: Node, target: int):\n    # YOUR CODE HERE\n    pass\n\nhead = Node(10, Node(20, Node(30)))\nprint(search_and_count(head, 20))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "linked-list",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Initialize count = 0 and found = False. Set curr = head and while curr is not None: increment count, check curr.val == target, and advance curr = curr.next.",
+            "code": "class Node:\n    def __init__(self, val, next=None):\n        self.val = val\n        self.next = next\n\ndef search_and_count(head: Node, target: int):\n    count = 0\n    found = False\n    curr = head\n    while curr:\n        count += 1\n        if curr.val == target:\n            found = True\n        curr = curr.next\n    return {'count': count, 'found': found}\n\nhead = Node(10, Node(20, Node(30)))\nprint(search_and_count(head, 20))\nprint(search_and_count(head, 99))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 82,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Arrays & Linked Lists",
+          "step": "9.1-P2",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "Practice 2",
+          "question": "Practice 2: Delete First Occurrence of Value in Linked List",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given the head of a linked list and a target value, delete the first node containing target and return the new head.",
+              "**Example**: Input: 1 -> 2 -> 3 -> 4, delete 3 -> Output: 1 -> 2 -> 4",
+              "**Constraints**: Handle deleting the head node properly.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given the head of a linked list and a target value, delete the first node containing target and return the new head."
+          },
+          "code": "def delete_node(head, target):\n    # YOUR CODE HERE\n    pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "linked-list",
+            "data": {}
+          },
+          "solution": {
+            "approach": "If head.val == target, return head.next. Otherwise, traverse with curr and check curr.next.val == target. If found, bypass it with curr.next = curr.next.next.",
+            "code": "class Node:\n    def __init__(self, val, next=None):\n        self.val = val\n        self.next = next\n\ndef delete_node(head, target):\n    if not head: return None\n    if head.val == target: return head.next\n    curr = head\n    while curr.next and curr.next.val != target:\n        curr = curr.next\n    if curr.next:\n        curr.next = curr.next.next\n    return head\n\nhead = Node(1, Node(2, Node(3, Node(4))))\nhead = delete_node(head, 3)\n# Print list\nres = []\nwhile head: res.append(str(head.val)); head = head.next\nprint(' -> '.join(res))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 83,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Arrays & Linked Lists",
+          "step": "9.1-L3",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "LeetCode: LeetCode #206",
+          "question": "LeetCode #206: Reverse Linked List",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given the head of a singly linked list, reverse the list, and return the reversed list.",
+              "**Example**: Input: head = [1,2,3,4,5] -> Output: [5,4,3,2,1]",
+              "**Constraints**: 0 <= number of nodes <= 5000. Can you reverse in O(1) memory?",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given the head of a singly linked list, reverse the list, and return the reversed list."
+          },
+          "code": "def reverse_list(head):\n    # YOUR CODE HERE\n    pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "linked-list-reverse",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Use three pointers: `prev = None`, `curr = head`, and `nxt`. In each loop iteration, save `nxt = curr.next`, point `curr.next = prev`, shift `prev = curr`, and advance `curr = nxt`.",
+            "code": "class ListNode:\n    def __init__(self, val=0, next=None):\n        self.val = val\n        self.next = next\n\ndef reverse_list(head):\n    prev = None\n    curr = head\n    while curr:\n        nxt = curr.next\n        curr.next = prev\n        prev = curr\n        curr = nxt\n    return prev\n\nhead = ListNode(1, ListNode(2, ListNode(3, ListNode(4, ListNode(5)))))\nrev = reverse_list(head)\nvals = []\nwhile rev: vals.append(str(rev.val)); rev = rev.next\nprint('Reversed:', ' -> '.join(vals))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 84,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Arrays & Linked Lists",
+          "step": "9.1-L4",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "LeetCode: LeetCode #141",
+          "question": "LeetCode #141: Linked List Cycle",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given head, the head of a linked list, determine if the linked list has a cycle in it (Floyd's Cycle Finding Algorithm).",
+              "**Example**: Input: head = [3,2,0,-4] with tail connecting to node 1 -> Output: True",
+              "**Constraints**: Can you solve it using O(1) memory?",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given head, the head of a linked list, determine if the linked list has a cycle in it (Floyd's Cycle Finding Algorithm)."
+          },
+          "code": "def has_cycle(head) -> bool:\n    # YOUR CODE HERE\n    pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "cycle-detection",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Floyd's Tortoise and Hare algorithm: use two pointers `slow` (advances 1 step) and `fast` (advances 2 steps). If there is a cycle, `fast` will eventually catch up and meet `slow`.",
+            "code": "def has_cycle(head) -> bool:\n    slow = fast = head\n    while fast and fast.next:\n        slow = slow.next\n        fast = fast.next.next\n        if slow == fast:\n            return True\n    return False",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 85,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Arrays & Linked Lists",
+          "step": "9.1-R5",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "Real-World: Browser History",
+          "question": "Real-Time Scenario: Browser Navigation History (Back & Forward)",
+          "explanation": {
+            "points": [
+              "**Challenge**: Implement a Doubly Linked List based BrowserHistory system supporting `visit(url)`, `back(steps)`, and `forward(steps)`.",
+              "**Example**: history.visit('google.com') -> visit('github.com') -> back(1) returns 'google.com' -> forward(1) returns 'github.com'",
+              "**Constraints**: Visiting a new URL clears all forward history.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Implement a Doubly Linked List based BrowserHistory system supporting `visit(url)`, `back(steps)`, and `forward(steps)`."
+          },
+          "code": "class BrowserHistory:\n    def __init__(self, homepage: str):\n        pass\n    def visit(self, url: str):\n        pass\n    def back(self, steps: int) -> str:\n        pass\n    def forward(self, steps: int) -> str:\n        pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "linked-list",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Use doubly linked list nodes with `prev` and `next` pointers. Visiting creates a new node, points curr.next to it, and clears further forward nodes.",
+            "code": "class DNode:\n    def __init__(self, url: str):\n        self.url = url\n        self.prev = None\n        self.next = None\n\nclass BrowserHistory:\n    def __init__(self, homepage: str):\n        self.curr = DNode(homepage)\n    def visit(self, url: str):\n        new_node = DNode(url)\n        self.curr.next = new_node\n        new_node.prev = self.curr\n        self.curr = new_node\n    def back(self, steps: int) -> str:\n        while steps > 0 and self.curr.prev:\n            self.curr = self.curr.prev\n            steps -= 1\n        return self.curr.url\n    def forward(self, steps: int) -> str:\n        while steps > 0 and self.curr.next:\n            self.curr = self.curr.next\n            steps -= 1\n        return self.curr.url\n\nbrowser = BrowserHistory('google.com')\nbrowser.visit('youtube.com')\nbrowser.visit('github.com')\nprint('Back 1:', browser.back(1))\nprint('Back 1:', browser.back(1))\nprint('Forward 1:', browser.forward(1))",
+            "timeComplexity": "O(Steps)",
+            "spaceComplexity": "O(URLs)"
+          }
+        },
+        {
+          "id": 86,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Arrays & Linked Lists",
+          "step": "9.1-R6",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "Real-World: LRU Node Memory",
+          "question": "Real-Time Scenario: Interval Coalescing Memory Block Allocator",
+          "explanation": {
+            "points": [
+              "**Challenge**: Write a memory manager algorithm that coalesces fragmented allocated/free memory blocks `(start_address, end_address)` into contiguous segments.",
+              "**Example**: Input: `[(0, 64), (64, 128), (200, 256)]` -> Output: `[(0, 128), (200, 256)]`",
+              "**Constraints**: Sort by start address and merge overlapping/adjacent intervals in O(N log N) time.",
+              "**Hint**: Compare `curr_start <= prev_end` to extend boundaries."
+            ],
+            "highlight": "Simulate a low-level memory block allocator where contiguous free memory blocks are tracked via a linked list and merged (coalesced) when re"
+          },
+          "code": "def coalesce_blocks(blocks: list[tuple[int, int]]):\n    # YOUR CODE HERE\n    pass\n\nprint(coalesce_blocks([(0, 64), (64, 128), (200, 256)]))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "linked-list",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Sort blocks by start address. Iterate and check if current_start <= prev_end. If so, extend prev_end = max(prev_end, current_end).",
+            "code": "def coalesce_blocks(blocks: list[tuple[int, int]]):\n    if not blocks: return []\n    sorted_blocks = sorted(blocks, key=lambda b: b[0])\n    merged = [list(sorted_blocks[0])]\n    for start, end in sorted_blocks[1:]:\n        if start <= merged[-1][1]:\n            merged[-1][1] = max(merged[-1][1], end)\n        else:\n            merged.append([start, end])\n    return [tuple(b) for b in merged]\n\nprint(coalesce_blocks([(0, 64), (64, 128), (200, 256)]))",
+            "timeComplexity": "O(N log N)",
+            "spaceComplexity": "O(N)"
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Stacks & Queues",
+      "slides": [
+        {
+          "id": 87,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Stacks & Queues",
+          "step": "10.1",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "Stacks & Queues",
+          "question": "What is the difference between a Stack (LIFO) and Queue (FIFO)?",
+          "explanation": {
+            "points": [
+              "**Stack**: Last-In-First-Out (**LIFO**). The last element pushed is the first one popped (e.g. Browser back button, Undo stack, Call stack).",
+              "**Queue**: First-In-First-Out (**FIFO**). The first element added is the first one processed (e.g. Printer queue, Task scheduling, Customer service lines).",
+              "In Python, implement a Stack using `list` with `.append()` and `.pop()`. For Queues, use `collections.deque` for O(1) `popleft()`."
+            ]
+          },
+          "code": "from collections import deque\n\n# 1. Stack (LIFO) using list\ncall_stack = []\ncall_stack.append(\"main()\")\ncall_stack.append(\"train_model()\")\ncall_stack.append(\"compute_loss()\")\n\nprint(\"Top of stack popped:\", call_stack.pop())  # compute_loss()\n\n# 2. Queue (FIFO) using collections.deque\ntask_queue = deque([\"Task 1: Preprocess\", \"Task 2: Tokenize\"])\ntask_queue.append(\"Task 3: Forward Pass\")\n\nprint(\"First task served:\", task_queue.popleft())  # Task 1\nprint(\"Next task to serve:\", task_queue[0])",
+          "tip": "Explain that using a regular Python list for a FIFO queue is an anti-pattern because list.pop(0) is O(n), whereas deque.popleft() is O(1).",
+          "viz": {
+            "type": "lifo-fifo-compare",
+            "data": {}
+          }
+        },
+        {
+          "id": 88,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Stacks & Queues",
+          "step": "10.1-P1",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "Practice 1",
+          "question": "Practice 1: Reverse a String Using a Stack",
+          "explanation": {
+            "points": [
+              "**Challenge**: Reverse a given string character by character using LIFO stack behavior (push all characters, then pop them all off).",
+              "**Example**: Input: 'Antigravity' -> Output: 'ytivargitnA'",
+              "**Constraints**: Must explicitly use a stack list with append() and pop().",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Reverse a given string character by character using LIFO stack behavior (push all characters, then pop them all off)."
+          },
+          "code": "def reverse_with_stack(s: str) -> str:\n    # YOUR CODE HERE\n    pass\n\nprint(reverse_with_stack('Antigravity'))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "stack",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Push each char into a list stack = []. Then pop until empty, joining popped chars into a new string.",
+            "code": "def reverse_with_stack(s: str) -> str:\n    stack = []\n    for char in s:\n        stack.append(char)\n    reversed_str = []\n    while stack:\n        reversed_str.append(stack.pop())\n    return ''.join(reversed_str)\n\nprint(reverse_with_stack('Antigravity'))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(N)"
+          }
+        },
+        {
+          "id": 89,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Stacks & Queues",
+          "step": "10.1-P2",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "Practice 2",
+          "question": "Practice 2: Circular Customer Service Queue (Round-Robin)",
+          "explanation": {
+            "points": [
+              "**Challenge**: Simulate a customer support ticket line using collections.deque with enqueue (serve at end) and dequeue (serve from front) operations in O(1).",
+              "**Example**: Queue tickets -> serve 2 -> add VIP ticket -> return served tickets",
+              "**Constraints**: deque.popleft() runs in O(1).",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Simulate a customer support ticket line using collections.deque with enqueue (serve at end) and dequeue (serve from front) operations in O(1"
+          },
+          "code": "from collections import deque\n\ndef round_robin_serve(tickets: list[str], rounds: int) -> tuple[list[str], list[str]]:\n    # YOUR CODE HERE\n    pass\n\nprint(round_robin_serve(['Ticket #1', 'Ticket #2', 'Ticket #3'], 5))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "stack",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Use collections.deque with circular round-robin re-queueing: popleft() from head, service ticket, and append() back to tail for circular scheduling.",
+            "code": "from collections import deque\n\ndef round_robin_serve(tickets: list[str], rounds: int) -> tuple[list[str], list[str]]:\n    q = deque(tickets)\n    history = []\n    for _ in range(rounds):\n        if not q:\n            break\n        current = q.popleft()\n        history.append(current)\n        # Re-enqueue to back for circular round-robin\n        q.append(current)\n    return history, list(q)\n\nserved_log, active_q = round_robin_serve(['Ticket #1', 'Ticket #2', 'Ticket #3'], 5)\nprint('Execution Order:', served_log)\nprint('Queue State:', active_q)",
+            "timeComplexity": "O(K)",
+            "spaceComplexity": "O(N)"
+          }
+        },
+        {
+          "id": 90,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Stacks & Queues",
+          "step": "10.1-L3",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "LeetCode: LeetCode #20",
+          "question": "LeetCode #20: Valid Parentheses",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given a string `s` containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid (brackets must close in correct order).",
+              "**Example**: Input: s = '()[]{}' -> Output: True | Input: s = '(]' -> Output: False",
+              "**Constraints**: 1 <= s.length <= 10^4",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given a string `s` containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid (brackets must clo"
+          },
+          "code": "def is_valid_parentheses(s: str) -> bool:\n    # YOUR CODE HERE\n    pass\n\nprint(is_valid_parentheses('()[]{}'))\nprint(is_valid_parentheses('(]'))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "parentheses-matcher",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Use a stack. When an opening bracket is seen, push it. When a closing bracket is seen, pop the top of the stack and check if it matches the expected opening pair.",
+            "code": "def is_valid_parentheses(s: str) -> bool:\n    mapping = {')': '(', '}': '{', ']': '['}\n    stack = []\n    for char in s:\n        if char in mapping:\n            top_element = stack.pop() if stack else '#'\n            if mapping[char] != top_element:\n                return False\n        else:\n            stack.append(char)\n    return not stack\n\nprint('()[]{} ->', is_valid_parentheses('()[]{}'))\nprint('(] ->', is_valid_parentheses('(]'))\nprint('([{}]) ->', is_valid_parentheses('([{}])'))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(N)"
+          }
+        },
+        {
+          "id": 91,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Stacks & Queues",
+          "step": "10.1-L4",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "LeetCode: LeetCode #155",
+          "question": "LeetCode #155: Min Stack (O(1) getMin)",
+          "explanation": {
+            "points": [
+              "**Challenge**: Design a stack that supports push, pop, top, and retrieving the minimum element in constant O(1) time.",
+              "**Example**: push(-2) -> push(0) -> push(-3) -> getMin() returns -3 -> pop() -> getMin() returns -2",
+              "**Constraints**: Methods pop, top and getMin operations will always be called on non-empty stacks.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Design a stack that supports push, pop, top, and retrieving the minimum element in constant O(1) time."
+          },
+          "code": "class MinStack:\n    def __init__(self):\n        pass\n    def push(self, val: int) -> None:\n        pass\n    def pop(self) -> None:\n        pass\n    def top(self) -> int:\n        pass\n    def getMin(self) -> int:\n        pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "min-stack",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Maintain two parallel stacks: main stack for all values, and min_stack tracking the running minimum at each height.",
+            "code": "class MinStack:\n    def __init__(self):\n        self.stack = []\n        self.min_stack = []\n    def push(self, val: int) -> None:\n        self.stack.append(val)\n        current_min = min(val, self.min_stack[-1] if self.min_stack else val)\n        self.min_stack.append(current_min)\n    def pop(self) -> None:\n        self.stack.pop()\n        self.min_stack.pop()\n    def top(self) -> int:\n        return self.stack[-1]\n    def getMin(self) -> int:\n        return self.min_stack[-1]\n\nms = MinStack()\nms.push(-2)\nms.push(0)\nms.push(-3)\nprint('Min:', ms.getMin())  # -3\nms.pop()\nprint('Top:', ms.top())     # 0\nprint('Min:', ms.getMin())  # -2",
+            "timeComplexity": "O(1) all ops",
+            "spaceComplexity": "O(N)"
+          }
+        },
+        {
+          "id": 92,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Stacks & Queues",
+          "step": "10.1-R5",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "Real-World: Undo Redo Manager",
+          "question": "Real-Time Scenario: Text Editor Undo / Redo Manager",
+          "explanation": {
+            "points": [
+              "**Challenge**: Build an Undo/Redo manager for a text editor using two stacks (`undo_stack` and `redo_stack`). Support `type_text(str)`, `undo()`, and `redo()`.",
+              "**Example**: type('Hello') -> type(' World') -> undo() returns 'Hello' -> redo() returns 'Hello World'",
+              "**Constraints**: Typing new text after undo clears the redo stack.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Build an Undo/Redo manager for a text editor using two stacks (`undo_stack` and `redo_stack`). Support `type_text(str)`, `undo()`, and `redo"
+          },
+          "code": "class UndoRedoEditor:\n    def __init__(self):\n        pass\n    def type_text(self, text: str):\n        pass\n    def undo(self) -> str:\n        pass\n    def redo(self) -> str:\n        pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "stack",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Track full document states or action diffs in undo_stack. On undo, push current to redo_stack and pop prev. On new typing, clear redo_stack.",
+            "code": "class UndoRedoEditor:\n    def __init__(self):\n        self.content = ''\n        self.undo_stack = []\n        self.redo_stack = []\n    def type_text(self, text: str):\n        self.undo_stack.append(self.content)\n        self.content += text\n        self.redo_stack.clear()\n    def undo(self) -> str:\n        if self.undo_stack:\n            self.redo_stack.append(self.content)\n            self.content = self.undo_stack.pop()\n        return self.content\n    def redo(self) -> str:\n        if self.redo_stack:\n            self.undo_stack.append(self.content)\n            self.content = self.redo_stack.pop()\n        return self.content\n\neditor = UndoRedoEditor()\neditor.type_text('Hello')\neditor.type_text(' World')\nprint('Current:', editor.content)\nprint('Undo:', editor.undo())\nprint('Redo:', editor.redo())",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(History)"
+          }
+        },
+        {
+          "id": 93,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Stacks & Queues",
+          "step": "10.1-R6",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "Real-World: Task Worker Queue",
+          "question": "Real-Time Scenario: Celery-Style Distributed Task Queue Worker",
+          "explanation": {
+            "points": [
+              "**Challenge**: Simulate a task worker queue where incoming job tasks have deadlines or payloads. Support enqueueing tasks and worker dispatch with FIFO ordering.",
+              "**Example**: Workers consume tasks in exact submission order.",
+              "**Constraints**: Queue must support thread-safe operations in production.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Simulate a task worker queue where incoming job tasks have deadlines or payloads. Support enqueueing tasks and worker dispatch with FIFO ord"
+          },
+          "code": "from collections import deque\n\nclass TaskWorker:\n    def __init__(self):\n        pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "stack",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Use deque to implement FIFO. Enqueue with append() and process with popleft().",
+            "code": "from collections import deque\n\nclass TaskQueue:\n    def __init__(self):\n        self.q = deque()\n    def enqueue(self, task_id: str, payload: dict):\n        self.q.append({'id': task_id, 'data': payload})\n    def process_next(self):\n        if not self.q:\n            return None\n        task = self.q.popleft()\n        return f'Processed task {task[\"id\"]} with data {task[\"data\"]}'\n\ntq = TaskQueue()\ntq.enqueue('job_101', {'image': 'avatar.png'})\ntq.enqueue('job_102', {'email': 'test@ai.com'})\nprint(tq.process_next())\nprint(tq.process_next())",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(N)"
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Heaps & Priority Queues",
+      "slides": [
+        {
+          "id": 94,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Heaps & Priority Queues",
+          "step": "10.2",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "Heaps",
+          "question": "How does a Min-Heap (heapq) provide O(log n) Priority Queue operations?",
+          "explanation": {
+            "points": [
+              "A **Binary Heap** is a complete binary tree where every parent node is less than or equal to its children (in a **Min-Heap**).",
+              "The minimum element is **always at the root** `heap[0]` in **O(1)** time.",
+              "Python's `heapq` module implements a min-heap directly on top of standard Python lists.",
+              "`heappush()` and `heappop()` maintain the heap invariant in **O(log n)** time using sift-up and sift-down operations.",
+              "Essential for Dijkstra's Shortest Path, A* search, and priority job schedulers."
+            ]
+          },
+          "code": "import heapq\n\n# 1. Min-Heap initialization\nscores = [45, 12, 85, 32, 89, 24]\nheapq.heapify(scores)  # Transforms list into min-heap in O(n)\nprint(\"Heapified array:\", scores)\nprint(\"Smallest element (root):\", scores[0])\n\n# 2. Pushing a new item (O(log n))\nheapq.heappush(scores, 5)\nprint(\"After pushing 5 (new min):\", scores[0])\n\n# 3. Priority Queue: Popping items in priority order\nprint(\"\\nPopping smallest elements:\")\nwhile scores:\n    print(heapq.heappop(scores), end=\" \")\nprint()",
+          "tip": "Use the interactive heap visualizer below to push values and watch how sift-up and sift-down maintain the binary heap tree.",
+          "viz": {
+            "type": "heap",
+            "data": {}
+          }
+        },
+        {
+          "id": 95,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Heaps & Priority Queues",
+          "step": "10.2-P1",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "Practice 1",
+          "question": "Practice 1: Find K Smallest Elements using Min-Heap",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given an unsorted list of integers, extract the `k` smallest elements in sorted ascending order using `heapq`.",
+              "**Example**: Input: [50, 10, 40, 20, 60, 30], k = 3 -> Output: [10, 20, 30]",
+              "**Constraints**: Must use heapq.nsmallest or heapq.heapify.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given an unsorted list of integers, extract the `k` smallest elements in sorted ascending order using `heapq`."
+          },
+          "code": "import heapq\n\ndef get_k_smallest(nums: list[int], k: int) -> list[int]:\n    # YOUR CODE HERE\n    pass\n\nprint(get_k_smallest([50, 10, 40, 20, 60, 30], 3))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "heap",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Python's heapq module provides heapq.nsmallest(k, nums) which maintains a bounded max-heap of size K in O(N log K) time.",
+            "code": "import heapq\n\ndef get_k_smallest(nums: list[int], k: int) -> list[int]:\n    return heapq.nsmallest(k, nums)\n\nprint('3 Smallest:', get_k_smallest([50, 10, 40, 20, 60, 30], 3))",
+            "timeComplexity": "O(N log K)",
+            "spaceComplexity": "O(K)"
+          }
+        },
+        {
+          "id": 96,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Heaps & Priority Queues",
+          "step": "10.2-P2",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "Practice 2",
+          "question": "Practice 2: Merge Two Sorted Lists with Heap",
+          "explanation": {
+            "points": [
+              "**Challenge**: Merge two sorted lists into one sorted list using heapq.merge with zero redundant memory allocations.",
+              "**Example**: Input: [1, 3, 5] and [2, 4, 6] -> Output: [1, 2, 3, 4, 5, 6]",
+              "**Constraints**: Uses lazy generators.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Merge two sorted lists into one sorted list using heapq.merge with zero redundant memory allocations."
+          },
+          "code": "import heapq\n\ndef merge_sorted(l1, l2):\n    # YOUR CODE HERE\n    pass\n\nprint(list(merge_sorted([1, 3, 5], [2, 4, 6])))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "heap",
+            "data": {}
+          },
+          "solution": {
+            "approach": "heapq.merge(*iterables) takes multiple pre-sorted inputs and yields values one at a time using an internal heap.",
+            "code": "import heapq\n\ndef merge_sorted(l1, l2):\n    return list(heapq.merge(l1, l2))\n\nprint('Merged:', merge_sorted([1, 3, 5], [2, 4, 6]))",
+            "timeComplexity": "O(N log K)",
+            "spaceComplexity": "O(K)"
+          }
+        },
+        {
+          "id": 97,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Heaps & Priority Queues",
+          "step": "10.2-L3",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "LeetCode: LeetCode #215",
+          "question": "LeetCode #215: Kth Largest Element in an Array",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given an integer array `nums` and an integer `k`, return the `k`th largest element in the array.",
+              "**Example**: Input: nums = [3,2,1,5,6,4], k = 2 -> Output: 5",
+              "**Constraints**: 1 <= k <= nums.length <= 10^5. Solve better than O(N log N) sorting.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given an integer array `nums` and an integer `k`, return the `k`th largest element in the array."
+          },
+          "code": "import heapq\n\ndef find_kth_largest(nums: list[int], k: int) -> int:\n    # YOUR CODE HERE\n    pass\n\nprint(find_kth_largest([3,2,1,5,6,4], 2))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "heap",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Maintain a min-heap of size `k`. Iterate through `nums`; push each number. If heap size exceeds `k`, pop smallest element. At the end, root of min-heap is the kth largest element.",
+            "code": "import heapq\n\ndef find_kth_largest(nums: list[int], k: int) -> int:\n    min_heap = []\n    for num in nums:\n        heapq.heappush(min_heap, num)\n        if len(min_heap) > k:\n            heapq.heappop(min_heap)\n    return min_heap[0]\n\nprint('2nd largest [3,2,1,5,6,4]:', find_kth_largest([3,2,1,5,6,4], 2))\nprint('4th largest [3,2,3,1,2,4,5,5,6]:', find_kth_largest([3,2,3,1,2,4,5,5,6], 4))",
+            "timeComplexity": "O(N log K)",
+            "spaceComplexity": "O(K)"
+          }
+        },
+        {
+          "id": 98,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Heaps & Priority Queues",
+          "step": "10.2-L4",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "LeetCode: LeetCode #973",
+          "question": "LeetCode #973: K Closest Points to Origin",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given an array of points where `points[i] = [xi, yi]` represents a point on the X-Y plane and an integer `k`, return the `k` closest points to origin (0, 0).",
+              "**Example**: Input: points = [[1,3],[-2,2]], k = 1 -> Output: [[-2,2]]",
+              "**Constraints**: Euclidean distance formula: x^2 + y^2.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given an array of points where `points[i] = [xi, yi]` represents a point on the X-Y plane and an integer `k`, return the `k` closest points "
+          },
+          "code": "import heapq\n\ndef k_closest(points: list[list[int]], k: int) -> list[list[int]]:\n    # YOUR CODE HERE\n    pass\n\nprint(k_closest([[1,3],[-2,2]], 1))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "heap",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Store distance as heap key: d = x**2 + y**2. Use heapq.nsmallest(k, points, key=lambda p: p[0]**2 + p[1]**2).",
+            "code": "import heapq\n\ndef k_closest(points: list[list[int]], k: int) -> list[list[int]]:\n    return heapq.nsmallest(k, points, key=lambda p: p[0]**2 + p[1]**2)\n\nprint('1 Closest:', k_closest([[1,3],[-2,2]], 1))\nprint('2 Closest:', k_closest([[3,3],[5,-1],[-2,4]], 2))",
+            "timeComplexity": "O(N log K)",
+            "spaceComplexity": "O(K)"
+          }
+        },
+        {
+          "id": 99,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Heaps & Priority Queues",
+          "step": "10.2-R5",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "Real-World: Cloud Job Scheduler",
+          "question": "Real-Time Scenario: Cloud Server Task Priority Scheduler",
+          "explanation": {
+            "points": [
+              "**Challenge**: Implement a priority queue scheduler where jobs have priorities (1=Highest, 10=Lowest). Workers always pop the highest priority job first.",
+              "**Example**: Jobs: ('Send Email', 5), ('Process Payment', 1), ('Log Metric', 9) -> Process Payment runs first!",
+              "**Constraints**: Handle jobs with identical priority cleanly using sequence counters.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Implement a priority queue scheduler where jobs have priorities (1=Highest, 10=Lowest). Workers always pop the highest priority job first."
+          },
+          "code": "import heapq\n\nclass PriorityScheduler:\n    def __init__(self):\n        pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "heap",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Store tuples in min-heap: (priority, counter, task_name). The counter prevents comparing task objects when priorities are equal.",
+            "code": "import heapq\n\nclass PriorityScheduler:\n    def __init__(self):\n        self.heap = []\n        self.counter = 0\n    def add_task(self, name: str, priority: int):\n        # Lower priority number = higher urgency\n        heapq.heappush(self.heap, (priority, self.counter, name))\n        self.counter += 1\n    def get_next_task(self):\n        if not self.heap: return None\n        priority, _, name = heapq.heappop(self.heap)\n        return f'Running {name} [Priority {priority}]'\n\nscheduler = PriorityScheduler()\nscheduler.add_task('Send Marketing Email', 8)\nscheduler.add_task('Process Stripe Payment', 1)\nscheduler.add_task('Update User Avatar', 4)\nprint(scheduler.get_next_task())\nprint(scheduler.get_next_task())",
+            "timeComplexity": "O(log N)",
+            "spaceComplexity": "O(N)"
+          }
+        },
+        {
+          "id": 100,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Heaps & Priority Queues",
+          "step": "10.2-R6",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "Real-World: Ride Sharing Matcher",
+          "question": "Real-Time Scenario: Uber/Lyft Driver Proximity Matcher",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given passenger coordinates (px, py) and a fleet of active driver locations, find the K closest available drivers in real-time.",
+              "**Example**: Find 2 closest drivers to user at (40.71, -74.00).",
+              "**Constraints**: Fleet can have thousands of drivers; extract top K in sub-millisecond time.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given passenger coordinates (px, py) and a fleet of active driver locations, find the K closest available drivers in real-time."
+          },
+          "code": "import heapq\n\ndef find_nearest_drivers(passenger_loc, drivers, k=3):\n    # YOUR CODE HERE\n    pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "heap",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Compute Euclidean distance squared (px - dx)**2 + (py - dy)**2. Use heapq.nsmallest with custom key.",
+            "code": "import heapq\n\ndef find_nearest_drivers(passenger_loc, drivers, k=2):\n    px, py = passenger_loc\n    def dist_sq(driver):\n        dx, dy = driver['loc']\n        return (px - dx)**2 + (py - dy)**2\n    return heapq.nsmallest(k, drivers, key=dist_sq)\n\ndriver_fleet = [\n    {'id': 'D1', 'loc': (40.75, -73.98)},\n    {'id': 'D2', 'loc': (40.72, -74.01)},\n    {'id': 'D3', 'loc': (40.80, -73.90)}\n]\nprint('Nearest Drivers:', find_nearest_drivers((40.71, -74.00), driver_fleet, k=2))",
+            "timeComplexity": "O(N log K)",
+            "spaceComplexity": "O(K)"
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Hash Tables & Collisions",
+      "slides": [
+        {
+          "id": 101,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Hash Tables & Collisions",
+          "step": "11.1",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "Hash Tables",
+          "question": "How do Hash Tables power Python dictionaries in O(1) time?",
+          "explanation": {
+            "points": [
+              "A **Hash Table** transforms any key into an integer array index using a hash function `hash(key) % array_size`.",
+              "Enables **O(1) average time complexity** for insertion, lookup, and deletion.",
+              "**Collisions** happen when two distinct keys yield the same bucket index. Python handles collisions using **open addressing with pseudo-random probing**.",
+              "Requires keys to be immutable and hashable (implements `__hash__` and `__eq__`)."
+            ]
+          },
+          "code": "# 1. Python's built-in hash() function\nprint(\"hash('apple'):\", hash('apple'))\nprint(\"hash('banana'):\", hash('banana'))\n\n# 2. Simulating bucket slot mapping for array of size 8\nbuckets = [None] * 8\nfor fruit in [\"apple\", \"banana\", \"orange\", \"grape\"]:\n    slot = abs(hash(fruit)) % 8\n    buckets[slot] = fruit\n    print(f\"Key: '{fruit}' ➔ Slot: {slot}\")\n\nprint(\"\\nMemory Buckets:\", buckets)",
+          "tip": "Walk viewers through the bucket collision visualizer below to show how keys map to memory indices.",
+          "viz": {
+            "type": "hash-table",
+            "data": {}
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Binary Search Tree",
+      "slides": [
+        {
+          "id": 102,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Binary Search Tree",
+          "step": "12.1",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "Trees",
+          "question": "What is a Binary Search Tree (BST) and how does O(log n) search work?",
+          "explanation": {
+            "points": [
+              "A **Binary Search Tree** is a hierarchical node structure where each node has at most two children.",
+              "**BST Invariant**: All values in the left subtree are **smaller** than the node, and all values in the right subtree are **greater**.",
+              "Search, Insertion, and Deletion run in **O(log n)** time on balanced trees (halves the search space at every step).",
+              "In-order traversal (`Left ➔ Root ➔ Right`) visits BST nodes in sorted ascending order."
+            ]
+          },
+          "code": "class BSTNode:\n    def __init__(self, val):\n        self.val = val\n        self.left = None\n        self.right = None\n\ndef insert(root, val):\n    if not root: return BSTNode(val)\n    if val < root.val: root.left = insert(root.left, val)\n    else: root.right = insert(root.right, val)\n    return root\n\ndef search(root, target):\n    if not root or root.val == target:\n        return root is not None\n    if target < root.val:\n        return search(root.left, target)\n    return search(root.right, target)\n\nroot = None\nfor v in [50, 30, 70, 20, 40, 60, 80]:\n    root = insert(root, v)\n\nprint(\"Searching for 40 in BST:\", search(root, 40))\nprint(\"Searching for 99 in BST:\", search(root, 99))",
+          "tip": "Click 'Search Node' in the visual to watch the search pointer branch left or right based on the comparison.",
+          "viz": {
+            "type": "bst",
+            "data": {}
+          }
+        },
+        {
+          "id": 103,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Binary Search Tree",
+          "step": "12.1-P1",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "Practice 1",
+          "question": "Practice 1: Find Minimum and Maximum Values in a BST",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given the root of a Binary Search Tree, find and return both the minimum value (leftmost leaf) and maximum value (rightmost leaf).",
+              "**Example**: BST with nodes [50, 30, 70, 20, 80] -> Min: 20, Max: 80",
+              "**Constraints**: Traverse in O(h) where h is tree height.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given the root of a Binary Search Tree, find and return both the minimum value (leftmost leaf) and maximum value (rightmost leaf)."
+          },
+          "code": "def find_min_max_bst(root):\n    # YOUR CODE HERE\n    pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "bst",
+            "data": {}
+          },
+          "solution": {
+            "approach": "To find min, traverse curr = curr.left until curr.left is None. To find max, traverse curr = curr.right until curr.right is None.",
+            "code": "class BSTNode:\n    def __init__(self, val, left=None, right=None):\n        self.val = val\n        self.left = left\n        self.right = right\n\ndef find_min_max_bst(root):\n    if not root: return None, None\n    min_node = root\n    while min_node.left: min_node = min_node.left\n    max_node = root\n    while max_node.right: max_node = max_node.right\n    return min_node.val, max_node.val\n\nroot = BSTNode(50, BSTNode(30, BSTNode(20), BSTNode(40)), BSTNode(70, BSTNode(60), BSTNode(80)))\nprint('Min and Max:', find_min_max_bst(root))",
+            "timeComplexity": "O(h)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 104,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Binary Search Tree",
+          "step": "12.1-P2",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "Practice 2",
+          "question": "Practice 2: Sorted In-Order Traversal of BST",
+          "explanation": {
+            "points": [
+              "**Challenge**: Return the node values of a Binary Search Tree in sorted ascending order using in-order traversal (Left -> Root -> Right).",
+              "**Example**: Input: BST with [50, 30, 70] -> Output: [30, 50, 70]",
+              "**Constraints**: Recursive or iterative stack.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Return the node values of a Binary Search Tree in sorted ascending order using in-order traversal (Left -> Root -> Right)."
+          },
+          "code": "def inorder_traversal(root) -> list[int]:\n    # YOUR CODE HERE\n    pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "bst",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Recursively traverse root.left, append root.val, and recursively traverse root.right.",
+            "code": "def inorder_traversal(root) -> list[int]:\n    res = []\n    def dfs(node):\n        if not node: return\n        dfs(node.left)\n        res.append(node.val)\n        dfs(node.right)\n    dfs(root)\n    return res\n\nroot = BSTNode(50, BSTNode(30, BSTNode(20), BSTNode(40)), BSTNode(70, BSTNode(60), BSTNode(80)))\nprint('Sorted In-Order:', inorder_traversal(root))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(N)"
+          }
+        },
+        {
+          "id": 105,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Binary Search Tree",
+          "step": "12.1-L3",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "LeetCode: LeetCode #700",
+          "question": "LeetCode #700: Search in a Binary Search Tree",
+          "explanation": {
+            "points": [
+              "**Challenge**: Find the node in the BST that the node's value equals `val` and return the subtree rooted with that node. If such a node does not exist, return null.",
+              "**Example**: Search 40 in BST -> returns subtree with root 40.",
+              "**Constraints**: Number of nodes in tree [1, 5000].",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Find the node in the BST that the node's value equals `val` and return the subtree rooted with that node. If such a node does not exist, ret"
+          },
+          "code": "def search_bst(root, val):\n    # YOUR CODE HERE\n    pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "bst",
+            "data": {}
+          },
+          "solution": {
+            "approach": "While root and val != root.val: if val < root.val go left else go right. Return root.",
+            "code": "def search_bst(root, val):\n    curr = root\n    while curr and curr.val != val:\n        if val < curr.val:\n            curr = curr.left\n        else:\n            curr = curr.right\n    return curr\n\nfound = search_bst(root, 70)\nprint('Found 70:', found.val if found else None)",
+            "timeComplexity": "O(h) (O(log N) avg, O(N) worst)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 106,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Binary Search Tree",
+          "step": "12.1-L4",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "LeetCode: LeetCode #98",
+          "question": "LeetCode #98: Validate Binary Search Tree",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given the root of a binary tree, determine if it is a valid binary search tree (every node's left subtree contains only values strictly less, right strictly greater).",
+              "**Example**: Input: [2, 1, 3] -> Output: True | Input: [5, 1, 4, null, null, 3, 6] -> Output: False",
+              "**Constraints**: Subtree invariants must hold for all ancestors, not just direct children.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given the root of a binary tree, determine if it is a valid binary search tree (every node's left subtree contains only values strictly less"
+          },
+          "code": "def is_valid_bst(root) -> bool:\n    # YOUR CODE HERE\n    pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "bst",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Pass running bounds (low, high) recursively. A node is valid if low < node.val < high, and validate(node.left, low, node.val) and validate(node.right, node.val, high).",
+            "code": "def is_valid_bst(root) -> bool:\n    def validate(node, low=float('-inf'), high=float('inf')):\n        if not node: return True\n        if not (low < node.val < high): return False\n        return validate(node.left, low, node.val) and validate(node.right, node.val, high)\n    return validate(root)\n\nprint('Is valid root?', is_valid_bst(root))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(h)"
+          }
+        },
+        {
+          "id": 107,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Binary Search Tree",
+          "step": "12.1-R5",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "Real-World: IP Range Matcher",
+          "question": "Real-Time Scenario: IP Address Subnet Routing Range Matcher",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given an integer representation of an IP address, lookup the corresponding cloud server cluster using a BST IP range lookup in O(log N).",
+              "**Example**: IP 192168010 falls in range [192168000 - 192168255] -> routes to 'US-East Cluster'.",
+              "**Constraints**: Ranges do not overlap.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given an integer representation of an IP address, lookup the corresponding cloud server cluster using a BST IP range lookup in O(log N)."
+          },
+          "code": "def match_ip_range(root, ip_int):\n    # YOUR CODE HERE\n    pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "bst",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Each node contains range (start, end, cluster_name). If ip_int in range, return cluster. If ip_int < start, branch left; else branch right.",
+            "code": "class IPRangeNode:\n    def __init__(self, start, end, cluster, left=None, right=None):\n        self.start, self.end, self.cluster = start, end, cluster\n        self.left, self.right = left, right\n\ndef match_ip(node, ip):\n    if not node: return 'Default-Gateway'\n    if node.start <= ip <= node.end:\n        return node.cluster\n    if ip < node.start:\n        return match_ip(node.left, ip)\n    return match_ip(node.right, ip)\n\nip_tree = IPRangeNode(2000, 3000, 'US-East', IPRangeNode(1000, 1999, 'EU-Central'), IPRangeNode(3001, 4000, 'AP-South'))\nprint('IP 1500 ->', match_ip(ip_tree, 1500))\nprint('IP 2500 ->', match_ip(ip_tree, 2500))",
+            "timeComplexity": "O(log N)",
+            "spaceComplexity": "O(log N)"
+          }
+        },
+        {
+          "id": 108,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Binary Search Tree",
+          "step": "12.1-R6",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "Real-World: DB B-Tree Lookup",
+          "question": "Real-Time Scenario: Database Index Binary Search Tree Lookup",
+          "explanation": {
+            "points": [
+              "**Challenge**: Simulate a database primary key index lookup on indexed records (ID -> DiskOffset) using binary search traversal.",
+              "**Example**: Lookup ID 4001 returns DiskOffset 0x8FA0.",
+              "**Constraints**: Sub-millisecond index lookup.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Simulate a database primary key index lookup on indexed records (ID -> DiskOffset) using binary search traversal."
+          },
+          "code": "def index_lookup(root, record_id):\n    # YOUR CODE HERE\n    pass",
+          "tip": "Pedagogical Note: While production relational databases (PostgreSQL, MySQL InnoDB) use multi-way B+Trees with hundreds of keys per disk page, the underlying search logic operates on the binary partitioning principle demonstrated here.",
+          "viz": {
+            "type": "bst",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Standard BST binary search returning node.disk_offset.",
+            "code": "class IndexNode:\n    def __init__(self, key, offset, left=None, right=None):\n        self.key = key\n        self.offset = offset\n        self.left = left\n        self.right = right\n\ndef find_offset(root, key):\n    curr = root\n    while curr:\n        if key == curr.key: return curr.offset\n        curr = curr.left if key < curr.key else curr.right\n    return None\n\nidx = IndexNode(100, 0x1000, IndexNode(50, 0x0500), IndexNode(150, 0x1500))\nprint('Disk offset for ID 150:', hex(find_offset(idx, 150)))",
+            "timeComplexity": "O(log N)",
+            "spaceComplexity": "O(1)"
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Recursion & Call Stack",
+      "slides": [
+        {
+          "id": 109,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Recursion & Call Stack",
+          "step": "13.1",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "Recursion",
+          "question": "How does Recursion solve problems by calling itself?",
+          "explanation": {
+            "points": [
+              "**Recursion** is a programming technique where a function calls itself to solve smaller sub-problems.",
+              "Every recursive function requires two parts: **1. Base Case** (stops recursion) and **2. Recursive Case** (breaks down work).",
+              "Without a base case, recursion causes a `RecursionError: maximum recursion depth exceeded` (Stack Overflow).",
+              "Each recursive invocation pushes a new stack frame onto the system call stack."
+            ]
+          },
+          "code": "def factorial(n: int) -> int:\n    # 1. Base Case: stops recursion\n    if n <= 1:\n        return 1\n    # 2. Recursive Case: calls itself with (n - 1)\n    return n * factorial(n - 1)\n\nprint(\"Factorial(5) = 5 * 4 * 3 * 2 * 1 =\", factorial(5))\n\ndef fibonacci(n: int) -> int:\n    if n <= 0: return 0\n    if n == 1: return 1\n    return fibonacci(n - 1) + fibonacci(n - 2)\n\nprint(\"Fibonacci sequence:\", [fibonacci(i) for i in range(8)])",
+          "tip": "Show how each recursive call pushes a stack frame and then pops off in reverse order once the base case returns.",
+          "viz": {
+            "type": "stack",
+            "data": {}
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Sorting Algorithms",
+      "slides": [
+        {
+          "id": 110,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Sorting Algorithms",
+          "step": "14.1",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "Sorting",
+          "question": "How do Bubble Sort, Merge Sort, and Python's Timsort organize data?",
+          "explanation": {
+            "points": [
+              "**Bubble Sort**: Compares adjacent elements and swaps them if out of order (**O(n²)** worst/average time, simple but inefficient).",
+              "**Merge Sort**: Divide-and-conquer algorithm that recursively splits arrays in half and merges sorted halves in **O(n log n)** time.",
+              "**Timsort**: Python's native sorting algorithm (`sorted()` and `list.sort()`), a hybrid of Merge Sort and Insertion Sort designed by Tim Peters.",
+              "Timsort achieves **O(n log n)** worst case and **O(n)** best case on real-world partially sorted datasets."
+            ]
+          },
+          "code": "# 1. Bubble Sort implementation\ndef bubble_sort(arr):\n    n = len(arr)\n    for i in range(n):\n        swapped = False\n        for j in range(0, n - i - 1):\n            if arr[j] > arr[j + 1]:\n                arr[j], arr[j + 1] = arr[j + 1], arr[j]\n                swapped = True\n        if not swapped: break\n    return arr\n\nraw_data = [64, 34, 25, 12, 22, 11, 90]\nprint(\"Bubble sorted:\", bubble_sort(raw_data.copy()))\n\n# 2. Python's built-in Timsort (Fast, C-speed)\nprint(\"Python sorted():\", sorted(raw_data))\nprint(\"Custom key sort:\", sorted([\"apple\", \"banana\", \"kiwi\"], key=len))",
+          "tip": "Click 'Run Sort' in the visual below to watch animated comparisons (amber) and swaps (rose) in real time.",
+          "viz": {
+            "type": "sorting",
+            "data": {}
+          }
+        },
+        {
+          "id": 111,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Sorting Algorithms",
+          "step": "14.1-P1",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "Practice 1",
+          "question": "Practice 1: Sort List of Tuples by Second Element",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given a list of tuples `(name, score)`, sort them in descending order of score using Python's `sort(key=...)`.",
+              "**Example**: Input: [('Alice', 85), ('Bob', 95), ('Charlie', 90)] -> Output: [('Bob', 95), ('Charlie', 90), ('Alice', 85)]",
+              "**Constraints**: O(N log N) using Timsort.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given a list of tuples `(name, score)`, sort them in descending order of score using Python's `sort(key=...)`."
+          },
+          "code": "def sort_by_score(records: list[tuple[str, int]]):\n    # YOUR CODE HERE\n    pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "sorting",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Use sorted(records, key=lambda r: r[1], reverse=True).",
+            "code": "def sort_by_score(records: list[tuple[str, int]]):\n    return sorted(records, key=lambda r: r[1], reverse=True)\n\nstudents = [('Alice', 85), ('Bob', 95), ('Charlie', 90)]\nprint('Sorted by score:', sort_by_score(students))",
+            "timeComplexity": "O(N log N)",
+            "spaceComplexity": "O(N)"
+          }
+        },
+        {
+          "id": 112,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Sorting Algorithms",
+          "step": "14.1-P2",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "Practice 2",
+          "question": "Practice 2: Sort String Characters Alphabetically",
+          "explanation": {
+            "points": [
+              "**Challenge**: Sort characters in a string alphabetically and return the resulting string.",
+              "**Example**: Input: 'python' -> Output: 'hnopty'",
+              "**Constraints**: Case-sensitive sorting.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Sort characters in a string alphabetically and return the resulting string."
+          },
+          "code": "def sort_string(s: str) -> str:\n    # YOUR CODE HERE\n    pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "sorting",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Convert string to sorted list with sorted(s) and combine with ''.join().",
+            "code": "def sort_string(s: str) -> str:\n    return ''.join(sorted(s))\n\nprint('python ->', sort_string('python'))\nprint('antigravity ->', sort_string('antigravity'))",
+            "timeComplexity": "O(N log N)",
+            "spaceComplexity": "O(N)"
+          }
+        },
+        {
+          "id": 113,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Sorting Algorithms",
+          "step": "14.1-L3",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "LeetCode: LeetCode #75",
+          "question": "LeetCode #75: Sort Colors (Dutch National Flag)",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given an array `nums` with `n` objects colored red, white, or blue (represented as 0, 1, 2), sort them in-place so that objects of the same color are adjacent.",
+              "**Example**: Input: nums = [2,0,2,1,1,0] -> Output: [0,0,1,1,2,2]",
+              "**Constraints**: Must solve in one pass with O(1) extra space without library sort.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given an array `nums` with `n` objects colored red, white, or blue (represented as 0, 1, 2), sort them in-place so that objects of the same "
+          },
+          "code": "def sort_colors(nums: list[int]) -> None:\n    # YOUR CODE HERE\n    pass\n\narr = [2,0,2,1,1,0]\nsort_colors(arr)\nprint('Sorted colors:', arr)",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "sorting",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Dutch National Flag Algorithm: 3 pointers `low = 0`, `mid = 0`, `high = len-1`. If nums[mid]==0: swap(low, mid), low++, mid++. If nums[mid]==1: mid++. If nums[mid]==2: swap(mid, high), high--.",
+            "code": "def sort_colors(nums: list[int]) -> None:\n    low = mid = 0\n    high = len(nums) - 1\n    while mid <= high:\n        if nums[mid] == 0:\n            nums[low], nums[mid] = nums[mid], nums[low]\n            low += 1\n            mid += 1\n        elif nums[mid] == 1:\n            mid += 1\n        else:  # nums[mid] == 2\n            nums[mid], nums[high] = nums[high], nums[mid]\n            high -= 1\n\narr = [2, 0, 2, 1, 1, 0]\nsort_colors(arr)\nprint('Sorted:', arr)",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 114,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Sorting Algorithms",
+          "step": "14.1-L4",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "LeetCode: LeetCode #88",
+          "question": "LeetCode #88: Merge Sorted Array",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given two sorted integer arrays `nums1` and `nums2`, merge `nums2` into `nums1` as one sorted array in-place. `nums1` has size `m + n`.",
+              "**Example**: Input: nums1 = [1,2,3,0,0,0], m = 3, nums2 = [2,5,6], n = 3 -> Output: [1,2,2,3,5,6]",
+              "**Constraints**: Fill nums1 from the back to avoid overwriting elements.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given two sorted integer arrays `nums1` and `nums2`, merge `nums2` into `nums1` as one sorted array in-place. `nums1` has size `m + n`."
+          },
+          "code": "def merge(nums1: list[int], m: int, nums2: list[int], n: int) -> None:\n    # YOUR CODE HERE\n    pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "sorting",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Three pointers starting from the back: `p1 = m - 1`, `p2 = n - 1`, and `p = m + n - 1`. Place the larger of nums1[p1] and nums2[p2] at nums1[p].",
+            "code": "def merge(nums1: list[int], m: int, nums2: list[int], n: int) -> None:\n    p1 = m - 1\n    p2 = n - 1\n    p = m + n - 1\n    while p1 >= 0 and p2 >= 0:\n        if nums1[p1] > nums2[p2]:\n            nums1[p] = nums1[p1]\n            p1 -= 1\n        else:\n            nums1[p] = nums2[p2]\n            p2 -= 1\n        p -= 1\n    # Copy remaining elements from nums2\n    nums1[:p2 + 1] = nums2[:p2 + 1]\n\narr1 = [1, 2, 3, 0, 0, 0]\nmerge(arr1, 3, [2, 5, 6], 3)\nprint('Merged:', arr1)",
+            "timeComplexity": "O(M + N)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 115,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Sorting Algorithms",
+          "step": "14.1-R5",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "Real-World: E-Commerce Ranker",
+          "question": "Real-Time Scenario: Multi-Attribute Product Catalog Ranker",
+          "explanation": {
+            "points": [
+              "**Challenge**: Sort products by multiple criteria: In-Stock first (True > False), then Rating descending, then Price ascending.",
+              "**Example**: In-stock 4.8 star $20 beats in-stock 4.8 star $30 beats out-of-stock 5.0 star.",
+              "**Constraints**: Python's sort is stable and supports tuple keys.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Sort products by multiple criteria: In-Stock first (True > False), then Rating descending, then Price ascending."
+          },
+          "code": "def rank_products(products: list[dict]):\n    # YOUR CODE HERE\n    pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "sorting",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Sort with key tuple: (not p['in_stock'], -p['rating'], p['price']).",
+            "code": "def rank_products(products: list[dict]):\n    return sorted(\n        products,\n        key=lambda p: (not p['in_stock'], -p['rating'], p['price'])\n    )\n\ncatalog = [\n    {'id': 'P1', 'in_stock': False, 'rating': 5.0, 'price': 10},\n    {'id': 'P2', 'in_stock': True, 'rating': 4.5, 'price': 50},\n    {'id': 'P3', 'in_stock': True, 'rating': 4.8, 'price': 25},\n    {'id': 'P4', 'in_stock': True, 'rating': 4.8, 'price': 15}\n]\nprint('Ranked IDs:', [p['id'] for p in rank_products(catalog)])",
+            "timeComplexity": "O(N log N)",
+            "spaceComplexity": "O(N)"
+          }
+        },
+        {
+          "id": 116,
+          "section": "2. Data Structures & Algorithms",
+          "topic": "Sorting Algorithms",
+          "step": "14.1-R6",
+          "category": "dsa",
+          "categoryLabel": "DSA",
+          "tag": "Real-World: Leaderboard Sorter",
+          "question": "Real-Time Scenario: Gaming Leaderboard with Ties & Ranks",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given gaming players and scores, assign competitive ranks (1, 2, 2, 4...) where ties receive the same rank and next rank skips.",
+              "**Example**: Scores [100, 90, 90, 80] -> Ranks [1, 2, 2, 4]",
+              "**Constraints**: O(N log N) runtime.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given gaming players and scores, assign competitive ranks (1, 2, 2, 4...) where ties receive the same rank and next rank skips."
+          },
+          "code": "def compute_leaderboard(players: list[dict]):\n    # YOUR CODE HERE\n    pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "sorting",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Sort players descending by score. Track current_rank, last_score, and index.",
+            "code": "def compute_leaderboard(players: list[dict]):\n    sorted_players = sorted(players, key=lambda p: p['score'], reverse=True)\n    ranked = []\n    curr_rank = 1\n    for i, p in enumerate(sorted_players):\n        if i > 0 and p['score'] < sorted_players[i - 1]['score']:\n            curr_rank = i + 1\n        ranked.append({'rank': curr_rank, 'name': p['name'], 'score': p['score']})\n    return ranked\n\nscores = [\n    {'name': 'Alice', 'score': 100},\n    {'name': 'Bob', 'score': 90},\n    {'name': 'Charlie', 'score': 90},\n    {'name': 'Dave', 'score': 75}\n]\nprint(compute_leaderboard(scores))",
+            "timeComplexity": "O(N log N)",
+            "spaceComplexity": "O(N)"
+          }
+        }
+      ]
+    }
+  ]
+}

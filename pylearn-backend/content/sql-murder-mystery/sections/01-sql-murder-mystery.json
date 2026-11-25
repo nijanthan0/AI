@@ -1,0 +1,549 @@
+{
+  "section": "SQL Murder Mystery",
+  "order": 1,
+  "topics": [
+    {
+      "topic": "Phase 1: The Crime Scene Report",
+      "slides": [
+        {
+          "id": "smm-1",
+          "language": "sql",
+          "section": "SQL Murder Mystery",
+          "topic": "Phase 1: The Crime Scene Report",
+          "step": "Case 1.1",
+          "category": "sql",
+          "categoryLabel": "Detective Case",
+          "tag": "Crime Scene",
+          "question": "Phase 1: Retrieve the Crime Scene Report for the Murder in SQL City",
+          "explanation": {
+            "points": [
+              "**Detective Briefing**: A murder occurred in **'SQL City'** on **January 15, 2024** (`date = '2024-01-15'`).",
+              "Your first task as lead detective is to query the `crime_scene_reports` table for `type = 'murder'`, `city = 'SQL City'`, and `date = '2024-01-15'`.",
+              "Read the officer's description to discover the identities of the two key eyewitnesses.",
+              "Click **▶ Run** to execute the query in your local SQLite terminal."
+            ],
+            "highlight": "Query crime_scene_reports where city = 'SQL City' AND type = 'murder' AND date = '2024-01-15'."
+          },
+          "code": "-- PHASE 1: Find the official murder incident report\nSELECT date, city, type, description\nFROM crime_scene_reports\nWHERE city = 'SQL City' \n  AND type = 'murder' \n  AND date = '2024-01-15';",
+          "tip": "Explain to your audience that every real forensic database investigation starts by scoping the incident timestamp and geographic jurisdiction.",
+          "viz": {
+            "type": "case-file",
+            "data": {
+              "caseId": "CASE #2024-MURDER-SQL",
+              "caseName": "The SQL City Homicide Investigation",
+              "theme": "detective",
+              "stageNumber": 1,
+              "totalStages": 7,
+              "briefing": "At 03:00 AM on Jan 15, 2024, emergency dispatch reported a homicide in SQL City. The perpetrator fled the scene. Inspect the crime scene report to find initial leads on witnesses.",
+              "clues": [
+                {
+                  "id": 1,
+                  "title": "Crime Scene Dispatch Report",
+                  "status": "current",
+                  "lead": "Search crime_scene_reports for city = 'SQL City' on 2024-01-15."
+                },
+                {
+                  "id": 2,
+                  "title": "Locate the 2 Eyewitnesses",
+                  "status": "locked",
+                  "lead": "Find the resident on Franklin Ave and the resident on Northwestern Dr."
+                },
+                {
+                  "id": 3,
+                  "title": "Witness Transcripts",
+                  "status": "locked",
+                  "lead": "Read witness testimony in witness_interviews."
+                },
+                {
+                  "id": 4,
+                  "title": "Gym Membership Record",
+                  "status": "locked",
+                  "lead": "Match 48Z gold membership and check-in timestamp."
+                },
+                {
+                  "id": 5,
+                  "title": "The Hitman Apprehended",
+                  "status": "locked",
+                  "lead": "Verify vehicle plate H42W and arrest the shooter."
+                },
+                {
+                  "id": 6,
+                  "title": "The Mastermind Behind the Hit",
+                  "status": "locked",
+                  "lead": "Unmask the wealthy red-haired woman with the Tesla Model S."
+                }
+              ],
+              "rawEvidenceSnippet": "POLICE DISPATCH LOG:\n[2024-01-15 03:14:02 EST] 911 CALL RECEIVED - SHOTS FIRED IN SQL CITY CENTRAL PLAZA.\nUNIT 42 RESPONDING. CORONER DISPATCHED."
+            }
+          },
+          "solution": {
+            "approach": "Filter the crime_scene_reports table with matching city, type, and date.",
+            "code": "SELECT * FROM crime_scene_reports WHERE city = 'SQL City' AND type = 'murder' AND date = '2024-01-15';",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(1)",
+            "explanationPoints": [
+              "The report notes: 'Security footage reveals that there were 2 witnesses. The first witness lives at the last house on Northwestern Dr. The second witness, named Annabel, lives somewhere on Franklin Ave.'",
+              "We now have concrete search parameters for the `person` table!"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Phase 2: Locating the Eyewitnesses",
+      "slides": [
+        {
+          "id": "smm-2",
+          "language": "sql",
+          "section": "SQL Murder Mystery",
+          "topic": "Phase 2: Locating the Eyewitnesses",
+          "step": "Case 1.2",
+          "category": "sql",
+          "categoryLabel": "Detective Case",
+          "tag": "Witness Search",
+          "question": "Phase 2: Query the `person` table to find the IDs of both eyewitnesses",
+          "explanation": {
+            "points": [
+              "**Clue Recall**: The report states:",
+              "1. Witness 1 lives at the **last house on Northwestern Dr** (`ORDER BY address_number DESC LIMIT 1`).",
+              "2. Witness 2 is named **Annabel** and lives on **Franklin Ave** (`name LIKE 'Annabel%' AND address_street_name = 'Franklin Ave'`).",
+              "Query `person` to uncover their `id`, `name`, `address_number`, and `address_street_name`."
+            ],
+            "highlight": "Find the maximum address number on Northwestern Dr, and Annabel on Franklin Ave."
+          },
+          "code": "-- Witness 1: The last house on Northwestern Dr\nSELECT id, name, address_number, address_street_name\nFROM person\nWHERE address_street_name = 'Northwestern Dr'\nORDER BY address_number DESC\nLIMIT 1;\n\n-- Witness 2: Annabel on Franklin Ave\nSELECT id, name, address_number, address_street_name\nFROM person\nWHERE address_street_name = 'Franklin Ave' AND name LIKE 'Annabel%';",
+          "tip": "Explain that finding the 'last house' is cleanly expressed with ORDER BY address_number DESC LIMIT 1.",
+          "viz": {
+            "type": "case-file",
+            "data": {
+              "caseId": "CASE #2024-MURDER-SQL",
+              "caseName": "The SQL City Homicide Investigation",
+              "theme": "detective",
+              "stageNumber": 2,
+              "totalStages": 7,
+              "briefing": "We know the addresses of both witnesses. Search the municipal civic registry (person table) to obtain their person_ids.",
+              "clues": [
+                {
+                  "id": 1,
+                  "title": "Crime Scene Dispatch Report",
+                  "status": "unlocked",
+                  "lead": "Report identified 2 witnesses on Northwestern Dr & Franklin Ave.",
+                  "revealedInfo": "Witness 1: Northwestern Dr (last house). Witness 2: Annabel on Franklin Ave."
+                },
+                {
+                  "id": 2,
+                  "title": "Locate the 2 Eyewitnesses",
+                  "status": "current",
+                  "lead": "Find the resident on Franklin Ave and the resident on Northwestern Dr."
+                },
+                {
+                  "id": 3,
+                  "title": "Witness Transcripts",
+                  "status": "locked",
+                  "lead": "Read witness testimony in witness_interviews."
+                }
+              ],
+              "suspects": [
+                {
+                  "name": "Morty Schapiro",
+                  "alias": "Witness #1",
+                  "status": "cleared",
+                  "notes": "Lives at 4919 Northwestern Dr (last house on street). Person ID: 14887."
+                },
+                {
+                  "name": "Annabel Miller",
+                  "alias": "Witness #2",
+                  "status": "cleared",
+                  "notes": "Lives at 103 Franklin Ave. Person ID: 16371."
+                }
+              ]
+            }
+          },
+          "solution": {
+            "approach": "Query person table twice or with UNION to retrieve Morty Schapiro (14887) and Annabel Miller (16371).",
+            "code": "SELECT id, name, address_number, address_street_name\nFROM person\nWHERE (address_street_name = 'Northwestern Dr' AND address_number = (SELECT MAX(address_number) FROM person WHERE address_street_name = 'Northwestern Dr'))\n   OR (address_street_name = 'Franklin Ave' AND name LIKE 'Annabel%');",
+            "timeComplexity": "O(N log N)",
+            "spaceComplexity": "O(1)",
+            "explanationPoints": [
+              "Witness 1 is **Morty Schapiro** (ID: `14887`) at 4919 Northwestern Dr.",
+              "Witness 2 is **Annabel Miller** (ID: `16371`) at 103 Franklin Ave."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Phase 3: Interrogating Witnesses",
+      "slides": [
+        {
+          "id": "smm-3",
+          "language": "sql",
+          "section": "SQL Murder Mystery",
+          "topic": "Phase 3: Interrogating Witnesses",
+          "step": "Case 1.3",
+          "category": "sql",
+          "categoryLabel": "Detective Case",
+          "tag": "Witness Interviews",
+          "question": "Phase 3: Read witness interview transcripts for Morty (14887) and Annabel (16371)",
+          "explanation": {
+            "points": [
+              "**Detective Action**: Search the `witness_interviews` table where `person_id IN (14887, 16371)`.",
+              "Pay close attention to:",
+              "- The gym membership bag details and membership code prefix.",
+              "- The partial vehicle license plate letters.",
+              "- The date when the witness recognized the killer at the gym."
+            ],
+            "highlight": "Query witness_interviews for person_id IN (14887, 16371) to extract killer leads."
+          },
+          "code": "-- PHASE 3: Read the transcripts of both witnesses\nSELECT person_id, transcript\nFROM witness_interviews\nWHERE person_id IN (14887, 16371);",
+          "tip": "Witness interviews in forensic SQL queries give qualitative unstructured leads that map to structured search queries.",
+          "viz": {
+            "type": "case-file",
+            "data": {
+              "caseId": "CASE #2024-MURDER-SQL",
+              "caseName": "The SQL City Homicide Investigation",
+              "theme": "detective",
+              "stageNumber": 3,
+              "totalStages": 7,
+              "briefing": "Detectives recorded interviews with Morty and Annabel. Inspect their testimony transcripts.",
+              "clues": [
+                {
+                  "id": 1,
+                  "title": "Crime Scene Dispatch Report",
+                  "status": "unlocked",
+                  "lead": "Report verified murder.",
+                  "revealedInfo": "Identified Morty Schapiro and Annabel Miller as sole eyewitnesses."
+                },
+                {
+                  "id": 2,
+                  "title": "Locate the 2 Eyewitnesses",
+                  "status": "unlocked",
+                  "lead": "IDs found.",
+                  "revealedInfo": "Morty Schapiro (14887), Annabel Miller (16371)."
+                },
+                {
+                  "id": 3,
+                  "title": "Witness Transcripts",
+                  "status": "current",
+                  "lead": "Analyze testimony in witness_interviews."
+                }
+              ],
+              "rawEvidenceSnippet": "TESTIMONY SNIPPET:\nMorty: 'He had a Get Fit Now Gym bag. The membership number started with 48Z. Only gold members have those. Car plate included H42W.'\nAnnabel: 'I recognized the killer from my gym when I worked out on Jan 9th.'"
+            }
+          },
+          "solution": {
+            "approach": "Query witness_interviews for both person_ids.",
+            "code": "SELECT person_id, transcript FROM witness_interviews WHERE person_id IN (14887, 16371);",
+            "timeComplexity": "O(1) with PK lookup",
+            "spaceComplexity": "O(1)",
+            "explanationPoints": [
+              "Morty reveals: Membership starts with **'48Z'**, must be **gold**, vehicle plate contains **'H42W'**.",
+              "Annabel reveals: Killer was at the gym on **January 9th, 2024**."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Phase 4: The Get Fit Now Gym Trail",
+      "slides": [
+        {
+          "id": "smm-4",
+          "language": "sql",
+          "section": "SQL Murder Mystery",
+          "topic": "Phase 4: The Get Fit Now Gym Trail",
+          "step": "Case 1.4",
+          "category": "sql",
+          "categoryLabel": "Detective Case",
+          "tag": "Gym Records",
+          "question": "Phase 4: Find gym members with '48Z%' gold status who checked in on 2024-01-09",
+          "explanation": {
+            "points": [
+              "**Detective Action**: Join `get_fit_now_members m` and `get_fit_now_checkins c`.",
+              "Criteria from witness testimony:",
+              "1. `m.id LIKE '48Z%'`",
+              "2. `m.membership_status = 'gold'`",
+              "3. `c.check_in_date = '2024-01-09'`",
+              "This narrows our suspect list down to 2 individuals!"
+            ],
+            "highlight": "Join gym members with check-ins on 2024-01-09 matching 48Z% and gold status."
+          },
+          "code": "-- PHASE 4: Cross-reference gym members and check-ins\nSELECT \n  m.id AS membership_id,\n  m.person_id,\n  m.name,\n  m.membership_status,\n  c.check_in_date,\n  c.check_in_time\nFROM get_fit_now_members m\nJOIN get_fit_now_checkins c ON m.id = c.membership_id\nWHERE m.id LIKE '48Z%'\n  AND m.membership_status = 'gold'\n  AND c.check_in_date = '2024-01-09';",
+          "tip": "Joining the membership roster with timestamp check-ins produces a tight suspect pool.",
+          "viz": {
+            "type": "case-file",
+            "data": {
+              "caseId": "CASE #2024-MURDER-SQL",
+              "caseName": "The SQL City Homicide Investigation",
+              "theme": "detective",
+              "stageNumber": 4,
+              "totalStages": 7,
+              "briefing": "Search gym records for members whose bags start with '48Z' who visited on Jan 9th.",
+              "clues": [
+                {
+                  "id": 4,
+                  "title": "Gym Membership Record",
+                  "status": "current",
+                  "lead": "Match 48Z gold members checked in on 2024-01-09."
+                }
+              ],
+              "suspects": [
+                {
+                  "name": "Joe Germuska",
+                  "alias": "Member #48Z7A",
+                  "status": "prime_suspect",
+                  "notes": "Checked in at 16:00. Person ID: 28819."
+                },
+                {
+                  "name": "Jeremy Bowers",
+                  "alias": "Member #48Z55",
+                  "status": "prime_suspect",
+                  "notes": "Checked in at 15:30. Person ID: 67318."
+                }
+              ]
+            }
+          },
+          "solution": {
+            "approach": "Join members and checkins filtering on 48Z%, gold status, and Jan 9th date.",
+            "code": "SELECT m.person_id, m.name, m.id FROM get_fit_now_members m JOIN get_fit_now_checkins c ON m.id = c.membership_id WHERE m.id LIKE '48Z%' AND m.membership_status = 'gold' AND c.check_in_date = '2024-01-09';",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(1)",
+            "explanationPoints": [
+              "Two prime suspects identified: **Joe Germuska** (Person ID: 28819) and **Jeremy Bowers** (Person ID: 67318).",
+              "Next clue: Check their driver's licenses for plate containing 'H42W'!"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Phase 5: The Vehicle & Killer Match",
+      "slides": [
+        {
+          "id": "smm-5",
+          "language": "sql",
+          "section": "SQL Murder Mystery",
+          "topic": "Phase 5: The Vehicle & Killer Match",
+          "step": "Case 1.5",
+          "category": "sql",
+          "categoryLabel": "Detective Case",
+          "tag": "Suspect Apprehended",
+          "question": "Phase 5: Check vehicle license plates of Joe Germuska & Jeremy Bowers to identify the shooter",
+          "explanation": {
+            "points": [
+              "**Detective Action**: Join `person p` and `drivers_licenses dl` for suspect IDs `(28819, 67318)`.",
+              "Match the plate number against Morty's testimony: `dl.plate_number LIKE '%H42W%'`.",
+              "Who drives the getaway car with plate matching H42W?",
+              "Click **▶ Run** to make the arrest!"
+            ],
+            "highlight": "Join person and drivers_licenses for both suspects filtering for plate_number LIKE '%H42W%'."
+          },
+          "code": "-- PHASE 5: Find which suspect drives the car with plate H42W\nSELECT \n  p.id AS person_id,\n  p.name,\n  dl.plate_number,\n  dl.car_make,\n  dl.car_model,\n  dl.gender,\n  dl.hair_color\nFROM person p\nJOIN drivers_licenses dl ON p.license_id = dl.id\nWHERE p.id IN (28819, 67318)\n  AND dl.plate_number LIKE '%H42W%';",
+          "tip": "Explain how cross-referencing vehicle registration with physical evidence establishes definitive proof.",
+          "viz": {
+            "type": "case-file",
+            "data": {
+              "caseId": "CASE #2024-MURDER-SQL",
+              "caseName": "The SQL City Homicide Investigation",
+              "theme": "detective",
+              "stageNumber": 5,
+              "totalStages": 7,
+              "briefing": "One of our two suspects drives the getaway vehicle with plate H42W. Query the Department of Motor Vehicles registry.",
+              "clues": [
+                {
+                  "id": 5,
+                  "title": "The Hitman Apprehended",
+                  "status": "unlocked",
+                  "lead": "Plate H42W verified.",
+                  "revealedInfo": "Jeremy Bowers drives Chevrolet Spark plate 0H42W2. HE IS THE SHOOTER!"
+                }
+              ],
+              "suspects": [
+                {
+                  "name": "Joe Germuska",
+                  "status": "cleared",
+                  "notes": "Plate 99AB41 does not match getaway car. Cleared of charges."
+                },
+                {
+                  "name": "Jeremy Bowers",
+                  "alias": "The Hitman",
+                  "status": "prime_suspect",
+                  "notes": "Drives Chevrolet Spark plate 0H42W2. Gold gym member 48Z55. ARRESTED!"
+                }
+              ]
+            }
+          },
+          "solution": {
+            "approach": "Match suspects to drivers licenses where plate_number LIKE '%H42W%'.",
+            "code": "SELECT p.id, p.name, dl.plate_number, dl.car_make, dl.car_model FROM person p JOIN drivers_licenses dl ON p.license_id = dl.id WHERE dl.plate_number LIKE '%H42W%';",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(1)",
+            "explanationPoints": [
+              "**Jeremy Bowers** (Person ID: `67318`) drives a Chevrolet Spark with plate **`0H42W2`**.",
+              "Jeremy Bowers is formally arrested as the hitman! But wait... did he act alone?"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Phase 6: The Killer's Secret Confession",
+      "slides": [
+        {
+          "id": "smm-6",
+          "language": "sql",
+          "section": "SQL Murder Mystery",
+          "topic": "Phase 6: The Killer's Secret Confession",
+          "step": "Case 1.6",
+          "category": "sql",
+          "categoryLabel": "Detective Case",
+          "tag": "Confession",
+          "question": "Phase 6: Interrogate Jeremy Bowers (67318) in witness_interviews to discover who hired him",
+          "explanation": {
+            "points": [
+              "**The Plot Twist**: In police custody, Jeremy Bowers confesses that he was just a hired hitman!",
+              "Query `witness_interviews` where `person_id = 67318` to read his full confession.",
+              "Identify the physical traits, vehicle, and events attended by the true mastermind who paid for the hit."
+            ],
+            "highlight": "Query witness_interviews where person_id = 67318 to read Jeremy Bowers' confession."
+          },
+          "code": "-- PHASE 6: Read Jeremy Bowers' custodial confession\nSELECT person_id, transcript\nFROM witness_interviews\nWHERE person_id = 67318;",
+          "tip": "Every great mystery has a mastermind behind the triggerman. This tests multi-constraint join logic.",
+          "viz": {
+            "type": "case-file",
+            "data": {
+              "caseId": "CASE #2024-MURDER-SQL",
+              "caseName": "The SQL City Homicide Investigation",
+              "theme": "detective",
+              "stageNumber": 6,
+              "totalStages": 7,
+              "briefing": "The hitman is talking. Read the transcript to identify the mastermind who funded the hit.",
+              "clues": [
+                {
+                  "id": 6,
+                  "title": "The Mastermind Behind the Hit",
+                  "status": "current",
+                  "lead": "Confession reveals female, red hair, height 65-67 inches, Tesla Model S, attended SQL Symphony Concert 3 times in Dec 2023."
+                }
+              ],
+              "rawEvidenceSnippet": "CONFESSION TRANSCRIPT:\n'I was hired by a woman with a lot of money. Around 5'5\" (65\") or 5'7\" (67\"). Red hair, drove a Tesla Model S. Attended the SQL Symphony Concert 3 times in December 2023.'"
+            }
+          },
+          "solution": {
+            "approach": "Query witness_interviews for Jeremy Bowers' ID (67318).",
+            "code": "SELECT transcript FROM witness_interviews WHERE person_id = 67318;",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(1)",
+            "explanationPoints": [
+              "Mastermind traits: Female, Red hair, Height between 65\" and 67\", drives a Tesla Model S.",
+              "Crucial event check-in clue: Attended the 'SQL Symphony Concert' exactly **3 times** in December 2023 (`date LIKE '2023-12%'`)."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Phase 7: Unmasking the Wealthy Mastermind",
+      "slides": [
+        {
+          "id": "smm-7",
+          "language": "sql",
+          "section": "SQL Murder Mystery",
+          "topic": "Phase 7: Unmasking the Wealthy Mastermind",
+          "step": "Case 1.7",
+          "category": "sql",
+          "categoryLabel": "Detective Case",
+          "tag": "Case Solved!",
+          "question": "Phase 7: Join drivers_licenses, person, and facebook_event_checkins to arrest the mastermind!",
+          "explanation": {
+            "points": [
+              "**Final Strike**: Combine all evidence into one master query:",
+              "- `dl.gender = 'female'` AND `dl.hair_color = 'red'`",
+              "- `dl.car_make = 'Tesla'` AND `dl.car_model = 'Model S'`",
+              "- `dl.height BETWEEN 65 AND 67`",
+              "- Attended `'SQL Symphony Concert'` **3 times** in December 2023 (`HAVING COUNT(*) = 3`).",
+              "Execute the query to unmask the mastermind and close the case!"
+            ],
+            "highlight": "Join person, drivers_licenses, and facebook_event_checkins with HAVING COUNT(*) = 3."
+          },
+          "code": "-- PHASE 7: Find the woman behind the murder\nSELECT \n  p.id,\n  p.name AS mastermind_name,\n  dl.car_make,\n  dl.car_model,\n  COUNT(*) AS concert_attendances\nFROM person p\nJOIN drivers_licenses dl ON p.license_id = dl.id\nJOIN facebook_event_checkins fb ON p.id = fb.person_id\nWHERE dl.gender = 'female'\n  AND dl.hair_color = 'red'\n  AND dl.car_make = 'Tesla'\n  AND dl.car_model = 'Model S'\n  AND dl.height BETWEEN 65 AND 67\n  AND fb.event_name = 'SQL Symphony Concert'\n  AND fb.date LIKE '2023-12%'\nGROUP BY p.id, p.name\nHAVING COUNT(*) = 3;",
+          "tip": "Congratulate your students on successfully solving the SQL Murder Mystery by chaining DQL, JOINs, and HAVING clauses!",
+          "viz": {
+            "type": "case-file",
+            "data": {
+              "caseId": "CASE #2024-MURDER-SQL",
+              "caseName": "The SQL City Homicide Investigation",
+              "theme": "detective",
+              "stageNumber": 7,
+              "totalStages": 7,
+              "briefing": "CASE SOLVED! All evidence converged on Miranda Priestly. The arrest warrant has been executed.",
+              "clues": [
+                {
+                  "id": 1,
+                  "title": "Crime Scene Dispatch Report",
+                  "status": "unlocked",
+                  "lead": "Report verified.",
+                  "revealedInfo": "Witnesses identified."
+                },
+                {
+                  "id": 2,
+                  "title": "Locate Eyewitnesses",
+                  "status": "unlocked",
+                  "lead": "Morty & Annabel located.",
+                  "revealedInfo": "Addresses confirmed."
+                },
+                {
+                  "id": 3,
+                  "title": "Witness Interviews",
+                  "status": "unlocked",
+                  "lead": "Gold gym member with 48Z bag & plate H42W.",
+                  "revealedInfo": "48Z bag confirmed."
+                },
+                {
+                  "id": 4,
+                  "title": "Gym Trail",
+                  "status": "unlocked",
+                  "lead": "Checkin on Jan 9th.",
+                  "revealedInfo": "Suspects: Joe & Jeremy."
+                },
+                {
+                  "id": 5,
+                  "title": "Hitman Apprehended",
+                  "status": "unlocked",
+                  "lead": "Jeremy Bowers arrested with plate 0H42W2.",
+                  "revealedInfo": "Jeremy Bowers confessed."
+                },
+                {
+                  "id": 6,
+                  "title": "Mastermind Unmasked",
+                  "status": "unlocked",
+                  "lead": "Miranda Priestly identified.",
+                  "revealedInfo": "ARREST WARRANT EXECUTED: MIRANDA PRIESTLY!"
+                }
+              ],
+              "suspects": [
+                {
+                  "name": "Miranda Priestly",
+                  "alias": "The Mastermind",
+                  "status": "mastermind",
+                  "notes": "Red hair, drives Tesla Model S plate VIP888. Attended 3 SQL Symphony concerts in Dec 2023. ARRESTED!"
+                }
+              ]
+            }
+          },
+          "solution": {
+            "approach": "Join person, drivers licenses, and facebook event checkins filtering for female, red hair, Tesla Model S, and 3 concerts in Dec 2023.",
+            "code": "SELECT p.name FROM person p JOIN drivers_licenses dl ON p.license_id = dl.id JOIN facebook_event_checkins fb ON p.id = fb.person_id WHERE dl.gender = 'female' AND dl.hair_color = 'red' AND dl.car_make = 'Tesla' AND dl.car_model = 'Model S' AND fb.event_name = 'SQL Symphony Concert' GROUP BY p.id, p.name HAVING COUNT(*) = 3;",
+            "timeComplexity": "O(N log N)",
+            "spaceComplexity": "O(1)",
+            "explanationPoints": [
+              "The query unmasks **Miranda Priestly** (ID: 99716)!",
+              "She drove the red Tesla Model S and checked in to the SQL Symphony Concert 3 times in December.",
+              "Congratulations! You have completed the SQL Murder Mystery investigation!"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,430 @@
+{
+  "section": "3. Manipulating Data",
+  "order": 3,
+  "topics": [
+    {
+      "topic": "INSERT Operations",
+      "slides": [
+        {
+          "id": "sql-23",
+          "language": "sql",
+          "section": "3. Manipulating Data",
+          "topic": "INSERT Operations",
+          "step": "3.1",
+          "category": "sql",
+          "categoryLabel": "Manipulating Data",
+          "tag": "Lesson",
+          "question": "How does the INSERT INTO statement add new records into database tables?",
+          "explanation": {
+            "points": [
+              "**`INSERT INTO table (col1, col2) VALUES (val1, val2);`** inserts a single new row.",
+              "Always explicitly list target column names: this ensures your query won't break if table columns change order later.",
+              "You can insert **multiple rows** in a single statement by chaining tuples: `VALUES (1, 'A'), (2, 'B'), (3, 'C');`.",
+              "Omitting a column sets it to its default value or `NULL` (if the column allows nulls)."
+            ],
+            "highlight": "Always specify target columns in INSERT to maintain schema resilience and support batch insertions."
+          },
+          "code": "-- Insert a new customer record\nINSERT INTO customers (id, name, email, country, referrer_id, joined_date)\nVALUES (7, 'Grace Hopper', 'grace@navy.mil', 'USA', NULL, '2024-04-01');\n\n-- Verify the inserted row\nSELECT * FROM customers WHERE id = 7;",
+          "tip": "Demonstrate how batch multi-row inserts reduce network roundtrips between backend apps and the database.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "customers (After INSERT)",
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "INTEGER",
+                  "isPk": true
+                },
+                {
+                  "name": "name",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "email",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "country",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "joined_date",
+                  "type": "TEXT"
+                }
+              ],
+              "rows": [
+                [
+                  7,
+                  "Grace Hopper",
+                  "grace@navy.mil",
+                  "USA",
+                  "2024-04-01"
+                ]
+              ],
+              "note": "New row successfully persisted"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "UPDATE Operations",
+      "slides": [
+        {
+          "id": "sql-24",
+          "language": "sql",
+          "section": "3. Manipulating Data",
+          "topic": "UPDATE Operations",
+          "step": "3.2",
+          "category": "sql",
+          "categoryLabel": "Manipulating Data",
+          "tag": "Lesson",
+          "question": "How does the UPDATE statement modify existing table values?",
+          "explanation": {
+            "points": [
+              "The **`UPDATE table SET col1 = val1, col2 = val2 WHERE condition;`** modifies matching rows.",
+              "**CRITICAL WARNING**: Always include a `WHERE` clause! An `UPDATE` without a `WHERE` updates **EVERY SINGLE ROW** in the table.",
+              "You can compute new values based on existing values (e.g. `SET price = price * 1.10` to apply a 10% price bump).",
+              "SQLite returns the count of affected rows upon completion."
+            ],
+            "highlight": "Never run an UPDATE without a WHERE clause unless you genuinely intend to overwrite every row in the table."
+          },
+          "code": "-- Apply a 10% inflation adjustment to Software Engineering books\nUPDATE books \nSET price = ROUND(price * 1.10, 2)\nWHERE category = 'Software Engineering';\n\n-- Verify updated prices\nSELECT id, title, category, price FROM books WHERE category = 'Software Engineering';",
+          "tip": "Tell students the industry horror story of missing WHERE clauses in production, and how transactions prevent disasters.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "books (Software Engineering Prices Adjusted)",
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "INTEGER",
+                  "isPk": true
+                },
+                {
+                  "name": "title",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "category",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "price",
+                  "type": "REAL"
+                }
+              ],
+              "rows": [
+                [
+                  1,
+                  "Clean Code",
+                  "Software Engineering",
+                  35.75
+                ],
+                [
+                  7,
+                  "Clean Architecture",
+                  "Software Engineering",
+                  38.5
+                ],
+                [
+                  8,
+                  "The Pragmatic Programmer",
+                  "Software Engineering",
+                  43.99
+                ]
+              ],
+              "note": "Prices increased by 10%"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Data Manipulation Quiz",
+      "slides": [
+        {
+          "id": "sql-25",
+          "language": "sql",
+          "section": "3. Manipulating Data",
+          "topic": "Data Manipulation Quiz",
+          "step": "3.3",
+          "category": "sql",
+          "categoryLabel": "Manipulating Data",
+          "tag": "Quiz",
+          "question": "Module 3 Quiz: Test your grasp of INSERT, UPDATE, and DELETE operations",
+          "explanation": {
+            "points": [
+              "Verify your understanding of SQL data manipulation rules.",
+              "Check what happens when constraints, nullability, or WHERE clauses are misconfigured.",
+              "Answer the questions on the interactive quiz card."
+            ],
+            "highlight": "Test your DML knowledge before running production mutations."
+          },
+          "code": "-- Interactive quiz slide.\n-- Answer questions in the visual panel on the left.\nSELECT 'Test your DML knowledge.' AS status;",
+          "tip": "Review transaction rollback procedures for accidental mass updates.",
+          "viz": {
+            "type": "sql-quiz",
+            "data": {
+              "quizTitle": "Module 3: Data Manipulation Language (DML) Quiz",
+              "questions": [
+                {
+                  "question": "What happens if you execute 'UPDATE employees SET salary = 90000;' without a WHERE clause?",
+                  "options": [
+                    "An error is raised because WHERE is strictly required",
+                    "Only the first employee record is updated",
+                    "Every employee in the entire table gets their salary changed to 90000",
+                    "The database creates a backup copy first"
+                  ],
+                  "answer": 2,
+                  "explanation": "Without a WHERE clause, UPDATE acts on all rows in the table unconditionally."
+                },
+                {
+                  "question": "Which statement can insert multiple rows into a table simultaneously?",
+                  "options": [
+                    "INSERT INTO t VALUES (1, 'A'), (2, 'B'), (3, 'C');",
+                    "INSERT MULTIPLE t (1, 'A') AND (2, 'B');",
+                    "ADD ROWS TO t WITH (1, 'A'), (2, 'B');",
+                    "BULK INSERT t [1, 'A', 2, 'B'];"
+                  ],
+                  "answer": 0,
+                  "explanation": "Standard SQL supports multi-row inserts by separating value tuples with commas."
+                },
+                {
+                  "question": "What is the primary danger of running 'DELETE FROM customers;'?",
+                  "options": [
+                    "It deletes the table structure and indexes",
+                    "It deletes all rows in the customers table, leaving an empty table",
+                    "It will prompt for confirmation automatically",
+                    "It only deletes customers with NULL IDs"
+                  ],
+                  "answer": 1,
+                  "explanation": "DELETE without WHERE removes all row records while preserving the table schema definition."
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "DELETE Operations",
+      "slides": [
+        {
+          "id": "sql-26",
+          "language": "sql",
+          "section": "3. Manipulating Data",
+          "topic": "DELETE Operations",
+          "step": "3.4",
+          "category": "sql",
+          "categoryLabel": "Manipulating Data",
+          "tag": "Lesson",
+          "question": "How does the DELETE statement safely remove records from a table?",
+          "explanation": {
+            "points": [
+              "**`DELETE FROM table WHERE condition;`** removes rows that satisfy the boolean condition.",
+              "Like `UPDATE`, omitting the `WHERE` clause deletes **ALL** records in the table.",
+              "Difference from `DROP TABLE`: `DELETE` removes data rows while leaving the table structure and indexes intact. `DROP` destroys the table entirely.",
+              "Foreign key constraints can prevent deletions if child tables reference the row, unless `ON DELETE CASCADE` is configured."
+            ],
+            "highlight": "DELETE FROM table removes row records based on WHERE; DROP TABLE destroys the table itself."
+          },
+          "code": "-- Remove cancelled test orders\nDELETE FROM orders \nWHERE status = 'CANCELLED';\n\n-- Inspect remaining active orders\nSELECT id, customer_id, total_amount, status FROM orders;",
+          "tip": "Show how soft-deletes (e.g. is_deleted = 1) are frequently preferred over hard physical DELETEs in production systems.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "orders (Active Records Remaining)",
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "INTEGER",
+                  "isPk": true
+                },
+                {
+                  "name": "customer_id",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "total_amount",
+                  "type": "REAL"
+                },
+                {
+                  "name": "status",
+                  "type": "TEXT"
+                }
+              ],
+              "rows": [
+                [
+                  1,
+                  1,
+                  77.5,
+                  "COMPLETED"
+                ],
+                [
+                  2,
+                  2,
+                  45.0,
+                  "COMPLETED"
+                ],
+                [
+                  3,
+                  1,
+                  119.98,
+                  "COMPLETED"
+                ],
+                [
+                  4,
+                  3,
+                  29.99,
+                  "COMPLETED"
+                ],
+                [
+                  5,
+                  4,
+                  81.99,
+                  "SHIPPED"
+                ],
+                [
+                  6,
+                  5,
+                  38.5,
+                  "PROCESSING"
+                ]
+              ],
+              "note": "Cancelled orders successfully purged"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Inserting Customers",
+      "slides": [
+        {
+          "id": "sql-27",
+          "language": "sql",
+          "section": "3. Manipulating Data",
+          "topic": "Inserting Customers",
+          "step": "3.5",
+          "category": "sql",
+          "categoryLabel": "Manipulating Data",
+          "tag": "Challenge",
+          "question": "Challenge: Onboard a new international loyalty customer",
+          "explanation": {
+            "points": [
+              "**Task**: Insert a new customer into the `customers` table with the following details:",
+              "- `id`: `7`",
+              "- `name`: `'Ada Lovelace'`",
+              "- `email`: `'ada@computing.org'`",
+              "- `country`: `'UK'`",
+              "- `referrer_id`: `1` (referred by Alice Smith)",
+              "- `joined_date`: `'2024-05-15'`",
+              "Follow with a `SELECT` statement to verify insertion."
+            ],
+            "highlight": "Insert Ada Lovelace with referrer_id 1 and verify with SELECT * FROM customers WHERE id = 7."
+          },
+          "code": "-- WRITE YOUR INSERT AND SELECT HERE:\nINSERT INTO customers (id, name, email, country, referrer_id, joined_date)\nVALUES (7, 'Ada Lovelace', 'ada@computing.org', 'UK', 1, '2024-05-15');\n\nSELECT * FROM customers WHERE id = 7;",
+          "tip": "Emphasize the importance of matching data types (integers vs strings in single quotes).",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Execute INSERT INTO specifying all 6 column names, provide corresponding values, and query back with WHERE id = 7.",
+            "code": "INSERT INTO customers (id, name, email, country, referrer_id, joined_date)\nVALUES (7, 'Ada Lovelace', 'ada@computing.org', 'UK', 1, '2024-05-15');\n\nSELECT * FROM customers WHERE id = 7;",
+            "timeComplexity": "O(1) insert",
+            "spaceComplexity": "O(1) row",
+            "explanationPoints": [
+              "All columns are explicitly declared in the target column list.",
+              "Strings are enclosed in single quotes `'Ada Lovelace'`.",
+              "The verification SELECT query confirms row insertion in SQLite."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Updating Bookstore",
+      "slides": [
+        {
+          "id": "sql-28",
+          "language": "sql",
+          "section": "3. Manipulating Data",
+          "topic": "Updating Bookstore",
+          "step": "3.6",
+          "category": "sql",
+          "categoryLabel": "Manipulating Data",
+          "tag": "Challenge",
+          "question": "Challenge: Restock inventory and adjust pricing for bestseller",
+          "explanation": {
+            "points": [
+              "**Task**: Update the book `'Designing Data-Intensive Applications'` (id = 2) in the `books` table:",
+              "1. Increase its `stock` by `25 units` (`stock = stock + 25`).",
+              "2. Set its `rating` to `5.0`.",
+              "Ensure your `WHERE` condition matches `id = 2`.",
+              "Verify your changes with a SELECT query."
+            ],
+            "highlight": "Update book id = 2 to add 25 to stock and set rating = 5.0."
+          },
+          "code": "-- WRITE YOUR UPDATE HERE:\nUPDATE books\nSET stock = stock + 25, rating = 5.0\nWHERE id = 2;\n\nSELECT id, title, stock, rating FROM books WHERE id = 2;",
+          "tip": "Demonstrate updating multiple columns simultaneously separated by commas.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Use UPDATE books SET stock = stock + 25, rating = 5.0 WHERE id = 2.",
+            "code": "UPDATE books\nSET stock = stock + 25, rating = 5.0\nWHERE id = 2;\n\nSELECT id, title, stock, rating FROM books WHERE id = 2;",
+            "timeComplexity": "O(1) with primary key lookup",
+            "spaceComplexity": "O(1)",
+            "explanationPoints": [
+              "`stock = stock + 25` reads the current value (80) and writes 105 atomically.",
+              "Multiple column assignments are separated by commas in the SET clause.",
+              "`WHERE id = 2` targets the specific book record."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Deleting Books",
+      "slides": [
+        {
+          "id": "sql-29",
+          "language": "sql",
+          "section": "3. Manipulating Data",
+          "topic": "Deleting Books",
+          "step": "3.7",
+          "category": "sql",
+          "categoryLabel": "Manipulating Data",
+          "tag": "Challenge",
+          "question": "Challenge: Safely purge obsolete books from catalog",
+          "explanation": {
+            "points": [
+              "**Task**: Delete any book from `books` that has a `stock` of `0` OR a `price` less than `$10.00`.",
+              "To test this, first insert a test row: `INSERT INTO books VALUES (99, 'Obsolete Draft', 1, 'Testing', 5.00, 0, 2000, 1.0);`",
+              "Then run your `DELETE` statement.",
+              "Finally, check that the row is gone."
+            ],
+            "highlight": "Delete books with stock = 0 OR price < 10.00 using safe boolean conditions."
+          },
+          "code": "-- Step 1: Insert test book\nINSERT INTO books VALUES (99, 'Obsolete Draft', 1, 'Testing', 5.00, 0, 2000, 1.0);\n\n-- Step 2: Delete it\nDELETE FROM books \nWHERE stock = 0 OR price < 10.00;\n\n-- Step 3: Verify deletion\nSELECT * FROM books WHERE id = 99;",
+          "tip": "Encourage testing DELETE statements as SELECT queries first to inspect matching rows before deletion.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Execute DELETE FROM books WHERE stock = 0 OR price < 10.00.",
+            "code": "DELETE FROM books \nWHERE stock = 0 OR price < 10.00;\n\nSELECT COUNT(*) AS obsolete_count FROM books WHERE id = 99;",
+            "timeComplexity": "O(N) table scan or index scan",
+            "spaceComplexity": "O(1)",
+            "explanationPoints": [
+              "The OR condition removes records failing either health check.",
+              "Best practice: Always run `SELECT * FROM books WHERE ...` first to verify which rows will be affected before calling `DELETE`."
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

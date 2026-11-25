@@ -1,0 +1,997 @@
+{
+  "section": "4. Defining Tables",
+  "order": 4,
+  "topics": [
+    {
+      "topic": "Creating Tables",
+      "slides": [
+        {
+          "id": "sql-30",
+          "language": "sql",
+          "section": "4. Defining Tables",
+          "topic": "Creating Tables",
+          "step": "4.1",
+          "category": "sql",
+          "categoryLabel": "Defining Tables",
+          "tag": "Lesson",
+          "question": "How does CREATE TABLE define schema structure, column types, and default values?",
+          "explanation": {
+            "points": [
+              "**`CREATE TABLE table_name (column1 datatype constraints, ...);`** sets up the physical blueprint.",
+              "A well-designed schema defines data integrity constraints directly at the database engine level.",
+              "Common column constraints: `NOT NULL` (disallows nulls), `UNIQUE` (prevents duplicates), `DEFAULT value` (provides fallback value if omitted).",
+              "Use `CREATE TABLE IF NOT EXISTS` in application migrations to avoid errors if the table is already present."
+            ],
+            "highlight": "CREATE TABLE IF NOT EXISTS establishes schemas with type safety, nullability, and default fallbacks."
+          },
+          "code": "-- Create a book_reviews table with integrity constraints\nCREATE TABLE IF NOT EXISTS book_reviews (\n  id INTEGER PRIMARY KEY,\n  book_id INTEGER NOT NULL,\n  reviewer_name TEXT NOT NULL,\n  rating INTEGER CHECK (rating BETWEEN 1 AND 5),\n  review_text TEXT,\n  created_at TEXT DEFAULT CURRENT_TIMESTAMP,\n  FOREIGN KEY (book_id) REFERENCES books(id)\n);\n\n-- Inspect created schema\nPRAGMA table_info(book_reviews);",
+          "tip": "Show how enforcing constraints at the database level protects against buggy backend code writing corrupt data.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "book_reviews (Schema Info)",
+              "columns": [
+                {
+                  "name": "cid",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "name",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "type",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "notnull",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "dflt_value",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "pk",
+                  "type": "INTEGER"
+                }
+              ],
+              "rows": [
+                [
+                  0,
+                  "id",
+                  "INTEGER",
+                  0,
+                  "None",
+                  1
+                ],
+                [
+                  1,
+                  "book_id",
+                  "INTEGER",
+                  1,
+                  "None",
+                  0
+                ],
+                [
+                  2,
+                  "reviewer_name",
+                  "TEXT",
+                  1,
+                  "None",
+                  0
+                ],
+                [
+                  3,
+                  "rating",
+                  "INTEGER",
+                  0,
+                  "None",
+                  0
+                ],
+                [
+                  4,
+                  "review_text",
+                  "TEXT",
+                  0,
+                  "None",
+                  0
+                ],
+                [
+                  5,
+                  "created_at",
+                  "TEXT",
+                  0,
+                  "CURRENT_TIMESTAMP",
+                  0
+                ]
+              ],
+              "note": "Schema definition with NOT NULL and DEFAULT constraints"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Data Types in SQLite",
+      "slides": [
+        {
+          "id": "sql-31",
+          "language": "sql",
+          "section": "4. Defining Tables",
+          "topic": "Data Types in SQLite",
+          "step": "4.2",
+          "category": "sql",
+          "categoryLabel": "Defining Tables",
+          "tag": "Lesson",
+          "question": "How does SQLite's type affinity model differ from rigid RDBMS types?",
+          "explanation": {
+            "points": [
+              "SQLite uses a dynamic typing system known as **Type Affinity**.",
+              "The 5 native storage classes in SQLite are: **`INTEGER`**, **`REAL`** (floating point), **`TEXT`**, **`BLOB`** (binary), and **`NULL`**.",
+              "Any column can theoretically store any type (except for strict tables), but SQLite attempts to convert data to the column's preferred affinity.",
+              "SQLite 3.37+ introduced `STRICT` tables (`CREATE TABLE t (...) STRICT;`) to enforce rigid PostgreSQL/MySQL-style type checking."
+            ],
+            "highlight": "SQLite provides 5 core storage classes: INTEGER, REAL, TEXT, BLOB, and NULL, with type affinity."
+          },
+          "code": "-- Inspecting data types and affinities using typeof()\nSELECT \n  title,\n  typeof(title) AS title_type,\n  price,\n  typeof(price) AS price_type,\n  stock,\n  typeof(stock) AS stock_type\nFROM books\nLIMIT 3;",
+          "tip": "Demonstrate using the typeof() function to inspect how values are physically encoded inside SQLite pages.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "typeof() Inspection",
+              "columns": [
+                {
+                  "name": "title",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "title_type",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "price",
+                  "type": "REAL"
+                },
+                {
+                  "name": "price_type",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "stock",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "stock_type",
+                  "type": "TEXT"
+                }
+              ],
+              "rows": [
+                [
+                  "Clean Code",
+                  "text",
+                  32.5,
+                  "real",
+                  45,
+                  "integer"
+                ],
+                [
+                  "Designing Data-Intensive Applications",
+                  "text",
+                  45.0,
+                  "real",
+                  80,
+                  "integer"
+                ]
+              ],
+              "note": "Physical storage classes confirmed by SQLite engine"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Common Data Types",
+      "slides": [
+        {
+          "id": "sql-32",
+          "language": "sql",
+          "section": "4. Defining Tables",
+          "topic": "Common Data Types",
+          "step": "4.3",
+          "category": "sql",
+          "categoryLabel": "Defining Tables",
+          "tag": "Lesson",
+          "question": "How do standard SQL types (VARCHAR, CHAR, BOOLEAN, DECIMAL) map to storage engines?",
+          "explanation": {
+            "points": [
+              "**`VARCHAR(n)` / `CHAR(n)`**: Variable vs fixed-length strings (maps to TEXT in SQLite).",
+              "**`BOOLEAN`**: Stored as `0` (FALSE) and `1` (TRUE).",
+              "**`DECIMAL(p, s)` / `NUMERIC`**: Used for financial calculations where floating-point rounding errors cannot be tolerated.",
+              "Choosing appropriate data types optimizes page-cache storage density and accelerates index scans."
+            ],
+            "highlight": "Standard types like VARCHAR, BOOLEAN, and DECIMAL map cleanly across Postgres, MySQL, and SQLite."
+          },
+          "code": "-- Create table utilizing cross-database standard types\nCREATE TABLE IF NOT EXISTS product_inventory (\n  sku VARCHAR(20) PRIMARY KEY,\n  product_name VARCHAR(100) NOT NULL,\n  is_available BOOLEAN DEFAULT 1,\n  unit_price DECIMAL(10, 2) NOT NULL\n);\n\nINSERT INTO product_inventory VALUES ('SKU-1001', 'Ergonomic Desk', 1, 299.99);\nSELECT sku, product_name, is_available, unit_price FROM product_inventory;",
+          "tip": "Explain why financial systems use integers (cents) or DECIMAL, never raw floating point numbers.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "product_inventory",
+              "columns": [
+                {
+                  "name": "sku",
+                  "type": "VARCHAR(20)",
+                  "isPk": true
+                },
+                {
+                  "name": "product_name",
+                  "type": "VARCHAR(100)"
+                },
+                {
+                  "name": "is_available",
+                  "type": "BOOLEAN"
+                },
+                {
+                  "name": "unit_price",
+                  "type": "DECIMAL(10, 2)"
+                }
+              ],
+              "rows": [
+                [
+                  "SKU-1001",
+                  "Ergonomic Desk",
+                  1,
+                  299.99
+                ]
+              ],
+              "note": "Cross-database portable schema"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "More on Numeric Types",
+      "slides": [
+        {
+          "id": "sql-33",
+          "language": "sql",
+          "section": "4. Defining Tables",
+          "topic": "More on Numeric Types",
+          "step": "4.4",
+          "category": "sql",
+          "categoryLabel": "Defining Tables",
+          "tag": "Lesson",
+          "question": "How do integer sizes (TINYINT, INT, BIGINT) and floating point representations work?",
+          "explanation": {
+            "points": [
+              "**`INT / INTEGER`**: Signed integer stored in 1, 2, 3, 4, 6, or 8 bytes depending on value magnitude in SQLite.",
+              "In Postgres/MySQL: `SMALLINT` (2 bytes, ±32K), `INTEGER` (4 bytes, ±2.1B), `BIGINT` (8 bytes, ±9 quintillion).",
+              "**`REAL / FLOAT / DOUBLE`**: 8-byte IEEE floating point numbers; fast, but can experience tiny binary precision anomalies.",
+              "Always use `INTEGER` for primary keys and foreign keys for maximal join performance."
+            ],
+            "highlight": "Select integer sizes to fit expected scale; use 64-bit BIGINT for global primary keys like snowflake IDs."
+          },
+          "code": "-- Demonstrating numeric calculations and integer division\nSELECT \n  title,\n  price,\n  CAST(price AS INTEGER) AS integer_dollars,\n  ROUND(price - CAST(price AS INTEGER), 2) AS remaining_cents\nFROM books\nLIMIT 4;",
+          "tip": "Demonstrate using CAST(col AS INTEGER) to perform explicit type conversions.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "Numeric Breakdown",
+              "columns": [
+                {
+                  "name": "title",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "price",
+                  "type": "REAL"
+                },
+                {
+                  "name": "integer_dollars",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "remaining_cents",
+                  "type": "REAL"
+                }
+              ],
+              "rows": [
+                [
+                  "Clean Code",
+                  32.5,
+                  32,
+                  0.5
+                ],
+                [
+                  "Designing Data-Intensive Applications",
+                  45.0,
+                  45,
+                  0.0
+                ],
+                [
+                  "Machine Learning Yearning",
+                  29.99,
+                  29,
+                  0.99
+                ]
+              ],
+              "note": "Integer and fractional parts separated via CAST"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Temporal Data Types",
+      "slides": [
+        {
+          "id": "sql-34",
+          "language": "sql",
+          "section": "4. Defining Tables",
+          "topic": "Temporal Data Types",
+          "step": "4.5",
+          "category": "sql",
+          "categoryLabel": "Defining Tables",
+          "tag": "Lesson",
+          "question": "How are dates, times, and timestamps represented and queried in SQL?",
+          "explanation": {
+            "points": [
+              "Relational databases offer temporal types: `DATE` ('YYYY-MM-DD'), `TIME` ('HH:MM:SS'), and `TIMESTAMP` ('YYYY-MM-DD HH:MM:SS').",
+              "SQLite stores temporal data as **ISO-8601 text strings** or unix timestamps.",
+              "Built-in temporal helper functions: `DATE()`, `TIME()`, `DATETIME()`, `STRFTIME()`, and `CURRENT_TIMESTAMP`.",
+              "Because ISO-8601 ('2024-03-15') is lexicographically sorted, standard string comparisons (`>`, `<`, `BETWEEN`) work seamlessly."
+            ],
+            "highlight": "Store dates in ISO-8601 'YYYY-MM-DD HH:MM:SS' format to ensure sorting and filtering work seamlessly."
+          },
+          "code": "-- Querying temporal orders and calculating time diffs\nSELECT \n  id AS order_id,\n  order_date,\n  DATE(order_date, '+30 days') AS payment_due_date,\n  JULIANDAY('2024-04-01') - JULIANDAY(order_date) AS days_elapsed\nFROM orders\nLIMIT 4;",
+          "tip": "Show how JULIANDAY() calculates exact day differences between two date strings.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "Temporal Calculation on Orders",
+              "columns": [
+                {
+                  "name": "order_id",
+                  "type": "INTEGER",
+                  "isPk": true
+                },
+                {
+                  "name": "order_date",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "payment_due_date",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "days_elapsed",
+                  "type": "REAL"
+                }
+              ],
+              "rows": [
+                [
+                  1,
+                  "2024-01-10",
+                  "2024-02-09",
+                  82.0
+                ],
+                [
+                  2,
+                  "2024-01-14",
+                  "2024-02-13",
+                  78.0
+                ],
+                [
+                  3,
+                  "2024-02-01",
+                  "2024-03-02",
+                  60.0
+                ]
+              ],
+              "note": "Date arithmetic evaluated by SQLite temporal functions"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Defining Tables Quiz",
+      "slides": [
+        {
+          "id": "sql-35",
+          "language": "sql",
+          "section": "4. Defining Tables",
+          "topic": "Defining Tables Quiz",
+          "step": "4.6",
+          "category": "sql",
+          "categoryLabel": "Defining Tables",
+          "tag": "Quiz",
+          "question": "Module 4 Quiz: Test your grasp of DDL, data types, constraints, and schemas",
+          "explanation": {
+            "points": [
+              "Verify your knowledge of table creation and constraint guarantees.",
+              "Answer the 4 questions in the interactive quiz card.",
+              "Master DDL principles before writing table modifications."
+            ],
+            "highlight": "Test your database design and DDL schema knowledge."
+          },
+          "code": "-- Interactive quiz slide.\n-- Answer questions in the visual panel on the left.\nSELECT 'Test your DDL knowledge.' AS status;",
+          "tip": "Review constraint enforcement rules in relational database engines.",
+          "viz": {
+            "type": "sql-quiz",
+            "data": {
+              "quizTitle": "Module 4: Defining Tables & Constraints Quiz",
+              "questions": [
+                {
+                  "question": "Which constraint ensures that a column cannot store NULL values?",
+                  "options": [
+                    "UNIQUE",
+                    "NOT NULL",
+                    "CHECK",
+                    "DEFAULT"
+                  ],
+                  "answer": 1,
+                  "explanation": "NOT NULL guarantees that every inserted row must have an explicit non-null value for that column."
+                },
+                {
+                  "question": "What is the recommended format for storing temporal dates in SQL text columns?",
+                  "options": [
+                    "MM/DD/YYYY",
+                    "DD-MM-YYYY",
+                    "YYYY-MM-DD (ISO-8601)",
+                    "Month Day, Year"
+                  ],
+                  "answer": 2,
+                  "explanation": "ISO-8601 ('YYYY-MM-DD') preserves alphabetical sort order identical to chronological order."
+                },
+                {
+                  "question": "What does a CHECK constraint do?",
+                  "options": [
+                    "Checks if the table exists before inserting",
+                    "Validates that row values satisfy a boolean expression (e.g. price > 0)",
+                    "Checks user password permissions",
+                    "Checks foreign key references"
+                  ],
+                  "answer": 1,
+                  "explanation": "CHECK constraints reject any INSERT or UPDATE where the boolean condition evaluates to FALSE."
+                },
+                {
+                  "question": "What is the difference between DROP TABLE and TRUNCATE TABLE?",
+                  "options": [
+                    "They are completely identical synonyms",
+                    "DROP TABLE removes the entire table and schema; TRUNCATE deletes all rows while keeping the table structure",
+                    "TRUNCATE is only for views",
+                    "DROP TABLE can be undone without transactions"
+                  ],
+                  "answer": 1,
+                  "explanation": "DROP TABLE destroys the table schema completely. TRUNCATE rapidly empties row data while preserving the table definition."
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "CHECK Constraints",
+      "slides": [
+        {
+          "id": "sql-36",
+          "language": "sql",
+          "section": "4. Defining Tables",
+          "topic": "CHECK Constraints",
+          "step": "4.7",
+          "category": "sql",
+          "categoryLabel": "Defining Tables",
+          "tag": "Lesson",
+          "question": "How do CHECK constraints enforce business rules at the database engine level?",
+          "explanation": {
+            "points": [
+              "A **`CHECK (condition)`** constraint enforces custom domain validation rules directly on table columns.",
+              "Examples: `CHECK (price > 0)`, `CHECK (rating BETWEEN 1 AND 5)`, `CHECK (email LIKE '%@%')`.",
+              "If an `INSERT` or `UPDATE` violates the expression, the database engine aborts the transaction with a constraint violation error.",
+              "Using database-level CHECK constraints guarantees that corrupt data can never enter your database, even if application code has bugs."
+            ],
+            "highlight": "Use CHECK constraints to ensure prices are positive, ratings stay in bounds, and email formats are valid."
+          },
+          "code": "-- Create an accounts table with strict balance and status constraints\nCREATE TABLE IF NOT EXISTS bank_accounts (\n  id INTEGER PRIMARY KEY,\n  account_number TEXT UNIQUE NOT NULL,\n  balance REAL CHECK (balance >= 0.00),\n  status TEXT CHECK (status IN ('ACTIVE', 'FROZEN', 'CLOSED'))\n);\n\n-- Valid insert\nINSERT INTO bank_accounts VALUES (1, 'ACC-9901', 500.00, 'ACTIVE');\nSELECT * FROM bank_accounts;",
+          "tip": "Demonstrate intentionally trying to insert a negative balance to show the engine throwing 'CHECK constraint failed: balance >= 0.00'.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "bank_accounts",
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "INTEGER",
+                  "isPk": true
+                },
+                {
+                  "name": "account_number",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "balance",
+                  "type": "REAL"
+                },
+                {
+                  "name": "status",
+                  "type": "TEXT"
+                }
+              ],
+              "rows": [
+                [
+                  1,
+                  "ACC-9901",
+                  500.0,
+                  "ACTIVE"
+                ]
+              ],
+              "note": "Engine validates balance >= 0 and valid status enum"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Primary Key Constraint",
+      "slides": [
+        {
+          "id": "sql-37",
+          "language": "sql",
+          "section": "4. Defining Tables",
+          "topic": "Primary Key Constraint",
+          "step": "4.8",
+          "category": "sql",
+          "categoryLabel": "Defining Tables",
+          "tag": "Lesson",
+          "question": "How does the PRIMARY KEY constraint uniquely identify table records?",
+          "explanation": {
+            "points": [
+              "A **`PRIMARY KEY`** uniquely identifies each row in a table. It is automatically `UNIQUE` and `NOT NULL`.",
+              "Each table can have at most **one** primary key (which can be a single column or a composite of multiple columns).",
+              "In SQLite, defining an **`INTEGER PRIMARY KEY`** automatically creates an auto-incrementing alias for the internal 64-bit `rowid`.",
+              "Primary keys automatically build an underlying clustered B-Tree index for instantaneous $O(\\log N)$ lookup performance."
+            ],
+            "highlight": "A PRIMARY KEY guarantees uniqueness and null-prevention while creating a lightning-fast B-Tree index."
+          },
+          "code": "-- Inspecting primary keys and rowid in authors table\nSELECT rowid, id, name, country, tier\nFROM authors;",
+          "tip": "Show how SQLite's internal 64-bit rowid is directly mapped to INTEGER PRIMARY KEY.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "authors (with Primary Key)",
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "INTEGER",
+                  "isPk": true
+                },
+                {
+                  "name": "name",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "country",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "tier",
+                  "type": "TEXT"
+                }
+              ],
+              "rows": [
+                [
+                  1,
+                  "Robert C. Martin",
+                  "USA",
+                  "Tier 1"
+                ],
+                [
+                  2,
+                  "Martin Kleppmann",
+                  "UK",
+                  "Tier 1"
+                ],
+                [
+                  3,
+                  "Andrew Ng",
+                  "USA",
+                  "Tier 1"
+                ]
+              ],
+              "note": "Primary key index ensures instantaneous key lookups"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Modifying Tables",
+      "slides": [
+        {
+          "id": "sql-38",
+          "language": "sql",
+          "section": "4. Defining Tables",
+          "topic": "Modifying Tables",
+          "step": "4.9",
+          "category": "sql",
+          "categoryLabel": "Defining Tables",
+          "tag": "Lesson",
+          "question": "How does ALTER TABLE evolve schemas by adding columns and renaming tables?",
+          "explanation": {
+            "points": [
+              "**`ALTER TABLE table_name ADD COLUMN column_definition;`** appends a new column to an existing table.",
+              "**`ALTER TABLE table_name RENAME TO new_name;`** renames an existing table safely without data loss.",
+              "**`ALTER TABLE table_name RENAME COLUMN old_name TO new_name;`** renames specific fields.",
+              "Adding columns with `NULL` or constant `DEFAULT` values is an instant $O(1)$ metadata-only operation in modern engines."
+            ],
+            "highlight": "ALTER TABLE safely modifies schemas without dropping existing data or interrupting read operations."
+          },
+          "code": "-- Create temporary test table, alter it, and verify\nCREATE TABLE IF NOT EXISTS promotions (\n  id INTEGER PRIMARY KEY,\n  code TEXT NOT NULL\n);\n\n-- Add discount_pct column\nALTER TABLE promotions ADD COLUMN discount_pct REAL DEFAULT 10.0;\n\nINSERT INTO promotions (id, code) VALUES (1, 'SPRING2024');\nSELECT * FROM promotions;",
+          "tip": "Emphasize the difference between adding a column (instant) vs altering a column type in large tables.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "promotions (After ALTER TABLE)",
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "INTEGER",
+                  "isPk": true
+                },
+                {
+                  "name": "code",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "discount_pct",
+                  "type": "REAL"
+                }
+              ],
+              "rows": [
+                [
+                  1,
+                  "SPRING2024",
+                  10.0
+                ]
+              ],
+              "note": "discount_pct column added via ALTER TABLE with default 10.0"
+            }
+          }
+        },
+        {
+          "id": "sql-45",
+          "language": "sql",
+          "section": "4. Defining Tables",
+          "topic": "Modifying Tables",
+          "step": "4.16",
+          "category": "sql",
+          "categoryLabel": "Defining Tables",
+          "tag": "Challenge",
+          "question": "Challenge: Schema migration to add loyalty tier and reward points",
+          "explanation": {
+            "points": [
+              "**Task**: In `customers`, add a new column `loyalty_points` of type `INTEGER` with a default of `100`.",
+              "Check that existing customers receive the default `100` points.",
+              "Query the modified table."
+            ],
+            "highlight": "Execute ALTER TABLE customers ADD COLUMN loyalty_points INTEGER DEFAULT 100."
+          },
+          "code": "-- WRITE YOUR ALTER STATEMENT HERE:\nALTER TABLE customers ADD COLUMN loyalty_points INTEGER DEFAULT 100;\n\nSELECT id, name, country, loyalty_points FROM customers LIMIT 4;",
+          "tip": "Demonstrate how SQLite retroactively exposes default values on existing rows without rewriting the entire table on disk.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Execute ALTER TABLE customers ADD COLUMN loyalty_points INTEGER DEFAULT 100.",
+            "code": "ALTER TABLE customers ADD COLUMN loyalty_points INTEGER DEFAULT 100;\n\nSELECT id, name, country, loyalty_points FROM customers LIMIT 4;",
+            "timeComplexity": "O(1) in SQLite metadata engine",
+            "spaceComplexity": "O(1)",
+            "explanationPoints": [
+              "`ADD COLUMN ... DEFAULT 100` adds the column metadata instantaneously.",
+              "All previously inserted customer rows now automatically return 100."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Dropping and Truncating",
+      "slides": [
+        {
+          "id": "sql-39",
+          "language": "sql",
+          "section": "4. Defining Tables",
+          "topic": "Dropping and Truncating",
+          "step": "4.10",
+          "category": "sql",
+          "categoryLabel": "Defining Tables",
+          "tag": "Lesson",
+          "question": "How do DROP TABLE and TRUNCATE differ in execution, memory, and transactional recovery?",
+          "explanation": {
+            "points": [
+              "**`DROP TABLE [IF EXISTS] table_name;`** completely removes the table schema, indexes, and all rows from the catalog.",
+              "In databases with `TRUNCATE TABLE`, rows are wiped rapidly by deallocating storage pages rather than scanning row-by-row.",
+              "In SQLite, `DELETE FROM table;` is optimized via the truncate optimization when no WHERE clause is provided.",
+              "Always use `DROP TABLE IF EXISTS` in staging pipelines to ensure idempotent script execution."
+            ],
+            "highlight": "Use DROP TABLE IF EXISTS to prevent catastrophic script aborts when tearing down temporary schemas."
+          },
+          "code": "-- Safe idempotent table teardown demonstration\nCREATE TABLE IF NOT EXISTS temp_staging (\n  id INTEGER PRIMARY KEY,\n  payload TEXT\n);\n\nINSERT INTO temp_staging VALUES (1, 'Test Payload');\n\n-- Drop the table safely\nDROP TABLE IF EXISTS temp_staging;\n\n-- Verify it was removed\nSELECT count(*) AS table_count FROM sqlite_master WHERE name = 'temp_staging';",
+          "tip": "Warn students that DROP TABLE is irreversible in production unless point-in-time recovery backups are configured.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "Catalog Verification",
+              "columns": [
+                {
+                  "name": "table_count",
+                  "type": "INTEGER"
+                }
+              ],
+              "rows": [
+                [
+                  0
+                ]
+              ],
+              "note": "temp_staging table successfully dropped from catalog"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Simple Table Creation",
+      "slides": [
+        {
+          "id": "sql-40",
+          "language": "sql",
+          "section": "4. Defining Tables",
+          "topic": "Simple Table Creation",
+          "step": "4.11",
+          "category": "sql",
+          "categoryLabel": "Defining Tables",
+          "tag": "Challenge",
+          "question": "Challenge: Design an article publishing table with constraints",
+          "explanation": {
+            "points": [
+              "**Task**: Create a table named `articles` with the following schema:",
+              "- `id`: INTEGER PRIMARY KEY",
+              "- `title`: TEXT NOT NULL",
+              "- `author_id`: INTEGER NOT NULL",
+              "- `word_count`: INTEGER DEFAULT 0",
+              "- `is_published`: BOOLEAN DEFAULT 0",
+              "Insert 1 sample row and query it."
+            ],
+            "highlight": "Create the articles table with NOT NULL, PRIMARY KEY, and DEFAULT constraints."
+          },
+          "code": "-- WRITE YOUR CREATE TABLE AND INSERT HERE:\nCREATE TABLE IF NOT EXISTS articles (\n  id INTEGER PRIMARY KEY,\n  title TEXT NOT NULL,\n  author_id INTEGER NOT NULL,\n  word_count INTEGER DEFAULT 0,\n  is_published BOOLEAN DEFAULT 0\n);\n\nINSERT INTO articles VALUES (1, 'Mastering SQL Joins', 2, 1850, 1);\nSELECT * FROM articles;",
+          "tip": "Review how default values automatically populate when columns are omitted in INSERTs.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Define columns with explicit constraints and verify using an INSERT and SELECT query.",
+            "code": "CREATE TABLE IF NOT EXISTS articles (\n  id INTEGER PRIMARY KEY,\n  title TEXT NOT NULL,\n  author_id INTEGER NOT NULL,\n  word_count INTEGER DEFAULT 0,\n  is_published BOOLEAN DEFAULT 0\n);\n\nINSERT INTO articles VALUES (1, 'Mastering SQL Joins', 2, 1850, 1);\nSELECT * FROM articles;",
+            "timeComplexity": "O(1) DDL creation",
+            "spaceComplexity": "O(1) schema catalog entry",
+            "explanationPoints": [
+              "`INTEGER PRIMARY KEY` provides uniqueness and row indexing.",
+              "`NOT NULL` prevents unassigned titles and author foreign keys.",
+              "`DEFAULT` ensures columns are safely populated if omitted by backend writers."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Data Types Challenge",
+      "slides": [
+        {
+          "id": "sql-41",
+          "language": "sql",
+          "section": "4. Defining Tables",
+          "topic": "Data Types Challenge",
+          "step": "4.12",
+          "category": "sql",
+          "categoryLabel": "Defining Tables",
+          "tag": "Challenge",
+          "question": "Challenge: Construct a hardware sensor metrics schema",
+          "explanation": {
+            "points": [
+              "**Task**: Create a table named `sensor_telemetry` designed for high-frequency IoT readings:",
+              "- `device_id`: TEXT NOT NULL",
+              "- `recorded_at`: TEXT NOT NULL (ISO timestamp)",
+              "- `temperature_celsius`: REAL NOT NULL",
+              "- `humidity_pct`: REAL CHECK (humidity_pct BETWEEN 0.0 AND 100.0)",
+              "- `battery_level`: INTEGER CHECK (battery_level BETWEEN 0 AND 100)"
+            ],
+            "highlight": "Define sensor_telemetry table with realistic physical types and range CHECKs."
+          },
+          "code": "-- WRITE YOUR TABLE CREATION HERE:\nCREATE TABLE IF NOT EXISTS sensor_telemetry (\n  id INTEGER PRIMARY KEY,\n  device_id TEXT NOT NULL,\n  recorded_at TEXT NOT NULL,\n  temperature_celsius REAL NOT NULL,\n  humidity_pct REAL CHECK (humidity_pct BETWEEN 0.0 AND 100.0),\n  battery_level INTEGER CHECK (battery_level BETWEEN 0 AND 100)\n);\n\nINSERT INTO sensor_telemetry VALUES (1, 'IOT-NODE-01', '2024-04-10 12:00:00', 23.4, 45.2, 98);\nSELECT * FROM sensor_telemetry;",
+          "tip": "Demonstrate how CHECK constraints on humidity and battery prevent impossible values (like 150% battery).",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Use REAL for continuous sensor telemetry and INTEGER with CHECK limits for percentages.",
+            "code": "CREATE TABLE IF NOT EXISTS sensor_telemetry (\n  id INTEGER PRIMARY KEY,\n  device_id TEXT NOT NULL,\n  recorded_at TEXT NOT NULL,\n  temperature_celsius REAL NOT NULL,\n  humidity_pct REAL CHECK (humidity_pct BETWEEN 0.0 AND 100.0),\n  battery_level INTEGER CHECK (battery_level BETWEEN 0 AND 100)\n);\n\nINSERT INTO sensor_telemetry VALUES (1, 'IOT-NODE-01', '2024-04-10 12:00:00', 23.4, 45.2, 98);\nSELECT * FROM sensor_telemetry;",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(1)",
+            "explanationPoints": [
+              "REAL data types accurately record decimal sensor readings.",
+              "`CHECK (humidity_pct BETWEEN 0.0 AND 100.0)` enforces physically valid sensor ranges."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Constraints Challenge",
+      "slides": [
+        {
+          "id": "sql-42",
+          "language": "sql",
+          "section": "4. Defining Tables",
+          "topic": "Constraints Challenge",
+          "step": "4.13",
+          "category": "sql",
+          "categoryLabel": "Defining Tables",
+          "tag": "Challenge",
+          "question": "Challenge: Enforce uniqueness and check rules on user accounts",
+          "explanation": {
+            "points": [
+              "**Task**: Create a `user_credentials` table with strict security guarantees:",
+              "- `user_id`: INTEGER PRIMARY KEY",
+              "- `username`: TEXT UNIQUE NOT NULL",
+              "- `email`: TEXT UNIQUE NOT NULL",
+              "- `role`: TEXT CHECK (role IN ('ADMIN', 'STAFF', 'MEMBER'))",
+              "- `is_active`: BOOLEAN DEFAULT 1"
+            ],
+            "highlight": "Enforce UNIQUE on username and email, with an enumerated role CHECK."
+          },
+          "code": "-- WRITE YOUR TABLE CREATION HERE:\nCREATE TABLE IF NOT EXISTS user_credentials (\n  user_id INTEGER PRIMARY KEY,\n  username TEXT UNIQUE NOT NULL,\n  email TEXT UNIQUE NOT NULL,\n  role TEXT CHECK (role IN ('ADMIN', 'STAFF', 'MEMBER')),\n  is_active BOOLEAN DEFAULT 1\n);\n\nINSERT INTO user_credentials VALUES (1, 'superadmin', 'admin@platform.io', 'ADMIN', 1);\nSELECT * FROM user_credentials;",
+          "tip": "Highlight how UNIQUE constraints automatically build unique indexes behind the scenes.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Create the table with UNIQUE constraints on credentials and an explicit CHECK IN constraint for roles.",
+            "code": "CREATE TABLE IF NOT EXISTS user_credentials (\n  user_id INTEGER PRIMARY KEY,\n  username TEXT UNIQUE NOT NULL,\n  email TEXT UNIQUE NOT NULL,\n  role TEXT CHECK (role IN ('ADMIN', 'STAFF', 'MEMBER')),\n  is_active BOOLEAN DEFAULT 1\n);\n\nINSERT INTO user_credentials VALUES (1, 'superadmin', 'admin@platform.io', 'ADMIN', 1);\nSELECT * FROM user_credentials;",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(1)",
+            "explanationPoints": [
+              "`UNIQUE NOT NULL` guarantees both presence and non-duplication across all rows.",
+              "`role IN (...)` implements an application enum directly in SQLite."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Temporal Validation",
+      "slides": [
+        {
+          "id": "sql-43",
+          "language": "sql",
+          "section": "4. Defining Tables",
+          "topic": "Temporal Validation",
+          "step": "4.14",
+          "category": "sql",
+          "categoryLabel": "Defining Tables",
+          "tag": "Challenge",
+          "question": "Challenge: Validate temporal order scheduling ranges",
+          "explanation": {
+            "points": [
+              "**Task**: Create a `project_milestones` table requiring that:",
+              "- `start_date`: TEXT NOT NULL",
+              "- `due_date`: TEXT NOT NULL",
+              "- **Constraint**: `due_date >= start_date` (a project cannot be due before it starts!)",
+              "Test inserting a valid milestone and an invalid milestone."
+            ],
+            "highlight": "Enforce table-level CHECK constraint comparing two date columns: due_date >= start_date."
+          },
+          "code": "-- WRITE YOUR TABLE CREATION HERE:\nCREATE TABLE IF NOT EXISTS project_milestones (\n  id INTEGER PRIMARY KEY,\n  project_name TEXT NOT NULL,\n  start_date TEXT NOT NULL,\n  due_date TEXT NOT NULL,\n  CHECK (due_date >= start_date)\n);\n\nINSERT INTO project_milestones VALUES (1, 'App Redesign', '2024-05-01', '2024-06-15');\nSELECT * FROM project_milestones;",
+          "tip": "Show how table-level CHECK constraints can compare multiple columns against each other.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Place the CHECK constraint at the table level so it can access both start_date and due_date.",
+            "code": "CREATE TABLE IF NOT EXISTS project_milestones (\n  id INTEGER PRIMARY KEY,\n  project_name TEXT NOT NULL,\n  start_date TEXT NOT NULL,\n  due_date TEXT NOT NULL,\n  CHECK (due_date >= start_date)\n);\n\nINSERT INTO project_milestones VALUES (1, 'App Redesign', '2024-05-01', '2024-06-15');\nSELECT * FROM project_milestones;",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(1)",
+            "explanationPoints": [
+              "Table-level CHECK constraints are evaluated after all column values are assembled.",
+              "Because ISO-8601 strings sort chronologically, string comparison `>=` works reliably."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Sales Data Analysis",
+      "slides": [
+        {
+          "id": "sql-44",
+          "language": "sql",
+          "section": "4. Defining Tables",
+          "topic": "Sales Data Analysis",
+          "step": "4.15",
+          "category": "sql",
+          "categoryLabel": "Defining Tables",
+          "tag": "Challenge",
+          "question": "Challenge: Schema design for an aggregated daily sales mart",
+          "explanation": {
+            "points": [
+              "**Task**: Create an analytical rollup table `daily_sales_mart`:",
+              "- `sale_date`: TEXT PRIMARY KEY (e.g. '2024-04-10')",
+              "- `order_count`: INTEGER NOT NULL DEFAULT 0",
+              "- `gross_revenue`: REAL NOT NULL DEFAULT 0.00",
+              "- `average_order_value`: REAL DEFAULT 0.00"
+            ],
+            "highlight": "Design an analytical rollup mart table for precomputed daily metrics."
+          },
+          "code": "-- WRITE YOUR TABLE CREATION HERE:\nCREATE TABLE IF NOT EXISTS daily_sales_mart (\n  sale_date TEXT PRIMARY KEY,\n  order_count INTEGER NOT NULL DEFAULT 0,\n  gross_revenue REAL NOT NULL DEFAULT 0.00,\n  average_order_value REAL DEFAULT 0.00\n);\n\nINSERT INTO daily_sales_mart VALUES ('2024-04-10', 42, 3450.50, 82.15);\nSELECT * FROM daily_sales_mart;",
+          "tip": "Explain how data engineers use daily rollup marts to avoid recalculating millions of rows every second.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Use sale_date as a natural PRIMARY KEY with pre-calculated aggregate fields.",
+            "code": "CREATE TABLE IF NOT EXISTS daily_sales_mart (\n  sale_date TEXT PRIMARY KEY,\n  order_count INTEGER NOT NULL DEFAULT 0,\n  gross_revenue REAL NOT NULL DEFAULT 0.00,\n  average_order_value REAL DEFAULT 0.00\n);\n\nINSERT INTO daily_sales_mart VALUES ('2024-04-10', 42, 3450.50, 82.15);\nSELECT * FROM daily_sales_mart;",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(1)",
+            "explanationPoints": [
+              "`sale_date TEXT PRIMARY KEY` ensures only 1 summary row per calendar day.",
+              "Precomputed metrics provide instant dashboards for business executives."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Removing Table Data",
+      "slides": [
+        {
+          "id": "sql-46",
+          "language": "sql",
+          "section": "4. Defining Tables",
+          "topic": "Removing Table Data",
+          "step": "4.17",
+          "category": "sql",
+          "categoryLabel": "Defining Tables",
+          "tag": "Challenge",
+          "question": "Challenge: Purge staging data and drop transient schemas",
+          "explanation": {
+            "points": [
+              "**Task**: Create a staging table `etl_import_buffer` with an `id` and `raw_json` column.",
+              "Insert 2 test records.",
+              "Delete all rows using `DELETE FROM etl_import_buffer;`.",
+              "Finally, drop the table using `DROP TABLE IF EXISTS etl_import_buffer;`."
+            ],
+            "highlight": "Execute a complete staging lifecycle: create, populate, empty, and drop."
+          },
+          "code": "-- WRITE YOUR STATEMENTS HERE:\nCREATE TABLE IF NOT EXISTS etl_import_buffer (id INTEGER PRIMARY KEY, raw_json TEXT);\nINSERT INTO etl_import_buffer VALUES (1, '{\"event\": \"click\"}'), (2, '{\"event\": \"checkout\"}');\n\nDELETE FROM etl_import_buffer;\nDROP TABLE IF EXISTS etl_import_buffer;\n\nSELECT 'Lifecycle complete!' AS status;",
+          "tip": "Review best practices for cleaning up transient tables in ETL data pipelines.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Execute CREATE TABLE, INSERT batch rows, DELETE rows, and tear down with DROP TABLE IF EXISTS.",
+            "code": "CREATE TABLE IF NOT EXISTS etl_import_buffer (id INTEGER PRIMARY KEY, raw_json TEXT);\nINSERT INTO etl_import_buffer VALUES (1, '{\"event\": \"click\"}'), (2, '{\"event\": \"checkout\"}');\n\nDELETE FROM etl_import_buffer;\nDROP TABLE IF EXISTS etl_import_buffer;\n\nSELECT 'Lifecycle complete!' AS status;",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(1)",
+            "explanationPoints": [
+              "`DELETE FROM table` wipes rows while keeping schema.",
+              "`DROP TABLE IF EXISTS` safely purges the schema from the catalog without throwing errors if already absent."
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

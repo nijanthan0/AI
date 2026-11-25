@@ -1,0 +1,766 @@
+{
+  "section": "6. Aggregate Functions",
+  "order": 6,
+  "topics": [
+    {
+      "topic": "What is Aggregation?",
+      "slides": [
+        {
+          "id": "sql-65",
+          "language": "sql",
+          "section": "6. Aggregate Functions",
+          "topic": "What is Aggregation?",
+          "step": "6.1",
+          "category": "sql",
+          "categoryLabel": "Aggregate Functions",
+          "tag": "Lesson",
+          "question": "How do aggregate functions summarize multiple rows into a single scalar value?",
+          "explanation": {
+            "points": [
+              "**Aggregate functions** compute a single summary result across a set of rows.",
+              "The 5 standard ANSI SQL aggregate functions:",
+              "- **`COUNT(column / *)`**: Returns the count of rows (COUNT(col) ignores NULLs; COUNT(*) counts all rows).",
+              "- **`SUM(column)`**: Computes the arithmetic sum of numeric values.",
+              "- **`AVG(column)`**: Computes the arithmetic mean (ignores NULLs).",
+              "- **`MIN(column)`** & **`MAX(column)`**: Finds the minimum and maximum value (works on numbers, dates, and strings).",
+              "Without `GROUP BY`, aggregate functions collapse the **entire table** into exactly one output row."
+            ],
+            "highlight": "Aggregate functions summarize multiple records into a single metric; COUNT(*) includes NULL rows while COUNT(col) ignores them."
+          },
+          "code": "-- Storewide catalog aggregate metrics\nSELECT \n  COUNT(*) AS total_book_count,\n  ROUND(AVG(price), 2) AS average_price,\n  MIN(price) AS cheapest_book_price,\n  MAX(price) AS most_expensive_price,\n  SUM(stock) AS total_units_in_warehouse\nFROM books;",
+          "tip": "Ask students what happens when AVG() encounters NULLs: emphasize that NULL rows are excluded from the denominator.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "Catalog Rollup Summary",
+              "columns": [
+                {
+                  "name": "total_book_count",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "average_price",
+                  "type": "REAL"
+                },
+                {
+                  "name": "cheapest_book_price",
+                  "type": "REAL"
+                },
+                {
+                  "name": "most_expensive_price",
+                  "type": "REAL"
+                },
+                {
+                  "name": "total_units_in_warehouse",
+                  "type": "INTEGER"
+                }
+              ],
+              "rows": [
+                [
+                  8,
+                  37.75,
+                  29.99,
+                  45.0,
+                  520
+                ]
+              ],
+              "note": "Single row generated summarizing all 8 books in inventory"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Basic Aggregation",
+      "slides": [
+        {
+          "id": "sql-66",
+          "language": "sql",
+          "section": "6. Aggregate Functions",
+          "topic": "Basic Aggregation",
+          "step": "6.2",
+          "category": "sql",
+          "categoryLabel": "Aggregate Functions",
+          "tag": "Lesson",
+          "question": "How does COUNT(DISTINCT) count unique entities in an aggregate query?",
+          "explanation": {
+            "points": [
+              "Combining **`COUNT(DISTINCT column)`** calculates the count of unique values, ignoring duplicate occurrences.",
+              "Example: `COUNT(customer_id)` counts total orders, while `COUNT(DISTINCT customer_id)` counts unique paying customers.",
+              "You can combine multiple standard aggregates alongside distinct aggregates in the same SELECT statement.",
+              "Be cautious: `COUNT(DISTINCT)` cannot utilize simple pre-computed table counters and requires sorting or hashing values."
+            ],
+            "highlight": "Use COUNT(DISTINCT col) to calculate unique active entities rather than total transaction events."
+          },
+          "code": "-- Unique entities vs total transaction counts\nSELECT \n  COUNT(*) AS total_orders_placed,\n  COUNT(DISTINCT customer_id) AS unique_purchasing_customers,\n  SUM(total_amount) AS total_gross_revenue,\n  ROUND(AVG(total_amount), 2) AS average_order_value\nFROM orders;",
+          "tip": "Demonstrate how 6 total orders came from only 5 unique customers because Alice ordered twice.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "Order Metrics with COUNT(DISTINCT)",
+              "columns": [
+                {
+                  "name": "total_orders_placed",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "unique_purchasing_customers",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "total_gross_revenue",
+                  "type": "REAL"
+                },
+                {
+                  "name": "average_order_value",
+                  "type": "REAL"
+                }
+              ],
+              "rows": [
+                [
+                  6,
+                  5,
+                  393.96,
+                  65.66
+                ]
+              ],
+              "note": "6 orders placed by 5 distinct customers"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Aggregation Quiz",
+      "slides": [
+        {
+          "id": "sql-67",
+          "language": "sql",
+          "section": "6. Aggregate Functions",
+          "topic": "Aggregation Quiz",
+          "step": "6.3",
+          "category": "sql",
+          "categoryLabel": "Aggregate Functions",
+          "tag": "Quiz",
+          "question": "Module 6 Quiz: Test your grasp of aggregate functions and GROUP BY mechanics",
+          "explanation": {
+            "points": [
+              "Verify your knowledge of COUNT(*), NULL handling in AVG(), and GROUP BY rules.",
+              "Test your understanding of the difference between WHERE and HAVING.",
+              "Answer the 4 questions in the interactive quiz card."
+            ],
+            "highlight": "Test your aggregate analysis and grouping knowledge."
+          },
+          "code": "-- Interactive quiz slide.\n-- Answer questions in the visual panel on the left.\nSELECT 'Test your Aggregations knowledge.' AS status;",
+          "tip": "Emphasize the Golden Rule: Any non-aggregated column in SELECT must be included in the GROUP BY clause.",
+          "viz": {
+            "type": "sql-quiz",
+            "data": {
+              "quizTitle": "Module 6: Aggregations & GROUP BY Quiz",
+              "questions": [
+                {
+                  "question": "What is the difference between COUNT(*) and COUNT(column_name)?",
+                  "options": [
+                    "COUNT(*) is slower in all databases",
+                    "COUNT(*) counts all rows including NULLs; COUNT(column_name) ignores NULL values",
+                    "COUNT(column_name) returns distinct values only",
+                    "There is no difference"
+                  ],
+                  "answer": 1,
+                  "explanation": "COUNT(*) counts total row tuples regardless of content. COUNT(col) counts only rows where col IS NOT NULL."
+                },
+                {
+                  "question": "When does the HAVING clause filter data compared to the WHERE clause?",
+                  "options": [
+                    "WHERE filters before grouping; HAVING filters after grouping on aggregated results",
+                    "HAVING filters before grouping; WHERE filters after grouping",
+                    "They are identical and can be used interchangeably anywhere",
+                    "HAVING only works on primary keys"
+                  ],
+                  "answer": 0,
+                  "explanation": "WHERE filters raw individual rows before GROUP BY occurs; HAVING filters aggregated bucket metrics after grouping."
+                },
+                {
+                  "question": "If you write 'SELECT category, AVG(price) FROM books;', what is missing in standard SQL?",
+                  "options": [
+                    "A WHERE clause",
+                    "GROUP BY category",
+                    "An ORDER BY clause",
+                    "A LIMIT clause"
+                  ],
+                  "answer": 1,
+                  "explanation": "Because 'category' is a non-aggregate column, standard SQL requires 'GROUP BY category' to determine group buckets."
+                },
+                {
+                  "question": "How does the AVG() function treat NULL values?",
+                  "options": [
+                    "It treats NULL as zero (0)",
+                    "It completely ignores NULL values from both the sum and the row count",
+                    "It returns NULL if any value in the column is NULL",
+                    "It throws a runtime error"
+                  ],
+                  "answer": 1,
+                  "explanation": "Aggregate functions (except COUNT(*)) silently skip NULL values in their calculations."
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Grouping Data",
+      "slides": [
+        {
+          "id": "sql-68",
+          "language": "sql",
+          "section": "6. Aggregate Functions",
+          "topic": "Grouping Data",
+          "step": "6.4",
+          "category": "sql",
+          "categoryLabel": "Aggregate Functions",
+          "tag": "Lesson",
+          "question": "How does GROUP BY bucket table rows into categorical summary partitions?",
+          "explanation": {
+            "points": [
+              "**`GROUP BY column1, column2`** partitions rows sharing the same values into summary buckets.",
+              "Aggregate functions like `COUNT()`, `SUM()`, and `AVG()` then compute results **per group** instead of table-wide.",
+              "**The Golden Rule of SQL Grouping**: Every column in the `SELECT` list must either be inside an aggregate function OR listed in the `GROUP BY` clause.",
+              "You can group by multiple columns (e.g. `GROUP BY department, job_title`)."
+            ],
+            "highlight": "GROUP BY partitions records into buckets; any unaggregated column in SELECT must appear in GROUP BY."
+          },
+          "code": "-- Calculate catalog metrics grouped by category\nSELECT \n  category,\n  COUNT(*) AS book_count,\n  ROUND(AVG(price), 2) AS avg_price,\n  SUM(stock) AS total_category_stock\nFROM books\nGROUP BY category\nORDER BY book_count DESC;",
+          "tip": "Demonstrate how each distinct category forms its own discrete summary row.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "Books Grouped by Category",
+              "columns": [
+                {
+                  "name": "category",
+                  "type": "TEXT",
+                  "isPk": true
+                },
+                {
+                  "name": "book_count",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "avg_price",
+                  "type": "REAL"
+                },
+                {
+                  "name": "total_category_stock",
+                  "type": "INTEGER"
+                }
+              ],
+              "rows": [
+                [
+                  "Software Engineering",
+                  3,
+                  35.83,
+                  135
+                ],
+                [
+                  "System Design",
+                  2,
+                  41.0,
+                  215
+                ],
+                [
+                  "AI & Data",
+                  2,
+                  34.25,
+                  90
+                ],
+                [
+                  "Distributed Systems",
+                  1,
+                  45.0,
+                  80
+                ]
+              ],
+              "note": "4 categorical summary groups generated"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Grouping and Filtering",
+      "slides": [
+        {
+          "id": "sql-69",
+          "language": "sql",
+          "section": "6. Aggregate Functions",
+          "topic": "Grouping and Filtering",
+          "step": "6.5",
+          "category": "sql",
+          "categoryLabel": "Aggregate Functions",
+          "tag": "Lesson",
+          "question": "How does the HAVING clause filter aggregated groups after GROUP BY evaluation?",
+          "explanation": {
+            "points": [
+              "**`WHERE`** filters individual rows **BEFORE** aggregation takes place.",
+              "**`HAVING`** filters summary groups **AFTER** aggregation is computed.",
+              "You cannot use aggregate functions inside a `WHERE` clause (`WHERE AVG(price) > 30` is illegal SQL!).",
+              "Instead, use `HAVING AVG(price) > 30` to filter aggregated category buckets.",
+              "Full query clause order: `FROM` -> `WHERE` -> `GROUP BY` -> `HAVING` -> `SELECT` -> `ORDER BY` -> `LIMIT`."
+            ],
+            "highlight": "WHERE filters rows before grouping; HAVING filters aggregated group metrics after GROUP BY."
+          },
+          "code": "-- Filter categories having more than 1 book and an average price >= $35.00\nSELECT \n  category,\n  COUNT(*) AS book_count,\n  ROUND(AVG(price), 2) AS avg_price\nFROM books\nWHERE stock > 0                       -- 1. Filter individual rows first\nGROUP BY category                     -- 2. Group into buckets\nHAVING COUNT(*) > 1 AND AVG(price) >= 35.00 -- 3. Filter group metrics\nORDER BY avg_price DESC;              -- 4. Sort results",
+          "tip": "Drill the standard logical processing order so students never try using aggregate expressions in WHERE.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "HAVING Filtered Categories",
+              "columns": [
+                {
+                  "name": "category",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "book_count",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "avg_price",
+                  "type": "REAL"
+                }
+              ],
+              "rows": [
+                [
+                  "System Design",
+                  2,
+                  41.0
+                ],
+                [
+                  "Software Engineering",
+                  3,
+                  35.83
+                ]
+              ],
+              "note": "AI & Data and Distributed Systems excluded by HAVING filters"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Book Sales Summary",
+      "slides": [
+        {
+          "id": "sql-70",
+          "language": "sql",
+          "section": "6. Aggregate Functions",
+          "topic": "Book Sales Summary",
+          "step": "6.6",
+          "category": "sql",
+          "categoryLabel": "Aggregate Functions",
+          "tag": "Challenge",
+          "question": "Challenge: Calculate total quantity sold and revenue generated per book",
+          "explanation": {
+            "points": [
+              "**Task**: Join `books b` and `order_items oi` to calculate sales performance per title.",
+              "Return:",
+              "- `b.title`",
+              "- `SUM(oi.quantity) AS total_units_sold`",
+              "- `ROUND(SUM(oi.quantity * oi.unit_price), 2) AS gross_revenue`",
+              "Group by `b.id`, `b.title` and sort by `gross_revenue` DESC."
+            ],
+            "highlight": "Join books with order_items, group by book title, and sum quantity and revenue."
+          },
+          "code": "-- WRITE YOUR AGGREGATE JOIN QUERY HERE:\nSELECT \n  b.title,\n  SUM(oi.quantity) AS total_units_sold,\n  ROUND(SUM(oi.quantity * oi.unit_price), 2) AS gross_revenue\nFROM books b\nJOIN order_items oi ON b.id = oi.book_id\nGROUP BY b.id, b.title\nORDER BY gross_revenue DESC;",
+          "tip": "Point out that grouping by both b.id and b.title preserves ANSI SQL compliance while preventing title collisions.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Join books with order_items, group by book id and title, and calculate aggregate sums of units and revenue.",
+            "code": "SELECT \n  b.title,\n  SUM(oi.quantity) AS total_units_sold,\n  ROUND(SUM(oi.quantity * oi.unit_price), 2) AS gross_revenue\nFROM books b\nJOIN order_items oi ON b.id = oi.book_id\nGROUP BY b.id, b.title\nORDER BY gross_revenue DESC;",
+            "timeComplexity": "O(N log G) where G is unique books",
+            "spaceComplexity": "O(G)",
+            "explanationPoints": [
+              "INNER JOIN pairs each order line item with its book title.",
+              "`SUM(oi.quantity * oi.unit_price)` computes total sales revenue.",
+              "`GROUP BY b.id, b.title` produces 1 row per distinct book."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Category Insights",
+      "slides": [
+        {
+          "id": "sql-71",
+          "language": "sql",
+          "section": "6. Aggregate Functions",
+          "topic": "Category Insights",
+          "step": "6.7",
+          "category": "sql",
+          "categoryLabel": "Aggregate Functions",
+          "tag": "Challenge",
+          "question": "Challenge: High-level category performance audit",
+          "explanation": {
+            "points": [
+              "**Task**: In the `books` table, group by `category` and compute:",
+              "- `COUNT(*) AS total_titles`",
+              "- `ROUND(AVG(price), 2) AS average_price`",
+              "- `MIN(price) AS min_price`",
+              "- `MAX(price) AS max_price`",
+              "Order by `total_titles` DESC, `category` ASC."
+            ],
+            "highlight": "Group by category and calculate count, avg, min, and max price per genre."
+          },
+          "code": "-- WRITE YOUR CATEGORY INSIGHTS QUERY HERE:\nSELECT \n  category,\n  COUNT(*) AS total_titles,\n  ROUND(AVG(price), 2) AS average_price,\n  MIN(price) AS min_price,\n  MAX(price) AS max_price\nFROM books\nGROUP BY category\nORDER BY total_titles DESC, category ASC;",
+          "tip": "Demonstrate how multiple aggregates on a single column provide a complete statistical summary.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Group by category and apply COUNT, AVG, MIN, and MAX functions.",
+            "code": "SELECT \n  category,\n  COUNT(*) AS total_titles,\n  ROUND(AVG(price), 2) AS average_price,\n  MIN(price) AS min_price,\n  MAX(price) AS max_price\nFROM books\nGROUP BY category\nORDER BY total_titles DESC, category ASC;",
+            "timeComplexity": "O(N log C) where C is categories",
+            "spaceComplexity": "O(C)",
+            "explanationPoints": [
+              "`ROUND(AVG(price), 2)` trims floating point averages to standard cents.",
+              "MIN and MAX reveal price dispersion within each technical niche."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Author Tier Analysis",
+      "slides": [
+        {
+          "id": "sql-72",
+          "language": "sql",
+          "section": "6. Aggregate Functions",
+          "topic": "Author Tier Analysis",
+          "step": "6.8",
+          "category": "sql",
+          "categoryLabel": "Aggregate Functions",
+          "tag": "Challenge",
+          "question": "Challenge: Analyze book pricing by author prestige tier",
+          "explanation": {
+            "points": [
+              "**Task**: Join `authors a` and `books b` on `a.id = b.author_id`.",
+              "Group by `a.tier` (e.g. 'Tier 1', 'Tier 2') and calculate:",
+              "- `COUNT(DISTINCT a.id) AS author_count`",
+              "- `COUNT(b.id) AS book_count`",
+              "- `ROUND(AVG(b.price), 2) AS average_book_price`",
+              "Order by `a.tier` ASC."
+            ],
+            "highlight": "Join authors and books, group by tier, and compute author count, book count, and avg price."
+          },
+          "code": "-- WRITE YOUR QUERY HERE:\nSELECT \n  a.tier,\n  COUNT(DISTINCT a.id) AS author_count,\n  COUNT(b.id) AS book_count,\n  ROUND(AVG(b.price), 2) AS average_book_price\nFROM authors a\nJOIN books b ON a.id = b.author_id\nGROUP BY a.tier\nORDER BY a.tier ASC;",
+          "tip": "Contrast COUNT(DISTINCT a.id) with COUNT(b.id) to highlight counting authors versus counting books.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Join authors to books, group by tier, and count distinct authors alongside total books and average price.",
+            "code": "SELECT \n  a.tier,\n  COUNT(DISTINCT a.id) AS author_count,\n  COUNT(b.id) AS book_count,\n  ROUND(AVG(b.price), 2) AS average_book_price\nFROM authors a\nJOIN books b ON a.id = b.author_id\nGROUP BY a.tier\nORDER BY a.tier ASC;",
+            "timeComplexity": "O(N log T) where T is tiers",
+            "spaceComplexity": "O(T)",
+            "explanationPoints": [
+              "`COUNT(DISTINCT a.id)` ensures an author with 3 books is only counted as 1 author in the tier.",
+              "`AVG(b.price)` compares pricing power between Tier 1 and Tier 2 authors."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Author Book Stats",
+      "slides": [
+        {
+          "id": "sql-73",
+          "language": "sql",
+          "section": "6. Aggregate Functions",
+          "topic": "Author Book Stats",
+          "step": "6.9",
+          "category": "sql",
+          "categoryLabel": "Aggregate Functions",
+          "tag": "Challenge",
+          "question": "Challenge: Aggregate catalog statistics per author",
+          "explanation": {
+            "points": [
+              "**Task**: For each author in `authors`, find their total catalog size and highest rated book score.",
+              "Join `authors a` with `books b`.",
+              "Return `a.name AS author_name`, `COUNT(b.id) AS titles_count`, and `MAX(b.rating) AS highest_rating`.",
+              "Group by `a.id`, `a.name` and order by `titles_count` DESC."
+            ],
+            "highlight": "Join authors and books, group by author name, and compute titles_count and max rating."
+          },
+          "code": "-- WRITE YOUR QUERY HERE:\nSELECT \n  a.name AS author_name,\n  COUNT(b.id) AS titles_count,\n  MAX(b.rating) AS highest_rating\nFROM authors a\nJOIN books b ON a.id = b.author_id\nGROUP BY a.id, a.name\nORDER BY titles_count DESC, highest_rating DESC;",
+          "tip": "Show how authors with prolific catalogs surface at the top of the leaderboard.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Join authors to books on author_id, group by author ID and name, and compute COUNT and MAX.",
+            "code": "SELECT \n  a.name AS author_name,\n  COUNT(b.id) AS titles_count,\n  MAX(b.rating) AS highest_rating\nFROM authors a\nJOIN books b ON a.id = b.author_id\nGROUP BY a.id, a.name\nORDER BY titles_count DESC, highest_rating DESC;",
+            "timeComplexity": "O(N log A)",
+            "spaceComplexity": "O(A)",
+            "explanationPoints": [
+              "`COUNT(b.id)` counts the number of published volumes per writer.",
+              "`MAX(b.rating)` finds their peak critical acclaim."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Daily Sales Report",
+      "slides": [
+        {
+          "id": "sql-74",
+          "language": "sql",
+          "section": "6. Aggregate Functions",
+          "topic": "Daily Sales Report",
+          "step": "6.10",
+          "category": "sql",
+          "categoryLabel": "Aggregate Functions",
+          "tag": "Challenge",
+          "question": "Challenge: Group customer orders into daily revenue batches",
+          "explanation": {
+            "points": [
+              "**Task**: Group all records in `orders` by `order_date`.",
+              "Calculate:",
+              "- `COUNT(*) AS orders_count`",
+              "- `ROUND(SUM(total_amount), 2) AS daily_revenue`",
+              "- `ROUND(AVG(total_amount), 2) AS avg_order_value`",
+              "Order chronologically by `order_date` ASC."
+            ],
+            "highlight": "Group orders by order_date and compute orders_count, daily_revenue, and avg_order_value."
+          },
+          "code": "-- WRITE YOUR DAILY SALES QUERY HERE:\nSELECT \n  order_date,\n  COUNT(*) AS orders_count,\n  ROUND(SUM(total_amount), 2) AS daily_revenue,\n  ROUND(AVG(total_amount), 2) AS avg_order_value\nFROM orders\nGROUP BY order_date\nORDER BY order_date ASC;",
+          "tip": "Demonstrate how financial dashboards aggregate timestamps into daily, weekly, or monthly bars.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Group by order_date and aggregate count, sum, and average of order totals.",
+            "code": "SELECT \n  order_date,\n  COUNT(*) AS orders_count,\n  ROUND(SUM(total_amount), 2) AS daily_revenue,\n  ROUND(AVG(total_amount), 2) AS avg_order_value\nFROM orders\nGROUP BY order_date\nORDER BY order_date ASC;",
+            "timeComplexity": "O(N log D)",
+            "spaceComplexity": "O(D)",
+            "explanationPoints": [
+              "`GROUP BY order_date` collapses individual transactions into calendar days.",
+              "`SUM(total_amount)` computes the day's gross cash intake."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Publisher Stats",
+      "slides": [
+        {
+          "id": "sql-75",
+          "language": "sql",
+          "section": "6. Aggregate Functions",
+          "topic": "Publisher Stats",
+          "step": "6.11",
+          "category": "sql",
+          "categoryLabel": "Aggregate Functions",
+          "tag": "Challenge",
+          "question": "Challenge: Summarize publishing house revenue and company locations",
+          "explanation": {
+            "points": [
+              "**Task**: In the `publishers` table, calculate the total revenue generated across all publishers.",
+              "Return:",
+              "- `COUNT(*) AS total_publishers`",
+              "- `ROUND(SUM(revenue) / 1000000.0, 2) AS total_revenue_millions`",
+              "- `ROUND(AVG(revenue) / 1000000.0, 2) AS average_revenue_millions`"
+            ],
+            "highlight": "Summarize corporate revenue metrics in millions across the publishing industry."
+          },
+          "code": "-- WRITE YOUR PUBLISHER STATS QUERY HERE:\nSELECT \n  COUNT(*) AS total_publishers,\n  ROUND(SUM(revenue) / 1000000.0, 2) AS total_revenue_millions,\n  ROUND(AVG(revenue) / 1000000.0, 2) AS average_revenue_millions\nFROM publishers;",
+          "tip": "Show how dividing by 1,000,000.0 scales unwieldy currency figures into executive-ready metrics.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Run table-wide aggregates on publishers converting currency to millions.",
+            "code": "SELECT \n  COUNT(*) AS total_publishers,\n  ROUND(SUM(revenue) / 1000000.0, 2) AS total_revenue_millions,\n  ROUND(AVG(revenue) / 1000000.0, 2) AS average_revenue_millions\nFROM publishers;",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(1)",
+            "explanationPoints": [
+              "Table-wide aggregates without GROUP BY output a single consolidated row.",
+              "Dividing by `1000000.0` uses floating point division to format as millions."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "High Value Publishers",
+      "slides": [
+        {
+          "id": "sql-76",
+          "language": "sql",
+          "section": "6. Aggregate Functions",
+          "topic": "High Value Publishers",
+          "step": "6.12",
+          "category": "sql",
+          "categoryLabel": "Aggregate Functions",
+          "tag": "Challenge",
+          "question": "Challenge: Filter large-market publishers using HAVING",
+          "explanation": {
+            "points": [
+              "**Task**: Filter `publishers` to only those with `revenue >= 20000000` ($20 Million).",
+              "Group by `city` and calculate `COUNT(*) AS publisher_count` and `SUM(revenue) AS city_revenue`.",
+              "Include a `HAVING` clause requiring `SUM(revenue) > 25000000`."
+            ],
+            "highlight": "Group publishers by city, filter with WHERE and HAVING, and aggregate revenue."
+          },
+          "code": "-- WRITE YOUR QUERY HERE:\nSELECT \n  city,\n  COUNT(*) AS publisher_count,\n  SUM(revenue) AS city_revenue\nFROM publishers\nWHERE revenue >= 20000000\nGROUP BY city\nHAVING SUM(revenue) > 25000000\nORDER BY city_revenue DESC;",
+          "tip": "Review how WHERE filters individual publishers before city groups are summed in HAVING.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Combine WHERE revenue >= 20M with GROUP BY city and HAVING SUM(revenue) > 25M.",
+            "code": "SELECT \n  city,\n  COUNT(*) AS publisher_count,\n  SUM(revenue) AS city_revenue\nFROM publishers\nWHERE revenue >= 20000000\nGROUP BY city\nHAVING SUM(revenue) > 25000000\nORDER BY city_revenue DESC;",
+            "timeComplexity": "O(N log C)",
+            "spaceComplexity": "O(C)",
+            "explanationPoints": [
+              "`WHERE revenue >= 20000000` drops small boutique presses before grouping.",
+              "`HAVING SUM(revenue) > 25000000` filters out cities whose collective publishing volume falls below $25M."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Premium Authors",
+      "slides": [
+        {
+          "id": "sql-77",
+          "language": "sql",
+          "section": "6. Aggregate Functions",
+          "topic": "Premium Authors",
+          "step": "6.13",
+          "category": "sql",
+          "categoryLabel": "Aggregate Functions",
+          "tag": "Challenge",
+          "question": "Challenge: Identify elite authors with stellar average catalog ratings",
+          "explanation": {
+            "points": [
+              "**Task**: Join `authors a` with `books b`.",
+              "Group by `a.id`, `a.name`.",
+              "Use a `HAVING` clause to filter for authors whose **average book rating** is at least `4.8` (`AVG(b.rating) >= 4.8`).",
+              "Return `a.name AS author_name`, `COUNT(b.id) AS catalog_size`, and `ROUND(AVG(b.rating), 2) AS avg_rating`."
+            ],
+            "highlight": "Join authors and books, group by author, and filter HAVING AVG(b.rating) >= 4.8."
+          },
+          "code": "-- WRITE YOUR QUERY HERE:\nSELECT \n  a.name AS author_name,\n  COUNT(b.id) AS catalog_size,\n  ROUND(AVG(b.rating), 2) AS avg_rating\nFROM authors a\nJOIN books b ON a.id = b.author_id\nGROUP BY a.id, a.name\nHAVING AVG(b.rating) >= 4.8\nORDER BY avg_rating DESC, catalog_size DESC;",
+          "tip": "Demonstrate using HAVING on an aggregate expression (AVG) that does not physically exist as a column in authors.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Join authors to books, group by author ID and name, and filter with HAVING AVG(b.rating) >= 4.8.",
+            "code": "SELECT \n  a.name AS author_name,\n  COUNT(b.id) AS catalog_size,\n  ROUND(AVG(b.rating), 2) AS avg_rating\nFROM authors a\nJOIN books b ON a.id = b.author_id\nGROUP BY a.id, a.name\nHAVING AVG(b.rating) >= 4.8\nORDER BY avg_rating DESC, catalog_size DESC;",
+            "timeComplexity": "O(N log A)",
+            "spaceComplexity": "O(A)",
+            "explanationPoints": [
+              "`HAVING AVG(b.rating) >= 4.8` isolates authors whose average critical score meets the premium threshold.",
+              "Sorting surfaces the highest-rated creators first."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Sales Analysis",
+      "slides": [
+        {
+          "id": "sql-78",
+          "language": "sql",
+          "section": "6. Aggregate Functions",
+          "topic": "Sales Analysis",
+          "step": "6.14",
+          "category": "sql",
+          "categoryLabel": "Aggregate Functions",
+          "tag": "Challenge",
+          "question": "Challenge: International sales breakdown by customer country",
+          "explanation": {
+            "points": [
+              "**Task**: Join `customers c` and `orders o`.",
+              "Group by `c.country` and compute:",
+              "- `COUNT(DISTINCT c.id) AS active_customers`",
+              "- `COUNT(o.id) AS total_orders`",
+              "- `ROUND(SUM(o.total_amount), 2) AS gross_country_sales`",
+              "Order by `gross_country_sales` DESC."
+            ],
+            "highlight": "Join customers and orders, group by country, and calculate regional sales volume."
+          },
+          "code": "-- WRITE YOUR REGIONAL SALES QUERY HERE:\nSELECT \n  c.country,\n  COUNT(DISTINCT c.id) AS active_customers,\n  COUNT(o.id) AS total_orders,\n  ROUND(SUM(o.total_amount), 2) AS gross_country_sales\nFROM customers c\nJOIN orders o ON c.id = o.customer_id\nGROUP BY c.country\nORDER BY gross_country_sales DESC;",
+          "tip": "Show how regional market share reports guide international currency expansion.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Join customers to orders, group by c.country, and aggregate active customers, order count, and gross sum.",
+            "code": "SELECT \n  c.country,\n  COUNT(DISTINCT c.id) AS active_customers,\n  COUNT(o.id) AS total_orders,\n  ROUND(SUM(o.total_amount), 2) AS gross_country_sales\nFROM customers c\nJOIN orders o ON c.id = o.customer_id\nGROUP BY c.country\nORDER BY gross_country_sales DESC;",
+            "timeComplexity": "O(N log C)",
+            "spaceComplexity": "O(C)",
+            "explanationPoints": [
+              "`COUNT(DISTINCT c.id)` prevents counting the same buyer multiple times in the active customer tally.",
+              "`SUM(o.total_amount)` totals the country's economic volume."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Employee Performance",
+      "slides": [
+        {
+          "id": "sql-79",
+          "language": "sql",
+          "section": "6. Aggregate Functions",
+          "topic": "Employee Performance",
+          "step": "6.15",
+          "category": "sql",
+          "categoryLabel": "Aggregate Functions",
+          "tag": "Challenge",
+          "question": "Challenge: Compute department payroll statistics and headcount",
+          "explanation": {
+            "points": [
+              "**Task**: In the `employees` table, group by `department` and compute:",
+              "- `COUNT(*) AS headcount`",
+              "- `ROUND(AVG(salary), 2) AS avg_salary`",
+              "- `MIN(salary) AS min_salary`",
+              "- `MAX(salary) AS max_salary`",
+              "- `SUM(salary) AS total_department_payroll`",
+              "Order by `total_department_payroll` DESC."
+            ],
+            "highlight": "Group employees by department and calculate headcount, avg salary, and total payroll."
+          },
+          "code": "-- WRITE YOUR DEPARTMENT PAYROLL QUERY HERE:\nSELECT \n  department,\n  COUNT(*) AS headcount,\n  ROUND(AVG(salary), 2) AS avg_salary,\n  MIN(salary) AS min_salary,\n  MAX(salary) AS max_salary,\n  SUM(salary) AS total_department_payroll\nFROM employees\nGROUP BY department\nORDER BY total_department_payroll DESC;",
+          "tip": "Demonstrate how HR and corporate budgeting systems use payroll aggregates for headcount planning.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Group by department and compute comprehensive salary aggregates.",
+            "code": "SELECT \n  department,\n  COUNT(*) AS headcount,\n  ROUND(AVG(salary), 2) AS avg_salary,\n  MIN(salary) AS min_salary,\n  MAX(salary) AS max_salary,\n  SUM(salary) AS total_department_payroll\nFROM employees\nGROUP BY department\nORDER BY total_department_payroll DESC;",
+            "timeComplexity": "O(N log D)",
+            "spaceComplexity": "O(D)",
+            "explanationPoints": [
+              "Computes department headcount and payroll budget.",
+              "Comparing MIN and MAX salary reveals internal pay dispersion."
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

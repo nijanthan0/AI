@@ -1,0 +1,987 @@
+{
+  "section": "5. Multi-Table Queries",
+  "order": 5,
+  "topics": [
+    {
+      "topic": "More on Relational Data",
+      "slides": [
+        {
+          "id": "sql-47",
+          "language": "sql",
+          "section": "5. Multi-Table Queries",
+          "topic": "More on Relational Data",
+          "step": "5.1",
+          "category": "sql",
+          "categoryLabel": "Multi-Table Queries",
+          "tag": "Lesson",
+          "question": "How does relational data modeling eliminate redundancy through Normalization (1NF, 2NF, 3NF)?",
+          "explanation": {
+            "points": [
+              "**Relational Modeling** splits information across separate logical tables to eliminate anomalies and redundancy.",
+              "**1NF (First Normal Form)**: Each cell contains a single atomic value; no repeating groups or comma-separated lists.",
+              "**2NF (Second Normal Form)**: Table is in 1NF and all non-key columns depend on the entire candidate key.",
+              "**3NF (Third Normal Form)**: Table is in 2NF and has no transitive dependencies (no non-key column depends on another non-key column).",
+              "Instead of duplicating author names inside every book row, we link `books.author_id` to `authors.id`."
+            ],
+            "highlight": "Normalization separates entities into distinct tables, eliminating data redundancy and update anomalies."
+          },
+          "code": "-- Inspect relational separation between books and authors\nSELECT \n  b.id AS book_id,\n  b.title,\n  b.author_id,\n  a.name AS author_name,\n  a.country\nFROM books b\nJOIN authors a ON b.author_id = a.id\nLIMIT 5;",
+          "tip": "Show what happens when an author changes their name: in normalized design, you update exactly 1 row in authors.",
+          "viz": {
+            "type": "sql-join",
+            "data": {
+              "leftTable": {
+                "name": "books",
+                "rows": [
+                  [
+                    1,
+                    "Clean Code (author_id = 1)"
+                  ],
+                  [
+                    2,
+                    "DDIA (author_id = 2)"
+                  ],
+                  [
+                    7,
+                    "Clean Architecture (author_id = 1)"
+                  ]
+                ]
+              },
+              "rightTable": {
+                "name": "authors",
+                "rows": [
+                  [
+                    1,
+                    "Robert C. Martin",
+                    "USA"
+                  ],
+                  [
+                    2,
+                    "Martin Kleppmann",
+                    "UK"
+                  ]
+                ]
+              },
+              "joinKey": "books.author_id = authors.id"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Relationships and Types",
+      "slides": [
+        {
+          "id": "sql-48",
+          "language": "sql",
+          "section": "5. Multi-Table Queries",
+          "topic": "Relationships and Types",
+          "step": "5.2",
+          "category": "sql",
+          "categoryLabel": "Multi-Table Queries",
+          "tag": "Lesson",
+          "question": "How are 1-to-1, 1-to-Many, and Many-to-Many relationships modeled in relational databases?",
+          "explanation": {
+            "points": [
+              "**1-to-1 (1:1)**: E.g., User and UserProfile. Primary key of child is also foreign key to parent.",
+              "**1-to-Many (1:N)**: E.g., One Customer has many Orders. Foreign key `customer_id` lives on the `orders` table.",
+              "**Many-to-Many (N:M)**: E.g., Orders and Books. Modeled using an intermediate **Junction Table** (`order_items`).",
+              "The junction table holds foreign keys to both parent tables plus line-item specific data (e.g., `quantity`, `unit_price`)."
+            ],
+            "highlight": "Model Many-to-Many relationships with a junction table linking two One-to-Many relationships."
+          },
+          "code": "-- Inspect the junction table order_items linking orders to books\nSELECT \n  oi.order_id,\n  c.name AS customer_name,\n  b.title AS purchased_book,\n  oi.quantity,\n  oi.unit_price\nFROM order_items oi\nJOIN orders o ON oi.order_id = o.id\nJOIN customers c ON o.customer_id = c.id\nJOIN books b ON oi.book_id = b.id\nLIMIT 5;",
+          "tip": "Have learners trace how an order can have multiple books, and a book can appear in multiple orders via order_items.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "Junction Table Query (order_items)",
+              "columns": [
+                {
+                  "name": "order_id",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "customer_name",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "purchased_book",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "quantity",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "unit_price",
+                  "type": "REAL"
+                }
+              ],
+              "rows": [
+                [
+                  1,
+                  "Alice Smith",
+                  "Clean Code",
+                  1,
+                  32.5
+                ],
+                [
+                  1,
+                  "Alice Smith",
+                  "Designing Data-Intensive Applications",
+                  1,
+                  45.0
+                ],
+                [
+                  2,
+                  "Bob Johnson",
+                  "Designing Data-Intensive Applications",
+                  1,
+                  45.0
+                ]
+              ],
+              "note": "Resolves N:M relationship between Orders and Books"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "JOINs in Queries",
+      "slides": [
+        {
+          "id": "sql-49",
+          "language": "sql",
+          "section": "5. Multi-Table Queries",
+          "topic": "JOINs in Queries",
+          "step": "5.3",
+          "category": "sql",
+          "categoryLabel": "Multi-Table Queries",
+          "tag": "Lesson",
+          "question": "How do INNER, LEFT, RIGHT, and FULL OUTER JOINs match records across tables?",
+          "explanation": {
+            "points": [
+              "**`INNER JOIN`**: Returns only rows where there is a match in **BOTH** tables.",
+              "**`LEFT JOIN` (or LEFT OUTER JOIN)**: Returns **ALL** rows from the left table, with matching right table rows or `NULL` if no match exists.",
+              "**`RIGHT JOIN`**: Returns **ALL** rows from the right table, matching left or `NULL`.",
+              "**`FULL OUTER JOIN`**: Returns all rows when there is a match in either table (combines LEFT and RIGHT).",
+              "Use table aliases (`FROM books b JOIN authors a`) to keep queries concise."
+            ],
+            "highlight": "INNER JOIN keeps only matches; LEFT JOIN keeps all left rows and fills unmatched rights with NULL."
+          },
+          "code": "-- Compare INNER JOIN vs LEFT JOIN\n-- 1. INNER JOIN: Only customers with orders\nSELECT c.name, o.id AS order_id, o.total_amount\nFROM customers c\nINNER JOIN orders o ON c.id = o.customer_id;\n\n-- 2. LEFT JOIN: All customers including those who never purchased\nSELECT c.name, o.id AS order_id, o.total_amount\nFROM customers c\nLEFT JOIN orders o ON c.id = o.customer_id;",
+          "tip": "Show the visual Venn diagram in the left panel to clearly see row preservation.",
+          "viz": {
+            "type": "sql-join",
+            "data": {
+              "leftTable": {
+                "name": "customers",
+                "rows": [
+                  [
+                    1,
+                    "Alice Smith"
+                  ],
+                  [
+                    2,
+                    "Bob Johnson"
+                  ],
+                  [
+                    6,
+                    "Fiona Gallagher (no orders)"
+                  ]
+                ]
+              },
+              "rightTable": {
+                "name": "orders",
+                "rows": [
+                  [
+                    1,
+                    1,
+                    "$77.50"
+                  ],
+                  [
+                    2,
+                    2,
+                    "$45.00"
+                  ]
+                ]
+              },
+              "joinKey": "customers.id = orders.customer_id"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Self Joins and Usecases",
+      "slides": [
+        {
+          "id": "sql-50",
+          "language": "sql",
+          "section": "5. Multi-Table Queries",
+          "topic": "Self Joins and Usecases",
+          "step": "5.4",
+          "category": "sql",
+          "categoryLabel": "Multi-Table Queries",
+          "tag": "Lesson",
+          "question": "How does a SELF JOIN query hierarchical data within the same table?",
+          "explanation": {
+            "points": [
+              "A **`SELF JOIN`** joins a table to itself by using two distinct table aliases (e.g. `FROM employees e JOIN employees m`).",
+              "Standard use case: **Hierarchies & Org Charts** where a row's `manager_id` points back to another row's `id` in the same table.",
+              "Another use case: Finding pairs or duplicates (e.g., books with the exact same price).",
+              "Always use `LEFT JOIN` for self-joins on hierarchies so the top-level CEO/root (whose `manager_id IS NULL`) is not filtered out."
+            ],
+            "highlight": "Join a table to itself using two distinct aliases to navigate hierarchies and manager relationships."
+          },
+          "code": "-- Self-Join: List employees alongside their managers\nSELECT \n  e.name AS employee_name,\n  e.department,\n  COALESCE(m.name, 'Top Executive / CEO') AS manager_name\nFROM employees e\nLEFT JOIN employees m ON e.manager_id = m.id\nORDER BY e.department, e.name;",
+          "tip": "Demonstrate why LEFT JOIN is necessary: without it, Sarah Connor (the CEO) disappears from the output.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "Self-Join Output (Employees & Managers)",
+              "columns": [
+                {
+                  "name": "employee_name",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "department",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "manager_name",
+                  "type": "TEXT"
+                }
+              ],
+              "rows": [
+                [
+                  "Sarah Connor",
+                  "Engineering",
+                  "Top Executive / CEO"
+                ],
+                [
+                  "John Doe",
+                  "Engineering",
+                  "Sarah Connor"
+                ],
+                [
+                  "Jane Roe",
+                  "Engineering",
+                  "Sarah Connor"
+                ],
+                [
+                  "Michael Scott",
+                  "Sales",
+                  "Top Executive / CEO"
+                ],
+                [
+                  "Dwight Schrute",
+                  "Sales",
+                  "Michael Scott"
+                ],
+                [
+                  "Jim Halpert",
+                  "Sales",
+                  "Michael Scott"
+                ]
+              ],
+              "note": "Hierarchy resolved using e.manager_id = m.id"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Multi-Table Queries Quiz",
+      "slides": [
+        {
+          "id": "sql-51",
+          "language": "sql",
+          "section": "5. Multi-Table Queries",
+          "topic": "Multi-Table Queries Quiz",
+          "step": "5.5",
+          "category": "sql",
+          "categoryLabel": "Multi-Table Queries",
+          "tag": "Quiz",
+          "question": "Module 5 Quiz: Test your grasp of relational JOINs and normalization",
+          "explanation": {
+            "points": [
+              "Verify your ability to select the correct JOIN type for real business requirements.",
+              "Test your understanding of NULL handling in unmatched LEFT JOIN records.",
+              "Answer the 4 questions in the interactive quiz card."
+            ],
+            "highlight": "Score 4/4 to demonstrate complete mastery of relational JOIN logic."
+          },
+          "code": "-- Interactive quiz slide.\n-- Answer questions in the visual panel on the left.\nSELECT 'Test your JOIN knowledge.' AS status;",
+          "tip": "Review Cartesian products (CROSS JOIN) caused by omitted ON clauses.",
+          "viz": {
+            "type": "sql-quiz",
+            "data": {
+              "quizTitle": "Module 5: Multi-Table Queries & JOINs Quiz",
+              "questions": [
+                {
+                  "question": "Which JOIN returns all records from the left table even if there is no match in the right table?",
+                  "options": [
+                    "INNER JOIN",
+                    "LEFT JOIN (LEFT OUTER JOIN)",
+                    "CROSS JOIN",
+                    "NATURAL JOIN"
+                  ],
+                  "answer": 1,
+                  "explanation": "LEFT JOIN guarantees that all rows from the left table are returned, filling unmatched columns with NULL."
+                },
+                {
+                  "question": "What happens if you omit the 'ON' clause in a JOIN statement?",
+                  "options": [
+                    "The database throws a syntax error or performs a CROSS JOIN (Cartesian product)",
+                    "It automatically matches columns with the same name",
+                    "It only joins the first row",
+                    "It creates a new table automatically"
+                  ],
+                  "answer": 0,
+                  "explanation": "Omitting the join condition produces a Cartesian product where every left row pairs with every right row (N x M rows)."
+                },
+                {
+                  "question": "In an organization hierarchy where employees have a manager_id, what type of query connects them?",
+                  "options": [
+                    "Cross-Database Replication",
+                    "Self JOIN (joining the employees table to itself)",
+                    "Full Cartesian Mesh",
+                    "UNION ALL"
+                  ],
+                  "answer": 1,
+                  "explanation": "A self-join with two aliases (e.g. 'employees e' and 'employees m') navigates parent-child relationships within one table."
+                },
+                {
+                  "question": "Which set operator combines results from two queries and removes duplicate rows?",
+                  "options": [
+                    "UNION ALL",
+                    "UNION",
+                    "MERGE",
+                    "APPEND"
+                  ],
+                  "answer": 1,
+                  "explanation": "UNION combines result sets and performs deduplication. UNION ALL keeps all duplicate rows and is faster."
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Foreign Key Constraint",
+      "slides": [
+        {
+          "id": "sql-52",
+          "language": "sql",
+          "section": "5. Multi-Table Queries",
+          "topic": "Foreign Key Constraint",
+          "step": "5.6",
+          "category": "sql",
+          "categoryLabel": "Multi-Table Queries",
+          "tag": "Lesson",
+          "question": "How do FOREIGN KEY constraints preserve Referential Integrity across tables?",
+          "explanation": {
+            "points": [
+              "A **`FOREIGN KEY`** matches the `PRIMARY KEY` of another table, ensuring a child record cannot reference a non-existent parent.",
+              "Referential actions on delete/update:",
+              "- **`ON DELETE CASCADE`**: Deleting the parent automatically deletes all its children.",
+              "- **`ON DELETE SET NULL`**: Sets the child foreign key column to NULL when the parent is deleted.",
+              "- **`ON DELETE RESTRICT` (Default)**: Rejects parent deletion if child rows still reference it.",
+              "In SQLite, execute `PRAGMA foreign_keys = ON;` to enforce foreign key checking."
+            ],
+            "highlight": "Foreign keys prevent orphan records and maintain strict referential integrity across related tables."
+          },
+          "code": "-- Enable and inspect foreign key support in SQLite\nPRAGMA foreign_keys = ON;\n\n-- Inspect foreign keys on books table\nPRAGMA foreign_key_list(books);",
+          "tip": "Point out how ON DELETE CASCADE is great for line items in orders, but dangerous for users with financial records.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "PRAGMA foreign_key_list(books)",
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "seq",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "table",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "from",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "to",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "on_delete",
+                  "type": "TEXT"
+                }
+              ],
+              "rows": [
+                [
+                  0,
+                  0,
+                  "authors",
+                  "author_id",
+                  "id",
+                  "NO ACTION"
+                ]
+              ],
+              "note": "books.author_id points strictly to authors.id"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Set Operator Queries",
+      "slides": [
+        {
+          "id": "sql-53",
+          "language": "sql",
+          "section": "5. Multi-Table Queries",
+          "topic": "Set Operator Queries",
+          "step": "5.7",
+          "category": "sql",
+          "categoryLabel": "Multi-Table Queries",
+          "tag": "Lesson",
+          "question": "How do UNION, UNION ALL, INTERSECT, and EXCEPT combine multiple query result sets?",
+          "explanation": {
+            "points": [
+              "Set operators combine the outputs of two or more independent `SELECT` statements.",
+              "**Requirements**: Both queries must return the **same number of columns** with compatible data types.",
+              "**`UNION`**: Combines datasets and **removes duplicates** (requires a sort/hash step).",
+              "**`UNION ALL`**: Combines datasets and **keeps all duplicates** (very fast, zero sorting overhead).",
+              "**`INTERSECT`**: Returns only rows present in **BOTH** queries.",
+              "**`EXCEPT` (or MINUS)**: Returns rows present in the first query but **NOT** in the second."
+            ],
+            "highlight": "Use UNION ALL when duplicate removal is unnecessary for significantly faster query performance."
+          },
+          "code": "-- 1. UNION: Unique list of all countries across authors and customers\nSELECT country FROM authors\nUNION\nSELECT country FROM customers;\n\n-- 2. INTERSECT: Countries that have BOTH authors AND customers\nSELECT country FROM authors\nINTERSECT\nSELECT country FROM customers;",
+          "tip": "Demonstrate how UNION ALL runs in O(N+M) while UNION requires an O((N+M) log (N+M)) deduplication sort.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "INTERSECT Result",
+              "columns": [
+                {
+                  "name": "country",
+                  "type": "TEXT"
+                }
+              ],
+              "rows": [
+                [
+                  "UK"
+                ],
+                [
+                  "USA"
+                ]
+              ],
+              "note": "Countries appearing in both authors and customers"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Views and Virtual Tables",
+      "slides": [
+        {
+          "id": "sql-54",
+          "language": "sql",
+          "section": "5. Multi-Table Queries",
+          "topic": "Views and Virtual Tables",
+          "step": "5.8",
+          "category": "sql",
+          "categoryLabel": "Multi-Table Queries",
+          "tag": "Lesson",
+          "question": "How do SQL Views encapsulate complex multi-table joins as reusable virtual tables?",
+          "explanation": {
+            "points": [
+              "A **`VIEW`** is a stored, named query definition that behaves like a virtual table: `CREATE VIEW view_name AS SELECT ...;`.",
+              "Views do **not** store physical data on disk (unless materialized); they re-execute the underlying query when queried.",
+              "Benefits: Encapsulates complex joins, simplifies frontend reporting, and restricts access to sensitive columns (e.g. hiding employee salaries).",
+              "Querying a view is as simple as `SELECT * FROM view_name WHERE ...`."
+            ],
+            "highlight": "Views encapsulate multi-table join complexity behind a simple virtual table interface."
+          },
+          "code": "-- Create a reusable view for order fulfillment\nCREATE VIEW IF NOT EXISTS v_order_summary AS\nSELECT \n  o.id AS order_id,\n  c.name AS customer_name,\n  c.email,\n  o.order_date,\n  o.total_amount,\n  o.status\nFROM orders o\nJOIN customers c ON o.customer_id = c.id;\n\n-- Query the virtual view\nSELECT * FROM v_order_summary WHERE status = 'COMPLETED';",
+          "tip": "Explain the security advantage: you can grant analysts access to a view without exposing underlying tables.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "v_order_summary (View Output)",
+              "columns": [
+                {
+                  "name": "order_id",
+                  "type": "INTEGER",
+                  "isPk": true
+                },
+                {
+                  "name": "customer_name",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "email",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "order_date",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "total_amount",
+                  "type": "REAL"
+                },
+                {
+                  "name": "status",
+                  "type": "TEXT"
+                }
+              ],
+              "rows": [
+                [
+                  1,
+                  "Alice Smith",
+                  "alice@tech.io",
+                  "2024-01-10",
+                  77.5,
+                  "COMPLETED"
+                ],
+                [
+                  2,
+                  "Bob Johnson",
+                  "bob@developer.org",
+                  "2024-01-14",
+                  45.0,
+                  "COMPLETED"
+                ],
+                [
+                  3,
+                  "Alice Smith",
+                  "alice@tech.io",
+                  "2024-02-01",
+                  119.98,
+                  "COMPLETED"
+                ]
+              ],
+              "note": "Virtual table dynamically computed upon execution"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Inactive Customers",
+      "slides": [
+        {
+          "id": "sql-55",
+          "language": "sql",
+          "section": "5. Multi-Table Queries",
+          "topic": "Inactive Customers",
+          "step": "5.9",
+          "category": "sql",
+          "categoryLabel": "Multi-Table Queries",
+          "tag": "Challenge",
+          "question": "Challenge: Identify churned or inactive customers who have never made a purchase",
+          "explanation": {
+            "points": [
+              "**Task**: Find all registered customers who have **NEVER** placed an order.",
+              "**Approach**: Use a `LEFT JOIN` between `customers` and `orders`, and filter where `orders.id IS NULL`.",
+              "Return `customers.id`, `name`, `email`, and `country`."
+            ],
+            "highlight": "Execute LEFT JOIN orders ON c.id = o.customer_id WHERE o.id IS NULL to find non-purchasers."
+          },
+          "code": "-- WRITE YOUR QUERY HERE:\nSELECT c.id, c.name, c.email, c.country\nFROM customers c\nLEFT JOIN orders o ON c.id = o.customer_id\nWHERE o.id IS NULL\nORDER BY c.name ASC;",
+          "tip": "This 'anti-join' pattern with LEFT JOIN ... WHERE right.id IS NULL is an essential SQL interview classic.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Perform a LEFT JOIN from customers to orders. Unmatched customers will receive NULL for all order columns. Filter with WHERE o.id IS NULL.",
+            "code": "SELECT c.id, c.name, c.email, c.country\nFROM customers c\nLEFT JOIN orders o ON c.id = o.customer_id\nWHERE o.id IS NULL\nORDER BY c.name ASC;",
+            "timeComplexity": "O(N) with hash join",
+            "spaceComplexity": "O(N)",
+            "explanationPoints": [
+              "LEFT JOIN retains every customer regardless of whether orders exist.",
+              "Customers with zero orders have `NULL` in the order fields.",
+              "`WHERE o.id IS NULL` isolates these non-purchasing customers."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Recent 3 Orders",
+      "slides": [
+        {
+          "id": "sql-56",
+          "language": "sql",
+          "section": "5. Multi-Table Queries",
+          "topic": "Recent 3 Orders",
+          "step": "5.10",
+          "category": "sql",
+          "categoryLabel": "Multi-Table Queries",
+          "tag": "Challenge",
+          "question": "Challenge: Fetch customer names for the 3 most recent transactions",
+          "explanation": {
+            "points": [
+              "**Task**: Retrieve the 3 most recent orders in the system.",
+              "**Details**: Return `orders.id AS order_id`, `customers.name AS customer_name`, `orders.order_date`, and `orders.total_amount`.",
+              "**Ordering**: Sort by `orders.order_date` DESC, `orders.id` DESC.",
+              "**Limit**: Return exactly 3 rows."
+            ],
+            "highlight": "Join orders with customers, sort by order_date DESC, and limit to 3 records."
+          },
+          "code": "-- WRITE YOUR QUERY HERE:\nSELECT \n  o.id AS order_id,\n  c.name AS customer_name,\n  o.order_date,\n  o.total_amount\nFROM orders o\nJOIN customers c ON o.customer_id = c.id\nORDER BY o.order_date DESC, o.id DESC\nLIMIT 3;",
+          "tip": "Demonstrate how an index on (order_date DESC) allows this query to return instantly without scanning the whole orders table.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "INNER JOIN orders and customers on customer_id = id, sort by order_date DESC, and cap with LIMIT 3.",
+            "code": "SELECT \n  o.id AS order_id,\n  c.name AS customer_name,\n  o.order_date,\n  o.total_amount\nFROM orders o\nJOIN customers c ON o.customer_id = c.id\nORDER BY o.order_date DESC, o.id DESC\nLIMIT 3;",
+            "timeComplexity": "O(N log K) with top-K index",
+            "spaceComplexity": "O(1) 3 rows",
+            "explanationPoints": [
+              "INNER JOIN connects order transactions to their corresponding customer accounts.",
+              "`ORDER BY o.order_date DESC, o.id DESC` sorts newest orders first with an ID tiebreaker.",
+              "`LIMIT 3` ensures only the top 3 recent orders are delivered."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "High Value Orders",
+      "slides": [
+        {
+          "id": "sql-57",
+          "language": "sql",
+          "section": "5. Multi-Table Queries",
+          "topic": "High Value Orders",
+          "step": "5.11",
+          "category": "sql",
+          "categoryLabel": "Multi-Table Queries",
+          "tag": "Challenge",
+          "question": "Challenge: Filter high-ticket purchases exceeding $50.00",
+          "explanation": {
+            "points": [
+              "**Task**: Find all orders where `total_amount >= 50.00`.",
+              "Return `order_id`, `customer_name`, `email`, and `total_amount`.",
+              "Sort by `total_amount` DESC."
+            ],
+            "highlight": "INNER JOIN customers with orders filtering WHERE total_amount >= 50.00."
+          },
+          "code": "-- WRITE YOUR QUERY HERE:\nSELECT \n  o.id AS order_id,\n  c.name AS customer_name,\n  c.email,\n  o.total_amount\nFROM orders o\nJOIN customers c ON o.customer_id = c.id\nWHERE o.total_amount >= 50.00\nORDER BY o.total_amount DESC;",
+          "tip": "Show students how sales teams use this exact query to trigger VIP concierge thank-you emails.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Join orders and customers, filter with WHERE total_amount >= 50.00, and sort DESC.",
+            "code": "SELECT \n  o.id AS order_id,\n  c.name AS customer_name,\n  c.email,\n  o.total_amount\nFROM orders o\nJOIN customers c ON o.customer_id = c.id\nWHERE o.total_amount >= 50.00\nORDER BY o.total_amount DESC;",
+            "timeComplexity": "O(N log N)",
+            "spaceComplexity": "O(N)",
+            "explanationPoints": [
+              "The WHERE condition filters out smaller retail orders.",
+              "Joining on `customer_id` extracts customer email contact info."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Specific Book Customers",
+      "slides": [
+        {
+          "id": "sql-58",
+          "language": "sql",
+          "section": "5. Multi-Table Queries",
+          "topic": "Specific Book Customers",
+          "step": "5.12",
+          "category": "sql",
+          "categoryLabel": "Multi-Table Queries",
+          "tag": "Challenge",
+          "question": "Challenge: Identify all buyers of 'Clean Code'",
+          "explanation": {
+            "points": [
+              "**Task**: Find the names and emails of all customers who purchased the book titled `'Clean Code'`.",
+              "**Tables needed**: `customers`, `orders`, `order_items`, and `books` (a 4-table join!).",
+              "Use `DISTINCT` on customer name to avoid listing the same customer twice if they bought it multiple times."
+            ],
+            "highlight": "Perform a 4-table relational join from customers to books via orders and order_items."
+          },
+          "code": "-- WRITE YOUR 4-TABLE JOIN HERE:\nSELECT DISTINCT \n  c.name AS customer_name,\n  c.email\nFROM customers c\nJOIN orders o ON c.id = o.customer_id\nJOIN order_items oi ON o.id = oi.order_id\nJOIN books b ON oi.book_id = b.id\nWHERE b.title = 'Clean Code'\nORDER BY c.name ASC;",
+          "tip": "This challenge demonstrates the power of relational algebra: traversing from User -> Order -> Item -> Product.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Traverse the relationship path: customers -> orders -> order_items -> books with WHERE b.title = 'Clean Code'.",
+            "code": "SELECT DISTINCT \n  c.name AS customer_name,\n  c.email\nFROM customers c\nJOIN orders o ON c.id = o.customer_id\nJOIN order_items oi ON o.id = oi.order_id\nJOIN books b ON oi.book_id = b.id\nWHERE b.title = 'Clean Code'\nORDER BY c.name ASC;",
+            "timeComplexity": "O(N) across relational chain",
+            "spaceComplexity": "O(N)",
+            "explanationPoints": [
+              "We chain 3 JOINs together following primary/foreign key connections.",
+              "`WHERE b.title = 'Clean Code'` filters the line item graph.",
+              "`DISTINCT` prevents multiple rows if a customer bought Clean Code across multiple orders."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Referred Customers",
+      "slides": [
+        {
+          "id": "sql-59",
+          "language": "sql",
+          "section": "5. Multi-Table Queries",
+          "topic": "Referred Customers",
+          "step": "5.13",
+          "category": "sql",
+          "categoryLabel": "Multi-Table Queries",
+          "tag": "Challenge",
+          "question": "Challenge: Build a referral marketing report using a Self-Join",
+          "explanation": {
+            "points": [
+              "**Task**: Write a `SELF JOIN` on the `customers` table to display who referred whom.",
+              "Return:",
+              "- `referred_customer`: The new customer's name (`c.name`)",
+              "- `referrer_name`: The referring customer's name (`r.name`)",
+              "- `country`: The referred customer's country",
+              "Only include customers who were referred (`WHERE c.referrer_id IS NOT NULL`)."
+            ],
+            "highlight": "Join customers c with customers r ON c.referrer_id = r.id to pair new users with referrers."
+          },
+          "code": "-- WRITE YOUR SELF JOIN HERE:\nSELECT \n  c.name AS referred_customer,\n  r.name AS referrer_name,\n  c.country\nFROM customers c\nJOIN customers r ON c.referrer_id = r.id\nORDER BY referrer_name, referred_customer;",
+          "tip": "Demonstrate how referral networks and invite rewards depend on self-referential foreign keys.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Self-join customers as 'c' (the referee) and customers as 'r' (the referrer) on c.referrer_id = r.id.",
+            "code": "SELECT \n  c.name AS referred_customer,\n  r.name AS referrer_name,\n  c.country\nFROM customers c\nJOIN customers r ON c.referrer_id = r.id\nORDER BY referrer_name, referred_customer;",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(N)",
+            "explanationPoints": [
+              "`customers c` represents the person who was referred.",
+              "`customers r` represents the existing member who shared their referral link.",
+              "`c.referrer_id = r.id` matches the relationship correctly."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Readers Like You",
+      "slides": [
+        {
+          "id": "sql-60",
+          "language": "sql",
+          "section": "5. Multi-Table Queries",
+          "topic": "Readers Like You",
+          "step": "5.14",
+          "category": "sql",
+          "categoryLabel": "Multi-Table Queries",
+          "tag": "Challenge",
+          "question": "Challenge: Co-purchase book recommendation engine",
+          "explanation": {
+            "points": [
+              "**Task**: Find pairs of distinct books that were purchased together in the **same order**.",
+              "Join `order_items oi1` with `order_items oi2` ON `oi1.order_id = oi2.order_id` AND `oi1.book_id < oi2.book_id`.",
+              "Join with `books` to get the titles.",
+              "Return `b1.title AS book_1` and `b2.title AS book_2`."
+            ],
+            "highlight": "Self-join order_items with oi1.book_id < oi2.book_id to find items bought in the same order."
+          },
+          "code": "-- WRITE YOUR CO-PURCHASE QUERY HERE:\nSELECT DISTINCT \n  b1.title AS book_1,\n  b2.title AS book_2\nFROM order_items oi1\nJOIN order_items oi2 ON oi1.order_id = oi2.order_id AND oi1.book_id < oi2.book_id\nJOIN books b1 ON oi1.book_id = b1.id\nJOIN books b2 ON oi2.book_id = b2.id\nORDER BY book_1, book_2;",
+          "tip": "Explain why the '<' comparison is crucial: it prevents pairing a book with itself and avoids mirror duplicates (A, B and B, A).",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Join order_items to itself matching on order_id with book_id inequality, then join book titles.",
+            "code": "SELECT DISTINCT \n  b1.title AS book_1,\n  b2.title AS book_2\nFROM order_items oi1\nJOIN order_items oi2 ON oi1.order_id = oi2.order_id AND oi1.book_id < oi2.book_id\nJOIN books b1 ON oi1.book_id = b1.id\nJOIN books b2 ON oi2.book_id = b2.id\nORDER BY book_1, book_2;",
+            "timeComplexity": "O(N^2) within orders",
+            "spaceComplexity": "O(N)",
+            "explanationPoints": [
+              "`oi1.order_id = oi2.order_id` ensures both items were purchased in the same shopping cart.",
+              "`oi1.book_id < oi2.book_id` strictly prevents a book matching itself and eliminates reverse duplicate pairs.",
+              "This is the foundational SQL pattern behind 'Customers who bought this also bought' recommendations."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Same Price Books",
+      "slides": [
+        {
+          "id": "sql-61",
+          "language": "sql",
+          "section": "5. Multi-Table Queries",
+          "topic": "Same Price Books",
+          "step": "5.15",
+          "category": "sql",
+          "categoryLabel": "Multi-Table Queries",
+          "tag": "Challenge",
+          "question": "Challenge: Find pairs of distinct books that share the exact same price",
+          "explanation": {
+            "points": [
+              "**Task**: Use a self-join on `books` to find distinct pairs of books that have identical prices (`price`).",
+              "Use `b1.id < b2.id` to avoid self-matches and reverse duplicates.",
+              "Return `b1.title AS book_1`, `b2.title AS book_2`, and `b1.price AS shared_price`.",
+              "Order by `shared_price` DESC."
+            ],
+            "highlight": "Join books b1 with books b2 ON b1.price = b2.price AND b1.id < b2.id."
+          },
+          "code": "-- WRITE YOUR QUERY HERE:\nSELECT \n  b1.title AS book_1,\n  b2.title AS book_2,\n  b1.price AS shared_price\nFROM books b1\nJOIN books b2 ON b1.price = b2.price AND b1.id < b2.id\nORDER BY shared_price DESC;",
+          "tip": "Point out how id < id is the universal SQL trick for pairwise non-duplicate combinations.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Join books b1 with books b2 on price equality and id inequality.",
+            "code": "SELECT \n  b1.title AS book_1,\n  b2.title AS book_2,\n  b1.price AS shared_price\nFROM books b1\nJOIN books b2 ON b1.price = b2.price AND b1.id < b2.id\nORDER BY shared_price DESC;",
+            "timeComplexity": "O(N log N) with price index",
+            "spaceComplexity": "O(N)",
+            "explanationPoints": [
+              "`b1.price = b2.price` matches books with identical price tags.",
+              "`b1.id < b2.id` ensures each pair is generated exactly once."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Multi-Section Authors",
+      "slides": [
+        {
+          "id": "sql-62",
+          "language": "sql",
+          "section": "5. Multi-Table Queries",
+          "topic": "Multi-Section Authors",
+          "step": "5.16",
+          "category": "sql",
+          "categoryLabel": "Multi-Table Queries",
+          "tag": "Challenge",
+          "question": "Challenge: Find authors whose catalog spans multiple technical categories",
+          "explanation": {
+            "points": [
+              "**Task**: Find authors who have written books in at least two distinct categories.",
+              "Self-join `books b1` and `books b2` on `b1.author_id = b2.author_id AND b1.category != b2.category`.",
+              "Join with `authors` to retrieve the author's name.",
+              "Use `DISTINCT` to return unique author names."
+            ],
+            "highlight": "Join books b1 with books b2 on author_id with distinct categories to find versatile writers."
+          },
+          "code": "-- WRITE YOUR QUERY HERE:\nSELECT DISTINCT \n  a.name AS author_name\nFROM books b1\nJOIN books b2 ON b1.author_id = b2.author_id AND b1.category != b2.category\nJOIN authors a ON b1.author_id = a.id\nORDER BY author_name ASC;",
+          "tip": "This pattern queries domain diversity across relational entities without requiring GROUP BY.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Self-join books on author_id where category != category, then resolve author names via authors table.",
+            "code": "SELECT DISTINCT \n  a.name AS author_name\nFROM books b1\nJOIN books b2 ON b1.author_id = b2.author_id AND b1.category != b2.category\nJOIN authors a ON b1.author_id = a.id\nORDER BY author_name ASC;",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(N)",
+            "explanationPoints": [
+              "`b1.category != b2.category` checks that an author has at least two different category classifications.",
+              "Joining on `authors` surfaces human-readable author names."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Expensive Books",
+      "slides": [
+        {
+          "id": "sql-63",
+          "language": "sql",
+          "section": "5. Multi-Table Queries",
+          "topic": "Expensive Books",
+          "step": "5.17",
+          "category": "sql",
+          "categoryLabel": "Multi-Table Queries",
+          "tag": "Challenge",
+          "question": "Challenge: Join books with author tiers and publisher revenue",
+          "explanation": {
+            "points": [
+              "**Task**: List all books with `price >= 40.00` along with their author's name and country.",
+              "Return `b.title`, `b.price`, `a.name AS author_name`, and `a.country`.",
+              "Sort by `b.price` DESC."
+            ],
+            "highlight": "Perform an INNER JOIN between books and authors filtering on price >= 40.00."
+          },
+          "code": "-- WRITE YOUR QUERY HERE:\nSELECT \n  b.title,\n  b.price,\n  a.name AS author_name,\n  a.country\nFROM books b\nJOIN authors a ON b.author_id = a.id\nWHERE b.price >= 40.00\nORDER BY b.price DESC;",
+          "tip": "Show how standard 2-table joins power product detail pages in production.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Join books with authors on author_id = id and filter on price >= 40.00.",
+            "code": "SELECT \n  b.title,\n  b.price,\n  a.name AS author_name,\n  a.country\nFROM books b\nJOIN authors a ON b.author_id = a.id\nWHERE b.price >= 40.00\nORDER BY b.price DESC;",
+            "timeComplexity": "O(N log N)",
+            "spaceComplexity": "O(N)",
+            "explanationPoints": [
+              "Matches book rows to their author biography details.",
+              "Filters the result set to premium technical literature."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Trending Tech Books",
+      "slides": [
+        {
+          "id": "sql-64",
+          "language": "sql",
+          "section": "5. Multi-Table Queries",
+          "topic": "Trending Tech Books",
+          "step": "5.18",
+          "category": "sql",
+          "categoryLabel": "Multi-Table Queries",
+          "tag": "Challenge",
+          "question": "Challenge: Identify books that have appeared in multiple order line items",
+          "explanation": {
+            "points": [
+              "**Task**: Find the titles of all books that have been ordered in at least one transaction.",
+              "Join `books` with `order_items` on `books.id = order_items.book_id`.",
+              "Use `DISTINCT` on `books.title`.",
+              "Sort alphabetically."
+            ],
+            "highlight": "Join books with order_items using DISTINCT to list all actively ordered inventory items."
+          },
+          "code": "-- WRITE YOUR QUERY HERE:\nSELECT DISTINCT \n  b.id AS book_id,\n  b.title,\n  b.price\nFROM books b\nJOIN order_items oi ON b.id = oi.book_id\nORDER BY b.title ASC;",
+          "tip": "Contrast this with the inactive customer query to demonstrate operational catalog metrics.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "INNER JOIN books and order_items on book_id = id and project distinct book records.",
+            "code": "SELECT DISTINCT \n  b.id AS book_id,\n  b.title,\n  b.price\nFROM books b\nJOIN order_items oi ON b.id = oi.book_id\nORDER BY b.title ASC;",
+            "timeComplexity": "O(N log N)",
+            "spaceComplexity": "O(N)",
+            "explanationPoints": [
+              "INNER JOIN naturally filters out any book that has never been ordered.",
+              "`DISTINCT` ensures each book is listed only once regardless of total sales volume."
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

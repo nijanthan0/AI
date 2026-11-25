@@ -1,0 +1,852 @@
+{
+  "section": "9. Window Functions",
+  "order": 9,
+  "topics": [
+    {
+      "topic": "What are they?",
+      "slides": [
+        {
+          "id": "sql-103",
+          "language": "sql",
+          "section": "9. Window Functions",
+          "topic": "What are they?",
+          "step": "9.1",
+          "category": "sql",
+          "categoryLabel": "Window Functions",
+          "tag": "Lesson",
+          "question": "How do Window Functions calculate metrics across row sets without collapsing rows?",
+          "explanation": {
+            "points": [
+              "Unlike `GROUP BY` which collapses multiple rows into a single summary row, **Window Functions** compute aggregate values across a related window of rows while **preserving every individual row** in the output.",
+              "Syntax: `FUNCTION() OVER (PARTITION BY ... ORDER BY ...)`.",
+              "Crucial distinction:",
+              "- `GROUP BY`: 100 rows in -> 5 summary rows out.",
+              "- `WINDOW FUNCTION`: 100 rows in -> 100 original rows out + 1 new column containing the window calculation.",
+              "Window functions execute **after** WHERE, GROUP BY, and HAVING, just before final ORDER BY."
+            ],
+            "highlight": "Window functions compute aggregate metrics across related row sets without collapsing individual records."
+          },
+          "code": "-- Compare each book's price against the overall catalog average\nSELECT \n  id,\n  title,\n  price,\n  ROUND(AVG(price) OVER (), 2) AS catalog_avg_price,\n  ROUND(price - AVG(price) OVER (), 2) AS diff_from_catalog_avg\nFROM books\nORDER BY price DESC;",
+          "tip": "Emphasize the 'OVER ()' clause: an empty OVER() considers the entire result set as the window.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "Window Function Output (No Group Collapse)",
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "INTEGER",
+                  "isPk": true
+                },
+                {
+                  "name": "title",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "price",
+                  "type": "REAL"
+                },
+                {
+                  "name": "catalog_avg_price",
+                  "type": "REAL"
+                },
+                {
+                  "name": "diff_from_catalog_avg",
+                  "type": "REAL"
+                }
+              ],
+              "rows": [
+                [
+                  2,
+                  "Designing Data-Intensive Applications",
+                  45.0,
+                  37.75,
+                  7.25
+                ],
+                [
+                  5,
+                  "System Design Interview Vol 2",
+                  42.0,
+                  37.75,
+                  4.25
+                ],
+                [
+                  4,
+                  "System Design Interview Vol 1",
+                  39.99,
+                  37.75,
+                  2.24
+                ],
+                [
+                  8,
+                  "The Pragmatic Programmer",
+                  39.99,
+                  37.75,
+                  2.24
+                ],
+                [
+                  6,
+                  "Designing Machine Learning Systems",
+                  38.5,
+                  37.75,
+                  0.75
+                ]
+              ],
+              "note": "Every book record retained with window calculation appended"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "OVER and PARTITION BY",
+      "slides": [
+        {
+          "id": "sql-104",
+          "language": "sql",
+          "section": "9. Window Functions",
+          "topic": "OVER and PARTITION BY",
+          "step": "9.2",
+          "category": "sql",
+          "categoryLabel": "Window Functions",
+          "tag": "Lesson",
+          "question": "How does PARTITION BY divide window calculations into isolated departmental groups?",
+          "explanation": {
+            "points": [
+              "The **`PARTITION BY column`** sub-clause divides the result set into distinct partitions (groups).",
+              "The window function calculation restarts fresh at the boundary of each partition.",
+              "Example: `AVG(price) OVER (PARTITION BY category)` calculates the average price for **that specific book's category**, stamped onto every row in that category.",
+              "You can partition by multiple columns: `OVER (PARTITION BY country, city)`."
+            ],
+            "highlight": "PARTITION BY resets the window calculation at the boundary of each categorical group."
+          },
+          "code": "-- Calculate category averages alongside individual book details\nSELECT \n  title,\n  category,\n  price,\n  ROUND(AVG(price) OVER (PARTITION BY category), 2) AS category_avg_price,\n  ROUND(price - AVG(price) OVER (PARTITION BY category), 2) AS diff_from_category_avg\nFROM books\nORDER BY category, price DESC;",
+          "tip": "Demonstrate how Software Engineering and System Design have their own distinct partition averages.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "PARTITION BY category Output",
+              "columns": [
+                {
+                  "name": "title",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "category",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "price",
+                  "type": "REAL"
+                },
+                {
+                  "name": "category_avg_price",
+                  "type": "REAL"
+                },
+                {
+                  "name": "diff_from_category_avg",
+                  "type": "REAL"
+                }
+              ],
+              "rows": [
+                [
+                  "Designing Machine Learning Systems",
+                  "AI & Data",
+                  38.5,
+                  34.25,
+                  4.25
+                ],
+                [
+                  "Machine Learning Yearning",
+                  "AI & Data",
+                  29.99,
+                  34.25,
+                  -4.26
+                ],
+                [
+                  "Designing Data-Intensive Applications",
+                  "Distributed Systems",
+                  45.0,
+                  45.0,
+                  0.0
+                ],
+                [
+                  "The Pragmatic Programmer",
+                  "Software Engineering",
+                  39.99,
+                  35.83,
+                  4.16
+                ],
+                [
+                  "Clean Architecture",
+                  "Software Engineering",
+                  35.0,
+                  35.83,
+                  -0.83
+                ],
+                [
+                  "Clean Code",
+                  "Software Engineering",
+                  32.5,
+                  35.83,
+                  -3.33
+                ]
+              ],
+              "note": "Calculation resets independently for each category"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Use of ORDER BY",
+      "slides": [
+        {
+          "id": "sql-105",
+          "language": "sql",
+          "section": "9. Window Functions",
+          "topic": "Use of ORDER BY",
+          "step": "9.3",
+          "category": "sql",
+          "categoryLabel": "Window Functions",
+          "tag": "Lesson",
+          "question": "How does ORDER BY inside OVER() compute cumulative running totals and moving balances?",
+          "explanation": {
+            "points": [
+              "Adding **`ORDER BY column`** inside the `OVER(...)` clause changes the evaluation frame from the whole partition to a **cumulative running total**.",
+              "By default, `OVER (ORDER BY ...)` evaluates rows from the start of the partition up to the **current row**.",
+              "Example: `SUM(total_amount) OVER (ORDER BY order_date)` computes the running cash intake of the company over time.",
+              "Essential for bank balances, cumulative signup counters, and pacing trackers."
+            ],
+            "highlight": "Adding ORDER BY inside OVER() turns aggregate functions into cumulative running totals."
+          },
+          "code": "-- Calculate cumulative revenue over time across orders\nSELECT \n  id AS order_id,\n  order_date,\n  total_amount,\n  ROUND(SUM(total_amount) OVER (ORDER BY order_date, id), 2) AS running_cumulative_revenue,\n  COUNT(*) OVER (ORDER BY order_date, id) AS cumulative_order_count\nFROM orders\nORDER BY order_date, id;",
+          "tip": "Trace row-by-row how running_cumulative_revenue accumulates each transaction amount.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "Cumulative Running Totals",
+              "columns": [
+                {
+                  "name": "order_id",
+                  "type": "INTEGER",
+                  "isPk": true
+                },
+                {
+                  "name": "order_date",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "total_amount",
+                  "type": "REAL"
+                },
+                {
+                  "name": "running_cumulative_revenue",
+                  "type": "REAL"
+                },
+                {
+                  "name": "cumulative_order_count",
+                  "type": "INTEGER"
+                }
+              ],
+              "rows": [
+                [
+                  1,
+                  "2024-01-10",
+                  77.5,
+                  77.5,
+                  1
+                ],
+                [
+                  2,
+                  "2024-01-14",
+                  45.0,
+                  122.5,
+                  2
+                ],
+                [
+                  3,
+                  "2024-02-01",
+                  119.98,
+                  242.48,
+                  3
+                ],
+                [
+                  4,
+                  "2024-02-18",
+                  29.99,
+                  272.47,
+                  4
+                ],
+                [
+                  5,
+                  "2024-03-05",
+                  81.99,
+                  354.46,
+                  5
+                ],
+                [
+                  6,
+                  "2024-03-12",
+                  38.5,
+                  392.96,
+                  6
+                ]
+              ],
+              "note": "Revenue steadily accumulates from 77.50 to 392.96"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Window Functions Quiz",
+      "slides": [
+        {
+          "id": "sql-106",
+          "language": "sql",
+          "section": "9. Window Functions",
+          "topic": "Window Functions Quiz",
+          "step": "9.4",
+          "category": "sql",
+          "categoryLabel": "Window Functions",
+          "tag": "Quiz",
+          "question": "Module 9 Quiz: Test your grasp of OVER, PARTITION BY, and Window Framing",
+          "explanation": {
+            "points": [
+              "Verify your understanding of window functions vs GROUP BY.",
+              "Test running total evaluation and ranking behaviors.",
+              "Answer the 4 questions in the interactive quiz card."
+            ],
+            "highlight": "Test your advanced window function knowledge."
+          },
+          "code": "-- Interactive quiz slide.\n-- Answer questions in the visual panel on the left.\nSELECT 'Test your Window Functions knowledge.' AS status;",
+          "tip": "Review the difference between ROW_NUMBER, RANK, and DENSE_RANK when ties occur.",
+          "viz": {
+            "type": "sql-quiz",
+            "data": {
+              "quizTitle": "Module 9: Window Functions Quiz",
+              "questions": [
+                {
+                  "question": "What is the primary difference between a Window Function and a GROUP BY aggregation?",
+                  "options": [
+                    "Window functions can only run on integers",
+                    "GROUP BY collapses rows into summary rows; Window Functions preserve every original row in the output",
+                    "Window functions cannot be used with ORDER BY",
+                    "GROUP BY does not support SUM"
+                  ],
+                  "answer": 1,
+                  "explanation": "Window functions retain the full granularity of input rows while stamping the window calculation alongside."
+                },
+                {
+                  "question": "If two rows tie for 1st place, what will DENSE_RANK() assign to the next row?",
+                  "options": [
+                    "2",
+                    "3",
+                    "NULL",
+                    "1.5"
+                  ],
+                  "answer": 0,
+                  "explanation": "DENSE_RANK() does not skip rank numbers after ties (1, 1, 2). Regular RANK() skips numbers (1, 1, 3)."
+                },
+                {
+                  "question": "Which sub-clause inside OVER() defines the grouping boundary where calculations reset?",
+                  "options": [
+                    "GROUP BY",
+                    "PARTITION BY",
+                    "SPLIT BY",
+                    "DIVIDE BY"
+                  ],
+                  "answer": 1,
+                  "explanation": "PARTITION BY resets the window calculation at the boundary of each partition."
+                },
+                {
+                  "question": "What does LAG(price, 1) OVER (ORDER BY date) return?",
+                  "options": [
+                    "The price from the subsequent row (future)",
+                    "The price from the immediately preceding row (past)",
+                    "The lowest price in the table",
+                    "The average price"
+                  ],
+                  "answer": 1,
+                  "explanation": "LAG() accesses data from a previous row at a specified physical offset (past row)."
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Ranking Functions",
+      "slides": [
+        {
+          "id": "sql-107",
+          "language": "sql",
+          "section": "9. Window Functions",
+          "topic": "Ranking Functions",
+          "step": "9.5",
+          "category": "sql",
+          "categoryLabel": "Window Functions",
+          "tag": "Lesson",
+          "question": "How do ROW_NUMBER(), RANK(), DENSE_RANK(), and NTILE() score order and ties?",
+          "explanation": {
+            "points": [
+              "**`ROW_NUMBER()`**: Assigns a unique sequential integer (1, 2, 3, ...) with zero duplicate rank values, even during ties.",
+              "**`RANK()`**: Assigns equal ranks to ties, but **skips** subsequent ranks (e.g. 1, 2, 2, 4).",
+              "**`DENSE_RANK()`**: Assigns equal ranks to ties **without gaps** in ranking numbers (e.g. 1, 2, 2, 3).",
+              "**`NTILE(n)`**: Divides rows into `n` equal quartiles/buckets (e.g. `NTILE(4)` for 25th, 50th, 75th percentiles)."
+            ],
+            "highlight": "ROW_NUMBER has no duplicate ties; RANK skips numbers after ties; DENSE_RANK has no gaps."
+          },
+          "code": "-- Compare ROW_NUMBER vs RANK vs DENSE_RANK on book ratings\nSELECT \n  title,\n  rating,\n  price,\n  ROW_NUMBER() OVER (ORDER BY rating DESC) AS row_num,\n  RANK() OVER (ORDER BY rating DESC) AS standard_rank,\n  DENSE_RANK() OVER (ORDER BY rating DESC) AS dense_rank,\n  NTILE(3) OVER (ORDER BY price DESC) AS price_tercile\nFROM books\nORDER BY rating DESC, title;",
+          "tip": "Point out how DDIA, System Design Vol 2, and Pragmatic Programmer all tie at 4.9 rating.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "Ranking Comparison on Ties",
+              "columns": [
+                {
+                  "name": "title",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "rating",
+                  "type": "REAL"
+                },
+                {
+                  "name": "row_num",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "standard_rank",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "dense_rank",
+                  "type": "INTEGER"
+                }
+              ],
+              "rows": [
+                [
+                  "Designing Data-Intensive Applications",
+                  4.9,
+                  1,
+                  1,
+                  1
+                ],
+                [
+                  "System Design Interview Vol 2",
+                  4.9,
+                  2,
+                  1,
+                  1
+                ],
+                [
+                  "The Pragmatic Programmer",
+                  4.9,
+                  3,
+                  1,
+                  1
+                ],
+                [
+                  "Machine Learning Yearning",
+                  4.8,
+                  4,
+                  4,
+                  2
+                ],
+                [
+                  "System Design Interview Vol 1",
+                  4.8,
+                  5,
+                  4,
+                  2
+                ],
+                [
+                  "Clean Code",
+                  4.7,
+                  6,
+                  6,
+                  3
+                ]
+              ],
+              "note": "Ties at rank 1 produce rank 4 in RANK(), but rank 2 in DENSE_RANK()"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Window Frames",
+      "slides": [
+        {
+          "id": "sql-108",
+          "language": "sql",
+          "section": "9. Window Functions",
+          "topic": "Window Frames",
+          "step": "9.6",
+          "category": "sql",
+          "categoryLabel": "Window Functions",
+          "tag": "Lesson",
+          "question": "How does the ROWS BETWEEN clause define sliding windows for moving averages?",
+          "explanation": {
+            "points": [
+              "A **Window Frame** defines the precise subset of rows around the current row used for the calculation.",
+              "Syntax: `ROWS BETWEEN lower_bound AND upper_bound`.",
+              "Frame boundaries:",
+              "- `UNBOUNDED PRECEDING`: From the beginning of the partition.",
+              "- `n PRECEDING`: Exactly `n` rows before current.",
+              "- `CURRENT ROW`: The row being processed.",
+              "- `n FOLLOWING`: Exactly `n` rows after current.",
+              "- `UNBOUNDED FOLLOWING`: To the very end of the partition.",
+              "Standard 3-day moving average: `ROWS BETWEEN 2 PRECEDING AND CURRENT ROW`."
+            ],
+            "highlight": "Use ROWS BETWEEN 2 PRECEDING AND CURRENT ROW to smooth financial volatility with a 3-point moving average."
+          },
+          "code": "-- Calculate a 3-transaction moving average on orders\nSELECT \n  id AS order_id,\n  order_date,\n  total_amount,\n  ROUND(AVG(total_amount) OVER (\n    ORDER BY order_date, id\n    ROWS BETWEEN 2 PRECEDING AND CURRENT ROW\n  ), 2) AS moving_avg_last_3_orders\nFROM orders\nORDER BY order_date, id;",
+          "tip": "Demonstrate how moving averages smooth out spikes and dips in financial charts.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "3-Order Moving Average",
+              "columns": [
+                {
+                  "name": "order_id",
+                  "type": "INTEGER",
+                  "isPk": true
+                },
+                {
+                  "name": "order_date",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "total_amount",
+                  "type": "REAL"
+                },
+                {
+                  "name": "moving_avg_last_3_orders",
+                  "type": "REAL"
+                }
+              ],
+              "rows": [
+                [
+                  1,
+                  "2024-01-10",
+                  77.5,
+                  77.5
+                ],
+                [
+                  2,
+                  "2024-01-14",
+                  45.0,
+                  61.25
+                ],
+                [
+                  3,
+                  "2024-02-01",
+                  119.98,
+                  80.83
+                ],
+                [
+                  4,
+                  "2024-02-18",
+                  29.99,
+                  64.99
+                ],
+                [
+                  5,
+                  "2024-03-05",
+                  81.99,
+                  77.32
+                ]
+              ],
+              "note": "Row 3 average is (77.50 + 45.00 + 119.98) / 3 = 80.83"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Basic Sales Metrics",
+      "slides": [
+        {
+          "id": "sql-109",
+          "language": "sql",
+          "section": "9. Window Functions",
+          "topic": "Basic Sales Metrics",
+          "step": "9.7",
+          "category": "sql",
+          "categoryLabel": "Window Functions",
+          "tag": "Challenge",
+          "question": "Challenge: Running total and percentage of total revenue",
+          "explanation": {
+            "points": [
+              "**Task**: In the `orders` table, calculate two window metrics simultaneously:",
+              "1. `running_total`: Cumulative sum of `total_amount` ordered by `order_date`.",
+              "2. `pct_of_total`: What percentage this individual order contributes to the storewide total revenue (`total_amount / SUM(total_amount) OVER () * 100`).",
+              "Return `id AS order_id`, `order_date`, `total_amount`, `running_total`, and `ROUND(pct_of_total, 2)`."
+            ],
+            "highlight": "Combine running SUM(total_amount) OVER (ORDER BY date) with global SUM(total_amount) OVER ()."
+          },
+          "code": "-- WRITE YOUR WINDOW QUERY HERE:\nSELECT \n  id AS order_id,\n  order_date,\n  total_amount,\n  ROUND(SUM(total_amount) OVER (ORDER BY order_date, id), 2) AS running_total,\n  ROUND((total_amount * 100.0) / SUM(total_amount) OVER (), 2) AS pct_of_total\nFROM orders\nORDER BY order_date, id;",
+          "tip": "Show how mixing ordered window frames with unbounded window frames produces executive ratios.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Use SUM(...) OVER (ORDER BY order_date, id) for the running total, and divide by SUM(...) OVER () for percentage of whole.",
+            "code": "SELECT \n  id AS order_id,\n  order_date,\n  total_amount,\n  ROUND(SUM(total_amount) OVER (ORDER BY order_date, id), 2) AS running_total,\n  ROUND((total_amount * 100.0) / SUM(total_amount) OVER (), 2) AS pct_of_total\nFROM orders\nORDER BY order_date, id;",
+            "timeComplexity": "O(N log N)",
+            "spaceComplexity": "O(N)",
+            "explanationPoints": [
+              "`SUM(total_amount) OVER (ORDER BY ...)` builds the cumulative line graph.",
+              "`SUM(total_amount) OVER ()` calculates the grand total denominator without needing a separate subquery.",
+              "Multiplying by `100.0` ensures floating-point arithmetic."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Bestseller Comparison",
+      "slides": [
+        {
+          "id": "sql-110",
+          "language": "sql",
+          "section": "9. Window Functions",
+          "topic": "Bestseller Comparison",
+          "step": "9.8",
+          "category": "sql",
+          "categoryLabel": "Window Functions",
+          "tag": "Challenge",
+          "question": "Challenge: Compare each book's price against its category average",
+          "explanation": {
+            "points": [
+              "**Task**: In `books`, calculate `ROUND(AVG(price) OVER (PARTITION BY category), 2) AS category_avg`.",
+              "Compute the dollar variance: `ROUND(price - AVG(price) OVER (PARTITION BY category), 2) AS price_delta`.",
+              "Return `title`, `category`, `price`, `category_avg`, and `price_delta`.",
+              "Order by `category`, `price_delta` DESC."
+            ],
+            "highlight": "Use PARTITION BY category to compute localized price variances."
+          },
+          "code": "-- WRITE YOUR CATEGORY BENCHMARK QUERY HERE:\nSELECT \n  title,\n  category,\n  price,\n  ROUND(AVG(price) OVER (PARTITION BY category), 2) AS category_avg,\n  ROUND(price - AVG(price) OVER (PARTITION BY category), 2) AS price_delta\nFROM books\nORDER BY category, price_delta DESC;",
+          "tip": "Demonstrate how PARTITION BY simplifies comparison queries that used to require complex self-joins.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Partition by category and compute category average and row-level delta.",
+            "code": "SELECT \n  title,\n  category,\n  price,\n  ROUND(AVG(price) OVER (PARTITION BY category), 2) AS category_avg,\n  ROUND(price - AVG(price) OVER (PARTITION BY category), 2) AS price_delta\nFROM books\nORDER BY category, price_delta DESC;",
+            "timeComplexity": "O(N log N)",
+            "spaceComplexity": "O(N)",
+            "explanationPoints": [
+              "`PARTITION BY category` guarantees each book is judged only against direct genre peers.",
+              "`price - AVG(...) OVER (...)` instantly flags overpriced or bargain items."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Author Category Sales",
+      "slides": [
+        {
+          "id": "sql-111",
+          "language": "sql",
+          "section": "9. Window Functions",
+          "topic": "Author Category Sales",
+          "step": "9.9",
+          "category": "sql",
+          "categoryLabel": "Window Functions",
+          "tag": "Challenge",
+          "question": "Challenge: Rank books within their specific genre by critical rating",
+          "explanation": {
+            "points": [
+              "**Task**: Use `DENSE_RANK()` to rank books **within each category** based on `rating` descending.",
+              "Syntax hint: `DENSE_RANK() OVER (PARTITION BY category ORDER BY rating DESC)`.",
+              "Return `category`, `DENSE_RANK() OVER (...) AS category_rank`, `title`, and `rating`.",
+              "Order by `category` ASC, `category_rank` ASC."
+            ],
+            "highlight": "Partition by category and order by rating DESC inside DENSE_RANK() for genre leaderboards."
+          },
+          "code": "-- WRITE YOUR GENRE LEADERBOARD QUERY HERE:\nSELECT \n  category,\n  DENSE_RANK() OVER (PARTITION BY category ORDER BY rating DESC) AS category_rank,\n  title,\n  rating\nFROM books\nORDER BY category ASC, category_rank ASC;",
+          "tip": "Show how frontend leaderboards for 'Top Books in System Design' are generated with this single window call.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Use DENSE_RANK() with PARTITION BY category and ORDER BY rating DESC.",
+            "code": "SELECT \n  category,\n  DENSE_RANK() OVER (PARTITION BY category ORDER BY rating DESC) AS category_rank,\n  title,\n  rating\nFROM books\nORDER BY category ASC, category_rank ASC;",
+            "timeComplexity": "O(N log N)",
+            "spaceComplexity": "O(N)",
+            "explanationPoints": [
+              "`PARTITION BY category` resets the rank number back to 1 for every new genre.",
+              "`ORDER BY rating DESC` rewards the highest rated titles with rank 1."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Top Authors",
+      "slides": [
+        {
+          "id": "sql-112",
+          "language": "sql",
+          "section": "9. Window Functions",
+          "topic": "Top Authors",
+          "step": "9.10",
+          "category": "sql",
+          "categoryLabel": "Window Functions",
+          "tag": "Challenge",
+          "question": "Challenge: Global author leaderboard by total order volume",
+          "explanation": {
+            "points": [
+              "**Task**: Build a CTE `author_sales` joining `authors`, `books`, and `order_items` to sum total revenue per author.",
+              "In the outer query, use `DENSE_RANK() OVER (ORDER BY total_revenue DESC) AS sales_rank`.",
+              "Return `sales_rank`, `author_name`, `country`, and `total_revenue`."
+            ],
+            "highlight": "Aggregate author sales in a CTE, then rank authors using DENSE_RANK() OVER (ORDER BY revenue DESC)."
+          },
+          "code": "-- WRITE YOUR AUTHOR RANKING QUERY HERE:\nWITH author_sales AS (\n  SELECT \n    a.name AS author_name,\n    a.country,\n    ROUND(SUM(oi.quantity * oi.unit_price), 2) AS total_revenue\n  FROM authors a\n  JOIN books b ON a.id = b.author_id\n  JOIN order_items oi ON b.id = oi.book_id\n  GROUP BY a.id, a.name, a.country\n)\nSELECT \n  DENSE_RANK() OVER (ORDER BY total_revenue DESC) AS sales_rank,\n  author_name,\n  country,\n  total_revenue\nFROM author_sales\nORDER BY sales_rank ASC;",
+          "tip": "Demonstrate how window ranking functions combine gracefully on top of aggregate CTEs.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Aggregate revenue by author in a CTE, then apply DENSE_RANK() OVER (ORDER BY total_revenue DESC).",
+            "code": "WITH author_sales AS (\n  SELECT \n    a.name AS author_name,\n    a.country,\n    ROUND(SUM(oi.quantity * oi.unit_price), 2) AS total_revenue\n  FROM authors a\n  JOIN books b ON a.id = b.author_id\n  JOIN order_items oi ON b.id = oi.book_id\n  GROUP BY a.id, a.name, a.country\n)\nSELECT \n  DENSE_RANK() OVER (ORDER BY total_revenue DESC) AS sales_rank,\n  author_name,\n  country,\n  total_revenue\nFROM author_sales\nORDER BY sales_rank ASC;",
+            "timeComplexity": "O(N log A)",
+            "spaceComplexity": "O(A)",
+            "explanationPoints": [
+              "The CTE summarizes sales revenue per creator.",
+              "`DENSE_RANK()` assigns gold, silver, and bronze rankings without rank gaps."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Price Tier Rankings",
+      "slides": [
+        {
+          "id": "sql-113",
+          "language": "sql",
+          "section": "9. Window Functions",
+          "topic": "Price Tier Rankings",
+          "step": "9.11",
+          "category": "sql",
+          "categoryLabel": "Window Functions",
+          "tag": "Challenge",
+          "question": "Challenge: Segment catalog prices into 4 economic quartiles with NTILE(4)",
+          "explanation": {
+            "points": [
+              "**Task**: In `books`, use `NTILE(4) OVER (ORDER BY price ASC) AS price_quartile` to divide titles into 4 price buckets.",
+              "Bucket 1 = Budget; Bucket 4 = Premium.",
+              "Return `id`, `title`, `price`, and `price_quartile`.",
+              "Order by `price_quartile` ASC, `price` ASC."
+            ],
+            "highlight": "Use NTILE(4) OVER (ORDER BY price ASC) to distribute items evenly across 4 statistical quartiles."
+          },
+          "code": "-- WRITE YOUR QUARTILE SEGMENTATION QUERY HERE:\nSELECT \n  id,\n  title,\n  price,\n  NTILE(4) OVER (ORDER BY price ASC) AS price_quartile\nFROM books\nORDER BY price_quartile ASC, price ASC;",
+          "tip": "Show how marketing analysts use NTILE(10) (deciles) or NTILE(100) (percentiles) for customer RFM segmentation.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Apply NTILE(4) OVER (ORDER BY price ASC) to evenly divide catalog rows into 4 quartile buckets.",
+            "code": "SELECT \n  id,\n  title,\n  price,\n  NTILE(4) OVER (ORDER BY price ASC) AS price_quartile\nFROM books\nORDER BY price_quartile ASC, price ASC;",
+            "timeComplexity": "O(N log N)",
+            "spaceComplexity": "O(N)",
+            "explanationPoints": [
+              "`NTILE(4)` partitions the 8 books into 4 groups of 2 books each.",
+              "Group 1 contains the 2 cheapest books ($29.99, $32.50); Group 4 contains the 2 most expensive ($42.00, $45.00)."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Month-over-Month Sales",
+      "slides": [
+        {
+          "id": "sql-114",
+          "language": "sql",
+          "section": "9. Window Functions",
+          "topic": "Month-over-Month Sales",
+          "step": "9.12",
+          "category": "sql",
+          "categoryLabel": "Window Functions",
+          "tag": "Challenge",
+          "question": "Challenge: Calculate monthly revenue growth velocity with LAG()",
+          "explanation": {
+            "points": [
+              "**Task**: In a CTE, aggregate `orders` by month: `STRFTIME('%Y-%m', order_date) AS month` and `SUM(total_amount) AS revenue`.",
+              "In the outer query, use `LAG(revenue, 1) OVER (ORDER BY month) AS prior_month_revenue`.",
+              "Calculate the month-over-month growth delta: `ROUND(revenue - LAG(revenue, 1) OVER (ORDER BY month), 2) AS mom_growth`."
+            ],
+            "highlight": "Use LAG(revenue, 1) OVER (ORDER BY month) to calculate month-over-month financial trends."
+          },
+          "code": "-- WRITE YOUR MOM GROWTH QUERY HERE:\nWITH monthly_rev AS (\n  SELECT \n    STRFTIME('%Y-%m', order_date) AS month,\n    ROUND(SUM(total_amount), 2) AS revenue\n  FROM orders\n  GROUP BY month\n)\nSELECT \n  month,\n  revenue,\n  LAG(revenue, 1) OVER (ORDER BY month) AS prior_month_revenue,\n  ROUND(revenue - LAG(revenue, 1) OVER (ORDER BY month), 2) AS mom_growth\nFROM monthly_rev\nORDER BY month ASC;",
+          "tip": "Show how LAG() allows financial queries to look back 1 period without requiring self-joins.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Group by month in a CTE, then use LAG(revenue, 1) OVER (ORDER BY month) in the outer query.",
+            "code": "WITH monthly_rev AS (\n  SELECT \n    STRFTIME('%Y-%m', order_date) AS month,\n    ROUND(SUM(total_amount), 2) AS revenue\n  FROM orders\n  GROUP BY month\n)\nSELECT \n  month,\n  revenue,\n  LAG(revenue, 1) OVER (ORDER BY month) AS prior_month_revenue,\n  ROUND(revenue - LAG(revenue, 1) OVER (ORDER BY month), 2) AS mom_growth\nFROM monthly_rev\nORDER BY month ASC;",
+            "timeComplexity": "O(M log M) where M is months",
+            "spaceComplexity": "O(M)",
+            "explanationPoints": [
+              "`LAG(revenue, 1)` fetches the preceding month's revenue figure into the current row.",
+              "For the first month (January), prior_month_revenue is NULL because no previous history exists.",
+              "Subtraction computes the raw financial growth delta."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Price Range Analysis",
+      "slides": [
+        {
+          "id": "sql-115",
+          "language": "sql",
+          "section": "9. Window Functions",
+          "topic": "Price Range Analysis",
+          "step": "9.13",
+          "category": "sql",
+          "categoryLabel": "Window Functions",
+          "tag": "Challenge",
+          "question": "Challenge: Analyze price step increments between catalog neighbors with LEAD()",
+          "explanation": {
+            "points": [
+              "**Task**: In `books`, sort books by `price` ascending.",
+              "Use `LEAD(price, 1) OVER (ORDER BY price ASC) AS next_higher_price`.",
+              "Compute the price step to the next book: `ROUND(LEAD(price, 1) OVER (ORDER BY price ASC) - price, 2) AS price_step`.",
+              "Return `title`, `price`, `next_higher_price`, and `price_step`."
+            ],
+            "highlight": "Use LEAD(price, 1) OVER (ORDER BY price ASC) to inspect upcoming catalog price increments."
+          },
+          "code": "-- WRITE YOUR LEAD QUERY HERE:\nSELECT \n  title,\n  price,\n  LEAD(price, 1) OVER (ORDER BY price ASC) AS next_higher_price,\n  ROUND(LEAD(price, 1) OVER (ORDER BY price ASC) - price, 2) AS price_step\nFROM books\nORDER BY price ASC;",
+          "tip": "Demonstrate how LEAD looks ahead into the future row while LAG looks back into the past row.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Use LEAD(price, 1) OVER (ORDER BY price ASC) to peek at the subsequent higher priced item.",
+            "code": "SELECT \n  title,\n  price,\n  LEAD(price, 1) OVER (ORDER BY price ASC) AS next_higher_price,\n  ROUND(LEAD(price, 1) OVER (ORDER BY price ASC) - price, 2) AS price_step\nFROM books\nORDER BY price ASC;",
+            "timeComplexity": "O(N log N)",
+            "spaceComplexity": "O(N)",
+            "explanationPoints": [
+              "`LEAD(price, 1)` pulls the next higher book price into the current row.",
+              "Subtracting `price` reveals the pricing gap between consecutive tiers.",
+              "The most expensive book ($45.00) receives NULL for next_higher_price as it is the ceiling."
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

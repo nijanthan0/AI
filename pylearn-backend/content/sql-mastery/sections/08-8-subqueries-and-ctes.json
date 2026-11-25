@@ -1,0 +1,663 @@
+{
+  "section": "8. Subqueries and CTEs",
+  "order": 8,
+  "topics": [
+    {
+      "topic": "What are Subqueries?",
+      "slides": [
+        {
+          "id": "sql-92",
+          "language": "sql",
+          "section": "8. Subqueries and CTEs",
+          "topic": "What are Subqueries?",
+          "step": "8.1",
+          "category": "sql",
+          "categoryLabel": "Subqueries and CTEs",
+          "tag": "Lesson",
+          "question": "How do scalar, column, and table subqueries embed queries within queries?",
+          "explanation": {
+            "points": [
+              "A **subquery** (nested query) is a `SELECT` statement enclosed in parentheses `(...)` inside another SQL statement.",
+              "Types of subqueries:",
+              "- **Scalar Subquery**: Returns exactly 1 row and 1 column. Can be used anywhere a literal value is expected (e.g., `WHERE price > (SELECT AVG(price) FROM books)`).",
+              "- **Column Subquery**: Returns 1 column with multiple rows. Evaluated with `IN`, `NOT IN`, `ANY`, `ALL`.",
+              "- **Table Subquery (Derived Table)**: Returns multiple columns and rows. Used in the `FROM` clause with an alias.",
+              "Uncorrelated subqueries execute **once**, and their result is reused by the outer query."
+            ],
+            "highlight": "Subqueries nest SELECT queries inside expressions, WHERE clauses, and FROM derived tables."
+          },
+          "code": "-- 1. Scalar Subquery: Books priced above the storewide average\nSELECT title, price, (SELECT ROUND(AVG(price), 2) FROM books) AS store_avg\nFROM books\nWHERE price > (SELECT AVG(price) FROM books)\nORDER BY price DESC;\n\n-- 2. Column Subquery with IN: Customers who placed at least one order\nSELECT id, name, email FROM customers WHERE id IN (SELECT customer_id FROM orders);",
+          "tip": "Contrast scalar subqueries (returns 1 cell) with column subqueries used with IN (returns a list).",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "Books Above Store Average",
+              "columns": [
+                {
+                  "name": "title",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "price",
+                  "type": "REAL"
+                },
+                {
+                  "name": "store_avg",
+                  "type": "REAL"
+                }
+              ],
+              "rows": [
+                [
+                  "Designing Data-Intensive Applications",
+                  45.0,
+                  37.75
+                ],
+                [
+                  "System Design Interview Vol 2",
+                  42.0,
+                  37.75
+                ],
+                [
+                  "The Pragmatic Programmer",
+                  39.99,
+                  37.75
+                ],
+                [
+                  "System Design Interview Vol 1",
+                  39.99,
+                  37.75
+                ],
+                [
+                  "Designing Machine Learning Systems",
+                  38.5,
+                  37.75
+                ]
+              ],
+              "note": "Filtered dynamically against storewide average (37.75)"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Correlated Subqueries",
+      "slides": [
+        {
+          "id": "sql-93",
+          "language": "sql",
+          "section": "8. Subqueries and CTEs",
+          "topic": "Correlated Subqueries",
+          "step": "8.2",
+          "category": "sql",
+          "categoryLabel": "Subqueries and CTEs",
+          "tag": "Lesson",
+          "question": "How do correlated subqueries evaluate dynamically per outer row?",
+          "explanation": {
+            "points": [
+              "Unlike independent subqueries that run once, a **correlated subquery** references columns from the outer query.",
+              "The database re-evaluates the correlated subquery for **each individual row** considered by the outer query.",
+              "Classic example: Finding books that are priced above the average of **their own specific category**.",
+              "Also used with `EXISTS` and `NOT EXISTS` to verify relational presence without retrieving whole rows."
+            ],
+            "highlight": "Correlated subqueries reference outer row columns and execute once per candidate row."
+          },
+          "code": "-- Correlated Subquery: Books priced higher than their own category average\nSELECT \n  b1.id,\n  b1.title,\n  b1.category,\n  b1.price,\n  (SELECT ROUND(AVG(b2.price), 2) FROM books b2 WHERE b2.category = b1.category) AS category_avg\nFROM books b1\nWHERE b1.price > (SELECT AVG(b2.price) FROM books b2 WHERE b2.category = b1.category)\nORDER BY b1.category, b1.price DESC;",
+          "tip": "Show how b1.category in the inner subquery connects back to the outer row b1.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "Category Outliers",
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "INTEGER",
+                  "isPk": true
+                },
+                {
+                  "name": "title",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "category",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "price",
+                  "type": "REAL"
+                },
+                {
+                  "name": "category_avg",
+                  "type": "REAL"
+                }
+              ],
+              "rows": [
+                [
+                  6,
+                  "Designing Machine Learning Systems",
+                  "AI & Data",
+                  38.5,
+                  34.25
+                ],
+                [
+                  8,
+                  "The Pragmatic Programmer",
+                  "Software Engineering",
+                  39.99,
+                  35.83
+                ],
+                [
+                  5,
+                  "System Design Interview Vol 2",
+                  "System Design",
+                  42.0,
+                  41.0
+                ]
+              ],
+              "note": "Books exceeding their specific category's mean price"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Subqueries and CTEs Quiz",
+      "slides": [
+        {
+          "id": "sql-94",
+          "language": "sql",
+          "section": "8. Subqueries and CTEs",
+          "topic": "Subqueries and CTEs Quiz",
+          "step": "8.3",
+          "category": "sql",
+          "categoryLabel": "Subqueries and CTEs",
+          "tag": "Quiz",
+          "question": "Module 8 Quiz: Test your grasp of nested subqueries and Common Table Expressions",
+          "explanation": {
+            "points": [
+              "Verify your knowledge of scalar subqueries, correlated execution, and CTE syntax.",
+              "Test your understanding of the WITH clause readability benefits.",
+              "Answer the 4 questions in the interactive quiz card."
+            ],
+            "highlight": "Test your subquery optimization and CTE architecture knowledge."
+          },
+          "code": "-- Interactive quiz slide.\n-- Answer questions in the visual panel on the left.\nSELECT 'Test your Subqueries and CTEs knowledge.' AS status;",
+          "tip": "Review how CTEs eliminate deeply nested 'subquery hell' in complex queries.",
+          "viz": {
+            "type": "sql-quiz",
+            "data": {
+              "quizTitle": "Module 8: Subqueries and CTEs Quiz",
+              "questions": [
+                {
+                  "question": "What is the key characteristic of a Correlated Subquery?",
+                  "options": [
+                    "It runs only once before the main query starts",
+                    "It references columns from the outer query and re-evaluates for each outer row",
+                    "It only returns character strings",
+                    "It can only be used in DDL statements"
+                  ],
+                  "answer": 1,
+                  "explanation": "Correlated subqueries depend on values in the outer query row, causing the engine to re-run or memoize the subquery per row."
+                },
+                {
+                  "question": "Which SQL keyword initiates a Common Table Expression (CTE)?",
+                  "options": [
+                    "WITH",
+                    "LET",
+                    "DEFINE",
+                    "DECLARE"
+                  ],
+                  "answer": 0,
+                  "explanation": "CTEs are defined using the 'WITH' keyword: 'WITH cte_name AS (SELECT ...) SELECT * FROM cte_name;'."
+                },
+                {
+                  "question": "What is a major advantage of using CTEs over nested derived tables?",
+                  "options": [
+                    "CTEs automatically delete source table rows",
+                    "CTEs make queries modular, linear, and significantly more readable and maintainable",
+                    "CTEs bypass all database security rules",
+                    "CTEs prevent any indexing"
+                  ],
+                  "answer": 1,
+                  "explanation": "CTEs allow developers to structure queries top-to-bottom like functions, avoiding deep indentation and repeated subquery code."
+                },
+                {
+                  "question": "What does WITH RECURSIVE enable in SQL?",
+                  "options": [
+                    "Infinite loops that crash the database",
+                    "Traversing recursive hierarchical data structures like employee org charts and graphs",
+                    "Recursive table creation",
+                    "Automatic index rebuilding"
+                  ],
+                  "answer": 1,
+                  "explanation": "WITH RECURSIVE allows queries to reference their own output to traverse trees, hierarchies, and graphs."
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Common Table Expressions",
+      "slides": [
+        {
+          "id": "sql-95",
+          "language": "sql",
+          "section": "8. Subqueries and CTEs",
+          "topic": "Common Table Expressions",
+          "step": "8.4",
+          "category": "sql",
+          "categoryLabel": "Subqueries and CTEs",
+          "tag": "Lesson",
+          "question": "How does the WITH clause (CTE) structure clean, modular, and readable pipelines?",
+          "explanation": {
+            "points": [
+              "A **Common Table Expression (CTE)** defines a temporary named result set valid only within the execution scope of a single query.",
+              "Syntax: `WITH cte_name AS (SELECT ...) SELECT * FROM cte_name;`.",
+              "**Advantages over nested subqueries**:",
+              "- Eliminates inverted 'inside-out' readability.",
+              "- Multiple CTEs can be chained together sequentially separated by commas.",
+              "- Can be referenced multiple times within the outer query without duplicating code.",
+              "Modern query planners optimize CTEs inline just as effectively as subqueries."
+            ],
+            "highlight": "Use WITH cte_name AS (...) to transform deeply nested subqueries into clean top-to-bottom pipelines."
+          },
+          "code": "-- Chained CTE pipeline: Find high-spending customers and their favorite books\nWITH customer_spend AS (\n  SELECT customer_id, SUM(total_amount) AS total_spent\n  FROM orders\n  GROUP BY customer_id\n  HAVING SUM(total_amount) > 50.00\n),\nvip_customers AS (\n  SELECT c.id, c.name, cs.total_spent\n  FROM customers c\n  JOIN customer_spend cs ON c.id = cs.customer_id\n)\nSELECT id, name, total_spent FROM vip_customers ORDER BY total_spent DESC;",
+          "tip": "Demonstrate how chaining CTEs reads like an intuitive assembly line.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "CTE Pipeline Output (vip_customers)",
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "INTEGER",
+                  "isPk": true
+                },
+                {
+                  "name": "name",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "total_spent",
+                  "type": "REAL"
+                }
+              ],
+              "rows": [
+                [
+                  1,
+                  "Alice Smith",
+                  197.48
+                ],
+                [
+                  4,
+                  "Diana Prince",
+                  81.99
+                ]
+              ],
+              "note": "Clean multi-step analytical rollup via chained CTEs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Recursive CTEs",
+      "slides": [
+        {
+          "id": "sql-96",
+          "language": "sql",
+          "section": "8. Subqueries and CTEs",
+          "topic": "Recursive CTEs",
+          "step": "8.5",
+          "category": "sql",
+          "categoryLabel": "Subqueries and CTEs",
+          "tag": "Lesson",
+          "question": "How does WITH RECURSIVE traverse hierarchical organization charts and graphs?",
+          "explanation": {
+            "points": [
+              "A **Recursive CTE** references itself to repeatedly expand a result set until a termination condition is reached.",
+              "Structure consists of two parts joined by `UNION ALL`:",
+              "1. **Anchor Member**: Initial base query that returns the root rows (e.g. CEO where `manager_id IS NULL`).",
+              "2. **Recursive Member**: Joins the CTE with the underlying table to find child rows (`manager_id = parent.id`).",
+              "Common use cases: Management hierarchies, category trees, parts explosion (BOM), and graph path traversal."
+            ],
+            "highlight": "WITH RECURSIVE uses an Anchor query and a Recursive Member joined by UNION ALL to traverse hierarchies."
+          },
+          "code": "-- Recursive CTE: Walk employee organization chart from CEO down with depth levels\nWITH RECURSIVE org_chart AS (\n  -- Anchor member: CEO (no manager)\n  SELECT id, name, department, manager_id, 0 AS hierarchy_level, name AS reporting_path\n  FROM employees\n  WHERE manager_id IS NULL\n  \n  UNION ALL\n  \n  -- Recursive member: Direct reports\n  SELECT e.id, e.name, e.department, e.manager_id, oc.hierarchy_level + 1, oc.reporting_path || ' -> ' || e.name\n  FROM employees e\n  JOIN org_chart oc ON e.manager_id = oc.id\n)\nSELECT id, name, department, hierarchy_level, reporting_path\nFROM org_chart\nORDER BY hierarchy_level, department, name;",
+          "tip": "Have students observe how hierarchy_level increments by 1 at each recursive depth.",
+          "viz": {
+            "type": "sql-table",
+            "data": {
+              "tableName": "Recursive Org Chart Hierarchy",
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "INTEGER",
+                  "isPk": true
+                },
+                {
+                  "name": "name",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "department",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "hierarchy_level",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "reporting_path",
+                  "type": "TEXT"
+                }
+              ],
+              "rows": [
+                [
+                  1,
+                  "Sarah Connor",
+                  "Engineering",
+                  0,
+                  "Sarah Connor"
+                ],
+                [
+                  4,
+                  "Michael Scott",
+                  "Sales",
+                  0,
+                  "Michael Scott"
+                ],
+                [
+                  7,
+                  "Pam Beesly",
+                  "Marketing",
+                  0,
+                  "Pam Beesly"
+                ],
+                [
+                  2,
+                  "John Doe",
+                  "Engineering",
+                  1,
+                  "Sarah Connor -> John Doe"
+                ],
+                [
+                  3,
+                  "Jane Roe",
+                  "Engineering",
+                  1,
+                  "Sarah Connor -> Jane Roe"
+                ],
+                [
+                  5,
+                  "Jim Halpert",
+                  "Sales",
+                  1,
+                  "Michael Scott -> Jim Halpert"
+                ],
+                [
+                  6,
+                  "Dwight Schrute",
+                  "Sales",
+                  1,
+                  "Michael Scott -> Dwight Schrute"
+                ],
+                [
+                  8,
+                  "Ryan Howard",
+                  "Marketing",
+                  1,
+                  "Pam Beesly -> Ryan Howard"
+                ]
+              ],
+              "note": "Full organizational tree resolved via WITH RECURSIVE"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Books Above Average",
+      "slides": [
+        {
+          "id": "sql-97",
+          "language": "sql",
+          "section": "8. Subqueries and CTEs",
+          "topic": "Books Above Average",
+          "step": "8.6",
+          "category": "sql",
+          "categoryLabel": "Subqueries and CTEs",
+          "tag": "Challenge",
+          "question": "Challenge: Identify titles priced strictly above the global catalog average",
+          "explanation": {
+            "points": [
+              "**Task**: Use a scalar subquery to find all books in `books` whose `price` is strictly greater than the average price of all books.",
+              "Return `title`, `price`, and `category`.",
+              "Order by `price` DESC."
+            ],
+            "highlight": "Filter WHERE price > (SELECT AVG(price) FROM books) using a scalar subquery."
+          },
+          "code": "-- WRITE YOUR SCALAR SUBQUERY HERE:\nSELECT title, price, category\nFROM books\nWHERE price > (SELECT AVG(price) FROM books)\nORDER BY price DESC;",
+          "tip": "Demonstrate how the inner query evaluates to 37.75 and passes this scalar to the outer WHERE clause.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Use a scalar subquery in the WHERE clause: WHERE price > (SELECT AVG(price) FROM books).",
+            "code": "SELECT title, price, category\nFROM books\nWHERE price > (SELECT AVG(price) FROM books)\nORDER BY price DESC;",
+            "timeComplexity": "O(N) table scan + O(N log N) sort",
+            "spaceComplexity": "O(N)",
+            "explanationPoints": [
+              "`(SELECT AVG(price) FROM books)` executes once, returning $37.75.",
+              "The outer WHERE filter compares each book's price against this dynamically evaluated average.",
+              "If new books are added in the future, the threshold adapts automatically without hardcoding numbers."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Latest Category Books",
+      "slides": [
+        {
+          "id": "sql-98",
+          "language": "sql",
+          "section": "8. Subqueries and CTEs",
+          "topic": "Latest Category Books",
+          "step": "8.7",
+          "category": "sql",
+          "categoryLabel": "Subqueries and CTEs",
+          "tag": "Challenge",
+          "question": "Challenge: Find the most recently published title in each category with a Correlated Subquery",
+          "explanation": {
+            "points": [
+              "**Task**: Find books that have the highest `published_year` within their specific `category`.",
+              "Write a correlated subquery in the WHERE clause matching on `category`.",
+              "Return `title`, `category`, and `published_year`.",
+              "Order by `published_year` DESC, `category` ASC."
+            ],
+            "highlight": "Use WHERE published_year = (SELECT MAX(published_year) FROM books b2 WHERE b2.category = b1.category)."
+          },
+          "code": "-- WRITE YOUR CORRELATED SUBQUERY HERE:\nSELECT b1.title, b1.category, b1.published_year\nFROM books b1\nWHERE b1.published_year = (\n  SELECT MAX(b2.published_year) \n  FROM books b2 \n  WHERE b2.category = b1.category\n)\nORDER BY b1.published_year DESC, b1.category ASC;",
+          "tip": "Demonstrate how the inner subquery references b1.category from the outer loop.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Use a correlated subquery where published_year equals the MAX published_year for that category.",
+            "code": "SELECT b1.title, b1.category, b1.published_year\nFROM books b1\nWHERE b1.published_year = (\n  SELECT MAX(b2.published_year) \n  FROM books b2 \n  WHERE b2.category = b1.category\n)\nORDER BY b1.published_year DESC, b1.category ASC;",
+            "timeComplexity": "O(N^2) without category index; O(N log N) with index",
+            "spaceComplexity": "O(N)",
+            "explanationPoints": [
+              "For each outer book `b1`, the subquery calculates the maximum publication year in `b1.category`.",
+              "Only books that achieve this category maximum are returned in the final result."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Low Stock by Category",
+      "slides": [
+        {
+          "id": "sql-99",
+          "language": "sql",
+          "section": "8. Subqueries and CTEs",
+          "topic": "Low Stock by Category",
+          "step": "8.8",
+          "category": "sql",
+          "categoryLabel": "Subqueries and CTEs",
+          "tag": "Challenge",
+          "question": "Challenge: Find books with inventory below their category average stock",
+          "explanation": {
+            "points": [
+              "**Task**: Identify books that have lower `stock` than the average stock of their own `category`.",
+              "Use a correlated subquery comparing `b1.stock < (SELECT AVG(b2.stock) ...)`.",
+              "Return `b1.title`, `b1.category`, `b1.stock`, and `ROUND(b2_avg, 1) AS category_avg_stock`."
+            ],
+            "highlight": "Identify books where stock is below the category-specific average using a correlated subquery."
+          },
+          "code": "-- WRITE YOUR CORRELATED STOCK QUERY HERE:\nSELECT \n  b1.title,\n  b1.category,\n  b1.stock,\n  (SELECT ROUND(AVG(b2.stock), 1) FROM books b2 WHERE b2.category = b1.category) AS category_avg_stock\nFROM books b1\nWHERE b1.stock < (SELECT AVG(b2.stock) FROM books b2 WHERE b2.category = b1.category)\nORDER BY b1.category, b1.stock ASC;",
+          "tip": "Show how warehouse inventory replenishment flags items that underperform peer benchmarks.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Compare b1.stock against the inner AVG(b2.stock) filtered on b2.category = b1.category.",
+            "code": "SELECT \n  b1.title,\n  b1.category,\n  b1.stock,\n  (SELECT ROUND(AVG(b2.stock), 1) FROM books b2 WHERE b2.category = b1.category) AS category_avg_stock\nFROM books b1\nWHERE b1.stock < (SELECT AVG(b2.stock) FROM books b2 WHERE b2.category = b1.category)\nORDER BY b1.category, b1.stock ASC;",
+            "timeComplexity": "O(N^2) unindexed",
+            "spaceComplexity": "O(N)",
+            "explanationPoints": [
+              "The correlated subquery dynamically benchmarks stock against category peers.",
+              "Items below average are flagged for immediate supplier reordering."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Bestseller Rankings",
+      "slides": [
+        {
+          "id": "sql-100",
+          "language": "sql",
+          "section": "8. Subqueries and CTEs",
+          "topic": "Bestseller Rankings",
+          "step": "8.9",
+          "category": "sql",
+          "categoryLabel": "Subqueries and CTEs",
+          "tag": "Challenge",
+          "question": "Challenge: Multi-step bestseller CTE pipeline",
+          "explanation": {
+            "points": [
+              "**Task**: Write a CTE named `book_sales` that aggregates `order_items` by `book_id`:",
+              "- Compute `SUM(quantity) AS units_sold` and `SUM(quantity * unit_price) AS total_revenue`.",
+              "In the outer query, join `books` with `book_sales`.",
+              "Return `books.title`, `book_sales.units_sold`, and `book_sales.total_revenue`.",
+              "Order by `units_sold` DESC, `total_revenue` DESC."
+            ],
+            "highlight": "Define a CTE aggregating order line items and join with the books catalog in the outer query."
+          },
+          "code": "-- WRITE YOUR BESTSELLER CTE PIPELINE HERE:\nWITH book_sales AS (\n  SELECT \n    book_id,\n    SUM(quantity) AS units_sold,\n    ROUND(SUM(quantity * unit_price), 2) AS total_revenue\n  FROM order_items\n  GROUP BY book_id\n)\nSELECT \n  b.title,\n  bs.units_sold,\n  bs.total_revenue\nFROM books b\nJOIN book_sales bs ON b.id = bs.book_id\nORDER BY bs.units_sold DESC, bs.total_revenue DESC;",
+          "tip": "Show how CTEs keep aggregation logic separate from presentation joining logic.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Aggregate order_items by book_id in a WITH clause, then join with books to project titles.",
+            "code": "WITH book_sales AS (\n  SELECT \n    book_id,\n    SUM(quantity) AS units_sold,\n    ROUND(SUM(quantity * unit_price), 2) AS total_revenue\n  FROM order_items\n  GROUP BY book_id\n)\nSELECT \n  b.title,\n  bs.units_sold,\n  bs.total_revenue\nFROM books b\nJOIN book_sales bs ON b.id = bs.book_id\nORDER BY bs.units_sold DESC, bs.total_revenue DESC;",
+            "timeComplexity": "O(N log B)",
+            "spaceComplexity": "O(B)",
+            "explanationPoints": [
+              "The `book_sales` CTE aggregates line items without cluttering the main query.",
+              "The main query performs a simple 2-table join to bring in titles."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "New Customer Analysis",
+      "slides": [
+        {
+          "id": "sql-101",
+          "language": "sql",
+          "section": "8. Subqueries and CTEs",
+          "topic": "New Customer Analysis",
+          "step": "8.10",
+          "category": "sql",
+          "categoryLabel": "Subqueries and CTEs",
+          "tag": "Challenge",
+          "question": "Challenge: Analyze purchasing velocity of newly registered customers",
+          "explanation": {
+            "points": [
+              "**Task**: Create a CTE `q1_cohort` containing customers who joined in `'2023'` (`joined_date LIKE '2023%'`).",
+              "Join `q1_cohort` with `orders` to find their order history.",
+              "Calculate total orders placed and total spend per cohort member.",
+              "Include customers with 0 orders using `LEFT JOIN`."
+            ],
+            "highlight": "Build a cohort CTE and LEFT JOIN orders to evaluate customer lifetime value."
+          },
+          "code": "-- WRITE YOUR COHORT ANALYSIS CTE HERE:\nWITH q1_cohort AS (\n  SELECT id, name, country, joined_date\n  FROM customers\n  WHERE joined_date LIKE '2023%'\n)\nSELECT \n  c.name,\n  c.country,\n  COUNT(o.id) AS total_orders,\n  COALESCE(ROUND(SUM(o.total_amount), 2), 0.00) AS total_spend\nFROM q1_cohort c\nLEFT JOIN orders o ON c.id = o.customer_id\nGROUP BY c.id, c.name, c.country\nORDER BY total_spend DESC;",
+          "tip": "Demonstrate how LEFT JOIN with COALESCE ensures customers with zero spend display $0.00 instead of NULL.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Isolate the 2023 cohort in a CTE, LEFT JOIN orders, and aggregate spend with COALESCE fallback.",
+            "code": "WITH q1_cohort AS (\n  SELECT id, name, country, joined_date\n  FROM customers\n  WHERE joined_date LIKE '2023%'\n)\nSELECT \n  c.name,\n  c.country,\n  COUNT(o.id) AS total_orders,\n  COALESCE(ROUND(SUM(o.total_amount), 2), 0.00) AS total_spend\nFROM q1_cohort c\nLEFT JOIN orders o ON c.id = o.customer_id\nGROUP BY c.id, c.name, c.country\nORDER BY total_spend DESC;",
+            "timeComplexity": "O(N log C)",
+            "spaceComplexity": "O(C)",
+            "explanationPoints": [
+              "`WHERE joined_date LIKE '2023%'` filters the annual cohort.",
+              "`LEFT JOIN` preserves cohort members who have not yet converted.",
+              "`COALESCE(..., 0.00)` handles non-buyers gracefully."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Daily Sales Report",
+      "slides": [
+        {
+          "id": "sql-102",
+          "language": "sql",
+          "section": "8. Subqueries and CTEs",
+          "topic": "Daily Sales Report",
+          "step": "8.11",
+          "category": "sql",
+          "categoryLabel": "Subqueries and CTEs",
+          "tag": "Challenge",
+          "question": "Challenge: Multi-CTE daily financial audit pipeline",
+          "explanation": {
+            "points": [
+              "**Task**: Build a 2-CTE pipeline:",
+              "1. `daily_orders`: Aggregate `orders` by `order_date`, counting orders and summing `total_amount AS daily_revenue`.",
+              "2. `daily_metrics`: Query `daily_orders` and calculate the storewide average daily revenue as a benchmark.",
+              "Return `order_date`, `daily_revenue`, and whether the day was `'Above Average'` or `'Below Average'`."
+            ],
+            "highlight": "Chain multiple CTEs together to compute daily benchmarks against storewide averages."
+          },
+          "code": "-- WRITE YOUR MULTI-CTE PIPELINE HERE:\nWITH daily_orders AS (\n  SELECT \n    order_date,\n    COUNT(*) AS order_count,\n    ROUND(SUM(total_amount), 2) AS daily_revenue\n  FROM orders\n  GROUP BY order_date\n),\nbenchmark AS (\n  SELECT AVG(daily_revenue) AS avg_daily_benchmark FROM daily_orders\n)\nSELECT \n  d.order_date,\n  d.daily_revenue,\n  CASE \n    WHEN d.daily_revenue >= b.avg_daily_benchmark THEN 'Above Average'\n    ELSE 'Below Average'\n  END AS performance_vs_benchmark\nFROM daily_orders d\nCROSS JOIN benchmark b\nORDER BY d.order_date ASC;",
+          "tip": "Demonstrate using CROSS JOIN with a 1-row benchmark CTE to expose scalar constants to every row.",
+          "viz": {
+            "type": "solution"
+          },
+          "solution": {
+            "approach": "Chain daily_orders and benchmark CTEs, cross-join the 1-row benchmark, and evaluate CASE performance.",
+            "code": "WITH daily_orders AS (\n  SELECT \n    order_date,\n    COUNT(*) AS order_count,\n    ROUND(SUM(total_amount), 2) AS daily_revenue\n  FROM orders\n  GROUP BY order_date\n),\nbenchmark AS (\n  SELECT AVG(daily_revenue) AS avg_daily_benchmark FROM daily_orders\n)\nSELECT \n  d.order_date,\n  d.daily_revenue,\n  CASE \n    WHEN d.daily_revenue >= b.avg_daily_benchmark THEN 'Above Average'\n    ELSE 'Below Average'\n  END AS performance_vs_benchmark\nFROM daily_orders d\nCROSS JOIN benchmark b\nORDER BY d.order_date ASC;",
+            "timeComplexity": "O(N log D)",
+            "spaceComplexity": "O(D)",
+            "explanationPoints": [
+              "Chaining CTEs separated by commas builds modular stages.",
+              "`CROSS JOIN benchmark b` brings the storewide average into every daily row.",
+              "CASE labels commercial success relative to average baseline."
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

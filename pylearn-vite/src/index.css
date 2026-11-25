@@ -1,0 +1,191 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { 
+  box-sizing: border-box; 
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:root {
+  --font-scale: 1;
+}
+
+html, body {
+  min-height: 100%;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  letter-spacing: -0.015em;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+body {
+  font-size: calc(14px * var(--font-scale));
+}
+
+/* ========================================================
+   NEOBRUTALISM DESIGN SYSTEM (Figma / Gumroad / Arc)
+   ======================================================== */
+
+.dark {
+  --bg: #121316;
+  --bg-alt: #1a1b20;
+  --bg-deep: #0a0b0d;
+  --surface: #22232a;
+  --surface2: #2c2e38;
+  --border: #383a45;
+  --border-subtle: #2b2c35;
+  --border-hover: #facc15;
+  --text: #fdfdfd;
+  --text-muted: #a1a1aa;
+  --text-dim: #71717a;
+  --primary: #facc15;          /* Neon Cyber Yellow */
+  --primary-fg: #000000;
+  --green: #4ade80;
+  --red: #f87171;
+  --yellow: #facc15;
+  --mauve: #c084fc;
+  --peach: #fb923c;
+  --sky: #38bdf8;
+  --teal: #2dd4bf;
+}
+
+.light {
+  --bg: #fffdf8;
+  --bg-alt: #f4efe6;
+  --bg-deep: #ebe4d8;
+  --surface: #ffffff;
+  --surface2: #f3ece0;
+  --border: #000000;
+  --border-subtle: #27272a;
+  --border-hover: #000000;
+  --text: #000000;
+  --text-muted: #3f3f46;
+  --text-dim: #71717a;
+  --primary: #facc15;          /* Vibrant Yellow */
+  --primary-fg: #000000;
+  --green: #22c55e;
+  --red: #ef4444;
+  --yellow: #eab308;
+  --mauve: #a855f7;
+  --peach: #f97316;
+  --sky: #0ea5e9;
+  --teal: #14b8a6;
+}
+
+/* Neobrutalist Hard Shadow Utilities */
+.shadow-brutal-sm {
+  box-shadow: 2px 2px 0px #000000;
+}
+
+.shadow-brutal {
+  box-shadow: 4px 4px 0px #000000;
+}
+
+.shadow-brutal-lg {
+  box-shadow: 6px 6px 0px #000000;
+}
+
+.shadow-brutal-xl {
+  box-shadow: 8px 8px 0px #000000;
+}
+
+.shadow-brutal-yellow {
+  box-shadow: 4px 4px 0px #facc15;
+}
+
+.shadow-brutal-lime {
+  box-shadow: 4px 4px 0px #a3e635;
+}
+
+.shadow-brutal-pink {
+  box-shadow: 4px 4px 0px #f472b6;
+}
+
+.shadow-brutal-sky {
+  box-shadow: 4px 4px 0px #38bdf8;
+}
+
+/* Tactile Push Button Effect */
+.btn-brutal {
+  border: 2px solid #000000;
+  box-shadow: 3px 3px 0px #000000;
+  transition: all 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+  font-weight: 700;
+}
+
+.btn-brutal:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px #000000;
+}
+
+.btn-brutal:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px #000000;
+}
+
+/* Neobrutal Card */
+.brutal-card {
+  background: #1a1b22;
+  border: 2px solid #000000;
+  box-shadow: 4px 4px 0px #000000;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.brutal-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #000000;
+}
+
+/* Floating Sticker Badge with Hover Tilt */
+.sticker-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 800;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  padding: 0.25rem 0.6rem;
+  border: 1.5px solid #000000;
+  box-shadow: 2px 2px 0px #000000;
+  border-radius: 6px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sticker-badge:hover {
+  transform: rotate(0deg) scale(1.04);
+  box-shadow: 3px 3px 0px #000000;
+}
+
+/* Halftone / Dot Matrix Background */
+.bg-brutal-dots {
+  background-size: 24px 24px;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.08) 1.5px, transparent 1.5px);
+}
+
+.light .bg-brutal-dots {
+  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.12) 1.5px, transparent 1.5px);
+}
+
+/* Sleek, Low-Profile Modern Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 9999px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
+}

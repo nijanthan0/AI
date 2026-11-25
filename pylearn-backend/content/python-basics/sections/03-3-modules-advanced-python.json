@@ -1,0 +1,779 @@
+{
+  "section": "3. Modules & Advanced Python",
+  "order": 3,
+  "topics": [
+    {
+      "topic": "Modules & Packages",
+      "slides": [
+        {
+          "id": 117,
+          "section": "3. Modules & Advanced Python",
+          "topic": "Modules & Packages",
+          "step": "15.1",
+          "category": "advanced",
+          "categoryLabel": "Advanced",
+          "tag": "Modules",
+          "question": "How do Built-in and Custom Modules organize Python code?",
+          "explanation": {
+            "points": [
+              "A **module** is simply a `.py` file containing functions, classes, and definitions.",
+              "A **package** is a directory of modules containing an `__init__.py` file.",
+              "Python includes 'Batteries Included' standard library modules: `math`, `os`, `sys`, `json`, `datetime`, `random`.",
+              "The `if __name__ == '__main__':` idiom ensures script code runs only when executed directly, not when imported."
+            ]
+          },
+          "code": "# 1. Standard Library Imports\nimport math\nimport json\nfrom datetime import datetime\n\nprint(\"Pi:\", math.pi)\nprint(\"Square root of 144:\", math.sqrt(144))\n\n# 2. JSON Serialization\nuser_dict = {\"name\": \"Alice\", \"role\": \"ML Engineer\", \"date\": str(datetime.now())}\njson_str = json.dumps(user_dict, indent=2)\nprint(\"Serialized JSON:\\n\", json_str)\n\n# 3. Main execution guard\nif __name__ == \"__main__\":\n    print(\"Script executed directly from terminal!\")",
+          "tip": "Explain how Python imports work under the hood: sys.modules cache, sys.path resolution, and bytecode compilation (.pyc).",
+          "viz": {
+            "type": "packaging-venv",
+            "data": {}
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Iterators Protocol",
+      "slides": [
+        {
+          "id": 118,
+          "section": "3. Modules & Advanced Python",
+          "topic": "Iterators Protocol",
+          "step": "16.1",
+          "category": "advanced",
+          "categoryLabel": "Advanced",
+          "tag": "Iterators",
+          "question": "What is an Iterator and how does the Iterator Protocol work?",
+          "explanation": {
+            "points": [
+              "An **iterable** is any object capable of returning its members one at a time (implements `__iter__()`).",
+              "An **iterator** is the stream object that produces values one by one via `__next__()`.",
+              "Calling `next(iterator)` advances the pointer; when no more elements remain, it raises `StopIteration`.",
+              "Python's `for` loop is syntactic sugar over `iter()` and `next()` inside a `try/except StopIteration` block."
+            ]
+          },
+          "code": "# 1. Exploring iter() and next()\nnumbers = [10, 20, 30]\nit = iter(numbers)  # Get iterator from list iterable\n\nprint(\"First item:\", next(it))\nprint(\"Second item:\", next(it))\nprint(\"Third item:\", next(it))\n\n# 2. Custom Iterator Class\nclass Countdown:\n    def __init__(self, start):\n        self.current = start\n    def __iter__(self):\n        return self\n    def __next__(self):\n        if self.current <= 0:\n            raise StopIteration\n        val = self.current\n        self.current -= 1\n        return val\n\nfor count in Countdown(3):\n    print(f\"Countdown: {count}\")",
+          "tip": "Clarify the distinction between Iterable (the container) and Iterator (the stateful cursor pointer).",
+          "viz": {
+            "type": "generator-yield",
+            "data": {}
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Generators & Yield",
+      "slides": [
+        {
+          "id": 119,
+          "section": "3. Modules & Advanced Python",
+          "topic": "Generators & Yield",
+          "step": "16.2",
+          "category": "advanced",
+          "categoryLabel": "Advanced",
+          "tag": "Generators",
+          "question": "How do Generators stream millions of items with zero RAM spikes?",
+          "explanation": {
+            "points": [
+              "A **Generator** is a function that produces a sequence of values lazily using the `yield` keyword.",
+              "Unlike `return` which terminates a function, `yield` **pauses** execution, saving local state and variables.",
+              "When `next()` is called again, execution resumes immediately after the `yield` statement.",
+              "**Memory Efficiency**: Generating 10,000,000 items with a list requires ~800MB RAM; with a generator it requires only ~120 bytes."
+            ]
+          },
+          "code": "import sys\n\n# 1. Generator function using yield\ndef stream_batches(total_samples: int, batch_size: int):\n    batch_idx = 0\n    for i in range(0, total_samples, batch_size):\n        batch_idx += 1\n        yield f\"Batch #{batch_idx}: samples {i} to {i + batch_size - 1}\"\n\n# 2. Streaming batches lazily\nfor batch in stream_batches(100, 25):\n    print(batch)\n\n# 3. Memory Footprint comparison\nlist_comp = [x for x in range(100_000)]\ngen_exp = (x for x in range(100_000))\nprint(f\"List in RAM: {sys.getsizeof(list_comp):,} bytes\")\nprint(f\"Generator in RAM: {sys.getsizeof(gen_exp):,} bytes\")",
+          "tip": "Emphasize that all modern AI data loaders (PyTorch DataLoader, HuggingFace Datasets) rely heavily on generators to stream multi-gigabyte datasets without running out of GPU/CPU RAM.",
+          "viz": {
+            "type": "generator-yield",
+            "data": {}
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Lambdas & Functional Helpers",
+      "slides": [
+        {
+          "id": 120,
+          "section": "3. Modules & Advanced Python",
+          "topic": "Lambdas & Functional Helpers",
+          "step": "17.1",
+          "category": "advanced",
+          "categoryLabel": "Advanced",
+          "tag": "Lambdas",
+          "question": "What is a Lambda Function and how is it used with map, filter, and sorted?",
+          "explanation": {
+            "points": [
+              "A **lambda function** is a small, anonymous inline function defined with the syntax `lambda arguments: expression`.",
+              "Can take any number of arguments, but can only contain a **single expression** (no multi-line statements).",
+              "Most commonly passed as callbacks to higher-order functions like `sorted(..., key=lambda ...)`, `map()`, and `filter()`.",
+              "For complex logic, prefer standard `def` functions for readability and debuggability."
+            ]
+          },
+          "code": "# 1. Simple Lambda\nsquare = lambda x: x ** 2\nprint(\"Square of 9:\", square(9))\n\n# 2. Sorting by custom dictionary keys\nstudents = [\n    {\"name\": \"Alice\", \"gpa\": 3.9},\n    {\"name\": \"Bob\", \"gpa\": 3.4},\n    {\"name\": \"Charlie\", \"gpa\": 4.0}\n]\n\n# Sort by GPA descending\nsorted_students = sorted(students, key=lambda s: s[\"gpa\"], reverse=True)\nfor s in sorted_students:\n    print(f\"{s['name']}: {s['gpa']}\")\n\n# 3. map and filter with lambdas\nnumbers = [1, 2, 3, 4, 5, 6]\nevens = list(filter(lambda x: x % 2 == 0, numbers))\nprint(\"Evens:\", evens)",
+          "tip": "Explain that while lambdas are convenient for one-liner keys, PEP 8 advises against assigning lambdas to variables (use def instead).",
+          "viz": {
+            "type": "function",
+            "data": {
+              "name": "lambda",
+              "args": [
+                "x"
+              ],
+              "returnValue": "x ** 2"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Decorators & Wrappers",
+      "slides": [
+        {
+          "id": 121,
+          "section": "3. Modules & Advanced Python",
+          "topic": "Decorators & Wrappers",
+          "step": "17.2",
+          "category": "advanced",
+          "categoryLabel": "Advanced",
+          "tag": "Decorators",
+          "question": "What is a Decorator and how does it wrap functionality?",
+          "explanation": {
+            "points": [
+              "A **decorator** is a function that takes another function as input, extends its behavior without modifying it, and returns the modified function.",
+              "Applied using the clean `@decorator_name` syntax placed directly above a function definition.",
+              "Common production use cases: Logging, Timing performance, Authentication/Authorization, Caching (`@lru_cache`).",
+              "Always use `@functools.wraps` to preserve the original function's name and docstring."
+            ]
+          },
+          "code": "import time\nimport functools\n\ndef timer_decorator(func):\n    @functools.wraps(func)\n    def wrapper(*args, **kwargs):\n        start_time = time.time()\n        result = func(*args, **kwargs)\n        elapsed = time.time() - start_time\n        print(f\"⏱️ [{func.__name__}] finished in {elapsed:.6f}s\")\n        return result\n    return wrapper\n\n@timer_decorator\ndef train_step(epochs: int):\n    time.sleep(0.05)  # Simulate workload\n    return f\"Trained {epochs} epochs successfully\"\n\nstatus = train_step(10)\nprint(status)",
+          "tip": "Show how FastAPI uses decorators (@app.get('/users')) to register HTTP endpoints cleanly.",
+          "viz": {
+            "type": "decorator",
+            "data": {
+              "decorator": "@timer_decorator",
+              "target": "train_step()"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Regular Expressions (re module)",
+      "slides": [
+        {
+          "id": 122,
+          "section": "3. Modules & Advanced Python",
+          "topic": "Regular Expressions (re module)",
+          "step": "18.1",
+          "category": "advanced",
+          "categoryLabel": "Advanced",
+          "tag": "Regex",
+          "question": "How do Regular Expressions find patterns, emails, and tokens in text?",
+          "explanation": {
+            "points": [
+              "The `re` module provides powerful pattern matching and text parsing engine in Python.",
+              "`re.search(pattern, text)` scans for the first location where pattern matches.",
+              "`re.findall(pattern, text)` returns all non-overlapping matches as a list of strings.",
+              "`re.sub(pattern, replacement, text)` performs search-and-replace using regex.",
+              "Common metacharacters: `\\d` (digit), `\\w` (word char), `+` (1 or more), `*` (0 or more), `[a-z]` (character set), `(...)` (capture group)."
+            ]
+          },
+          "code": "import re\n\ntext = \"Contact support at help@antigravity.dev or security@google.com! Order #9842.\"\n\n# 1. Finding all email addresses\nemail_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}'\nemails = re.findall(email_pattern, text)\nprint(\"Found Emails:\", emails)\n\n# 2. Extracting order numbers (digits)\norder_id = re.search(r'#(\\d+)', text)\nif order_id:\n    print(\"Order ID:\", order_id.group(1))\n\n# 3. Sanitizing text (re.sub)\nclean_text = re.sub(r'#\\d+', '[REDACTED_ID]', text)\nprint(\"Sanitized text:\", clean_text)",
+          "tip": "Use the interactive regex playground visual below to test email, phone, and digit extraction patterns live!",
+          "viz": {
+            "type": "regex",
+            "data": {}
+          }
+        },
+        {
+          "id": 123,
+          "section": "3. Modules & Advanced Python",
+          "topic": "Regular Expressions (re module)",
+          "step": "18.1-P1",
+          "category": "advanced",
+          "categoryLabel": "Advanced",
+          "tag": "Practice 1",
+          "question": "Practice 1: Extract All Currency Prices and Amounts from Raw Text",
+          "explanation": {
+            "points": [
+              "**Challenge**: Extract all monetary dollar amounts (both whole numbers like '$1200' and decimals like '$45.99') from a raw invoice string.",
+              "**Example**: Input: 'Invoice #104: Items cost $49.50 plus $5.00 shipping, total $1200.' -> Output: ['$49.50', '$5.00', '$1200']",
+              "**Constraints**: Use `re.findall` with regex `r'\\$\\d+(?:\\.\\d{2})?'`.",
+              "**Hint**: `(?:\\.\\d{2})?` specifies an optional non-capturing group for decimal cents."
+            ],
+            "highlight": "Extract all monetary dollar amounts like '$45.99' and integers from a raw invoice string."
+          },
+          "code": "import re\n\ndef extract_prices(text: str) -> list[str]:\n    # YOUR CODE HERE\n    pass\n\nprint(extract_prices('Items cost $49.50 plus $5.00 shipping.'))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "regex",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Use regex pattern r'\\$\\d+(?:\\.\\d{2})?' matching dollar sign followed by digits and optional decimal cents.",
+            "code": "import re\n\ndef extract_prices(text: str) -> list[str]:\n    return re.findall(r'\\$\\d+(?:\\.\\d{2})?', text)\n\nprint(extract_prices('Items cost $49.50 plus $5.00 shipping.'))\nprint(extract_prices('Total $1200 or $3.50 each'))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(Matches)"
+          }
+        },
+        {
+          "id": 124,
+          "section": "3. Modules & Advanced Python",
+          "topic": "Regular Expressions (re module)",
+          "step": "18.1-P2",
+          "category": "advanced",
+          "categoryLabel": "Advanced",
+          "tag": "Practice 2",
+          "question": "Practice 2: Validate US Phone Numbers",
+          "explanation": {
+            "points": [
+              "**Challenge**: Validate if a string is a valid US phone number in format (123) 456-7890 or 123-456-7890.",
+              "**Example**: Input: '(415) 555-0199' -> True | Input: '123-45' -> False",
+              "**Constraints**: Must match full string with ^ and $.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Validate if a string is a valid US phone number in format (123) 456-7890 or 123-456-7890."
+          },
+          "code": "import re\n\ndef is_valid_phone(phone: str) -> bool:\n    # YOUR CODE HERE\n    pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "regex",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Use pattern r'^(\\(\\d{3}\\)|\\d{3})[-.\\s]?\\d{3}[-.\\s]?\\d{4}$'.",
+            "code": "import re\n\ndef is_valid_phone(phone: str) -> bool:\n    pattern = r'^(\\(\\d{3}\\)|\\d{3})[-.\\s]?\\d{3}[-.\\s]?\\d{4}$'\n    return bool(re.match(pattern, phone.strip()))\n\nprint('(415) 555-0199 ->', is_valid_phone('(415) 555-0199'))\nprint('415-555-0199 ->', is_valid_phone('415-555-0199'))\nprint('12345 ->', is_valid_phone('12345'))",
+            "timeComplexity": "O(1)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 125,
+          "section": "3. Modules & Advanced Python",
+          "topic": "Regular Expressions (re module)",
+          "step": "18.1-L3",
+          "category": "advanced",
+          "categoryLabel": "Advanced",
+          "tag": "LeetCode: LeetCode #8",
+          "question": "LeetCode #8: String to Integer (myAtoi)",
+          "explanation": {
+            "points": [
+              "**Challenge**: Implement myAtoi which converts a string to a 32-bit signed integer. Whitespace is ignored, optional +/- sign, clamp to [-2^31, 2^31 - 1].",
+              "**Example**: Input: s = '   -42' -> Output: -42 | Input: s = '4193 with words' -> Output: 4193",
+              "**Constraints**: -2^31 <= result <= 2^31 - 1",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Implement myAtoi which converts a string to a 32-bit signed integer. Whitespace is ignored, optional +/- sign, clamp to [-2^31, 2^31 - 1]."
+          },
+          "code": "import re\n\ndef my_atoi(s: str) -> int:\n    # YOUR CODE HERE\n    pass\n\nprint(my_atoi('   -42'))\nprint(my_atoi('4193 with words'))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "regex",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Use regex matching leading whitespace, optional sign, and digits: r'^\\s*([+-]?\\d+)'. Convert group to int and clamp.",
+            "code": "import re\n\ndef my_atoi(s: str) -> int:\n    match = re.match(r'^\\s*([+-]?\\d+)', s)\n    if not match:\n        return 0\n    val = int(match.group(1))\n    # 32-bit clamping\n    INT_MIN, INT_MAX = -2**31, 2**31 - 1\n    return max(INT_MIN, min(val, INT_MAX))\n\nprint(my_atoi('   -42'))\nprint(my_atoi('4193 with words'))\nprint(my_atoi('words and 987'))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 126,
+          "section": "3. Modules & Advanced Python",
+          "topic": "Regular Expressions (re module)",
+          "step": "18.1-L4",
+          "category": "advanced",
+          "categoryLabel": "Advanced",
+          "tag": "LeetCode: LeetCode #10",
+          "question": "LeetCode #10: Regular Expression Matching (* and .)",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given an input string `s` and pattern `p`, implement regular expression matching with support for '.' (any single character) and '*' (zero or more of preceding element).",
+              "**Example**: Input: s = 'aa', p = 'a*' -> Output: True | Input: s = 'ab', p = '.*' -> Output: True",
+              "**Constraints**: 1 <= s.length <= 20, 1 <= p.length <= 20",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given an input string `s` and pattern `p`, implement regular expression matching with support for '.' (any single character) and '*' (zero o"
+          },
+          "code": "def is_match(s: str, p: str) -> bool:\n    # YOUR CODE HERE\n    pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "regex",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Dynamic programming: dp[i][j] indicates whether s[:i] matches p[:j]. Handle '*' by considering 0 occurrences dp[i][j-2] or 1+ occurrences dp[i-1][j].",
+            "code": "def is_match(s: str, p: str) -> bool:\n    dp = [[False] * (len(p) + 1) for _ in range(len(s) + 1)]\n    dp[0][0] = True\n    for j in range(2, len(p) + 1):\n        if p[j - 1] == '*':\n            dp[0][j] = dp[0][j - 2]\n    for i in range(1, len(s) + 1):\n        for j in range(1, len(p) + 1):\n            if p[j - 1] == s[i - 1] or p[j - 1] == '.':\n                dp[i][j] = dp[i - 1][j - 1]\n            elif p[j - 1] == '*':\n                dp[i][j] = dp[i][j - 2] or (dp[i - 1][j] if p[j - 2] in (s[i - 1], '.') else False)\n    return dp[len(s)][len(p)]\n\nprint('aa vs a* ->', is_match('aa', 'a*'))\nprint('ab vs .* ->', is_match('ab', '.*'))\nprint('aab vs c*a*b ->', is_match('aab', 'c*a*b'))",
+            "timeComplexity": "O(M * N)",
+            "spaceComplexity": "O(M * N)"
+          }
+        },
+        {
+          "id": 127,
+          "section": "3. Modules & Advanced Python",
+          "topic": "Regular Expressions (re module)",
+          "step": "18.1-R5",
+          "category": "advanced",
+          "categoryLabel": "Advanced",
+          "tag": "Real-World: PII Sanitizer",
+          "question": "Real-Time Scenario: Production Data Masker (PII & Credit Cards)",
+          "explanation": {
+            "points": [
+              "**Challenge**: Sanitize database dump files by redacting Credit Card numbers (4x4 digits) and Social Security Numbers (3-2-4 digits) with '[REDACTED]'.",
+              "**Example**: Input: 'Card: 4532-1234-5678-9012' -> Output: 'Card: [REDACTED_CC]'",
+              "**Constraints**: Use re.sub with regex patterns.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Sanitize database dump files by redacting Credit Card numbers (4x4 digits) and Social Security Numbers (3-2-4 digits) with '[REDACTED]'."
+          },
+          "code": "import re\n\ndef redact_sensitive_data(text: str) -> str:\n    # YOUR CODE HERE\n    pass\n\nprint(redact_sensitive_data('User 4532-1234-5678-9012 SSN 123-45-6789 paid $50.'))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "regex",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Define patterns for credit card (\\b(?:\\d{4}[-\\s]?){4}\\b) and SSN (\\b\\d{3}-\\d{2}-\\d{4}\\b). Use re.sub to mask both.",
+            "code": "import re\n\ndef redact_sensitive_data(text: str) -> str:\n    # Redact CC\n    cc_pattern = r'\\b\\d{4}[-\\s]?\\d{4}[-\\s]?\\d{4}[-\\s]?\\d{4}\\b'\n    ssn_pattern = r'\\b\\d{3}-\\d{2}-\\d{4}\\b'\n    text = re.sub(cc_pattern, '[REDACTED_CC]', text)\n    text = re.sub(ssn_pattern, '[REDACTED_SSN]', text)\n    return text\n\nlog = 'User 4532-1234-5678-9012 and SSN 123-45-6789 created account.'\nprint(redact_sensitive_data(log))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(N)"
+          }
+        },
+        {
+          "id": 128,
+          "section": "3. Modules & Advanced Python",
+          "topic": "Regular Expressions (re module)",
+          "step": "18.1-R6",
+          "category": "advanced",
+          "categoryLabel": "Advanced",
+          "tag": "Real-World: Nginx Log Parser",
+          "question": "Real-Time Scenario: Web Server Access Log Pattern Parser",
+          "explanation": {
+            "points": [
+              "**Challenge**: Parse Nginx Common Log Format lines: '127.0.0.1 - - [29/Oct/2026:10:00:00] \"GET /api/v1/users HTTP/1.1\" 200 1420' into IP, Method, Route, and Status Code.",
+              "**Example**: Extract IP: '127.0.0.1', Method: 'GET', Path: '/api/v1/users', Status: 200",
+              "**Constraints**: Use named capturing groups (?P<name>...).",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Parse Nginx Common Log Format lines: '127.0.0.1 - - [29/Oct/2026:10:00:00] \"GET /api/v1/users HTTP/1.1\" 200 1420' into IP, Method, Route, an"
+          },
+          "code": "import re\n\ndef parse_nginx_line(line: str) -> dict:\n    # YOUR CODE HERE\n    pass\n\nline = '192.168.1.1 - - [29/Oct/2026:10:00:00] \"POST /login HTTP/1.1\" 200 512'\nprint(parse_nginx_line(line))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "regex",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Build regex with named groups: r'^(?P<ip>\\S+).*?\"(?P<method>\\w+)\\s+(?P<path>\\S+).*?\"\\s+(?P<status>\\d{3})'.",
+            "code": "import re\n\ndef parse_nginx_line(line: str) -> dict:\n    pattern = r'^(?P<ip>\\S+)\\s+-\\s+-\\s+\\[.*?\\]\\s+\"(?P<method>\\w+)\\s+(?P<path>\\S+)[^\"]*\"\\s+(?P<status>\\d{3})'\n    m = re.match(pattern, line)\n    return m.groupdict() if m else {}\n\nline = '192.168.1.1 - - [29/Oct/2026:10:00:00] \"POST /login HTTP/1.1\" 200 512'\nprint(parse_nginx_line(line))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(Groups)"
+          }
+        }
+      ]
+    },
+    {
+      "topic": "List & Dict Comprehensions",
+      "slides": [
+        {
+          "id": 129,
+          "section": "3. Modules & Advanced Python",
+          "topic": "List & Dict Comprehensions",
+          "step": "19.1",
+          "category": "advanced",
+          "categoryLabel": "Advanced",
+          "tag": "Comprehensions",
+          "question": "What are List, Dict, and Set Comprehensions and why are they faster?",
+          "explanation": {
+            "points": [
+              "Comprehensions provide a concise syntax to create collections from iterables.",
+              "Syntax: `[expression for item in iterable if condition]`.",
+              "**Performance**: Comprehensions execute faster in Python bytecode using the dedicated `LIST_APPEND` opcode instead of repeated `.append()` attribute lookups.",
+              "Supports **Dict Comprehensions** `{k: v for ...}` and **Set Comprehensions** `{x for ...}`."
+            ]
+          },
+          "code": "# 1. Traditional Loop vs List Comprehension\nnums = [1, 2, 3, 4, 5, 6, 7, 8]\n\n# 1-line List Comprehension with filtering\neven_squares = [x ** 2 for x in nums if x % 2 == 0]\nprint(\"Even Squares:\", even_squares)\n\n# 2. Dictionary Comprehension (word lengths)\nwords = [\"python\", \"fastapi\", \"pytorch\", \"ai\"]\nword_lengths = {word: len(word) for word in words}\nprint(\"Word Lengths Dict:\", word_lengths)\n\n# 3. Set Comprehension (deduplicate & transform)\nraw_emails = [\"alice@DEV.com\", \"bob@ai.org\", \"ALICE@dev.com\"]\nclean_domains = {email.split('@')[1].lower() for email in raw_emails}\nprint(\"Unique Domains:\", clean_domains)",
+          "tip": "Click through the interactive transformation visualizer below to see how a 4-line for loop collapses into a 1-line comprehension.",
+          "viz": {
+            "type": "comprehension",
+            "data": {}
+          }
+        },
+        {
+          "id": 130,
+          "section": "3. Modules & Advanced Python",
+          "topic": "List & Dict Comprehensions",
+          "step": "19.1-P1",
+          "category": "advanced",
+          "categoryLabel": "Advanced",
+          "tag": "Practice 1",
+          "question": "Practice 1: Even Squares List Comprehension with Conditional",
+          "explanation": {
+            "points": [
+              "**Challenge**: Transform an input list of integers into a list containing the squares of only the even numbers, using a 1-line list comprehension.",
+              "**Example**: Input: [1, 2, 3, 4, 5, 6] -> Output: [4, 16, 36]",
+              "**Constraints**: Must be a single-line list comprehension.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Transform an input list of integers into a list containing the squares of only the even numbers, using a 1-line list comprehension."
+          },
+          "code": "def even_squares(nums: list[int]) -> list[int]:\n    # YOUR CODE HERE\n    pass\n\nprint(even_squares([1, 2, 3, 4, 5, 6]))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "comprehension",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Use syntax: [x**2 for x in nums if x % 2 == 0].",
+            "code": "def even_squares(nums: list[int]) -> list[int]:\n    return [x ** 2 for x in nums if x % 2 == 0]\n\nprint(even_squares([1, 2, 3, 4, 5, 6]))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(N)"
+          }
+        },
+        {
+          "id": 131,
+          "section": "3. Modules & Advanced Python",
+          "topic": "List & Dict Comprehensions",
+          "step": "19.1-P2",
+          "category": "advanced",
+          "categoryLabel": "Advanced",
+          "tag": "Practice 2",
+          "question": "Practice 2: Dictionary Comprehension Word-Length Mapping",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given a list of words, create a dictionary mapping each unique word to its character length using a dict comprehension.",
+              "**Example**: Input: ['python', 'ai', 'vite'] -> Output: {'python': 6, 'ai': 2, 'vite': 4}",
+              "**Constraints**: One-line dictionary comprehension.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given a list of words, create a dictionary mapping each unique word to its character length using a dict comprehension."
+          },
+          "code": "def word_length_map(words: list[str]) -> dict:\n    # YOUR CODE HERE\n    pass\n\nprint(word_length_map(['python', 'ai', 'vite']))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "comprehension",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Use syntax: {w: len(w) for w in words}.",
+            "code": "def word_length_map(words: list[str]) -> dict:\n    return {w: len(w) for w in words}\n\nprint(word_length_map(['python', 'fastapi', 'pyodide', 'vite']))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(N)"
+          }
+        },
+        {
+          "id": 132,
+          "section": "3. Modules & Advanced Python",
+          "topic": "List & Dict Comprehensions",
+          "step": "19.1-L3",
+          "category": "advanced",
+          "categoryLabel": "Advanced",
+          "tag": "LeetCode: LeetCode #136",
+          "question": "LeetCode #136: Single Number (XOR / Set Comprehension)",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given a non-empty array of integers `nums`, every element appears twice except for one. Find that single one in O(N) time and O(1) space.",
+              "**Example**: Input: nums = [4,1,2,1,2] -> Output: 4",
+              "**Constraints**: Must run in linear time.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given a non-empty array of integers `nums`, every element appears twice except for one. Find that single one in O(N) time and O(1) space."
+          },
+          "code": "def single_number(nums: list[int]) -> int:\n    # YOUR CODE HERE\n    pass\n\nprint(single_number([4,1,2,1,2]))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "comprehension",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Method 1 uses Set Comprehension: 2 * sum({x for x in nums}) - sum(nums). Method 2 uses optimal O(1) bitwise XOR: a ^ a = 0.",
+            "code": "# Approach 1: Mathematical Set Comprehension\ndef single_number_set_comp(nums: list[int]) -> int:\n    unique_set = {n for n in nums}  # Set comprehension\n    return 2 * sum(unique_set) - sum(nums)\n\n# Approach 2: Optimal O(1) Space Bitwise XOR\ndef single_number_xor(nums: list[int]) -> int:\n    res = 0\n    for n in nums:\n        res ^= n\n    return res\n\ntest_data = [4, 1, 2, 1, 2]\nprint('Set Comprehension Result:', single_number_set_comp(test_data))\nprint('Optimal XOR Result:', single_number_xor(test_data))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(1)"
+          }
+        },
+        {
+          "id": 133,
+          "section": "3. Modules & Advanced Python",
+          "topic": "List & Dict Comprehensions",
+          "step": "19.1-L4",
+          "category": "advanced",
+          "categoryLabel": "Advanced",
+          "tag": "LeetCode: LeetCode #448",
+          "question": "LeetCode #448: Find All Numbers Disappeared in an Array",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given an array `nums` of `n` integers where `nums[i]` is in range [1, n], return an array of all integers in [1, n] that do not appear in `nums`.",
+              "**Example**: Input: nums = [4,3,2,7,8,2,3,1] -> Output: [5,6]",
+              "**Constraints**: Can you solve with a set comprehension?",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given an array `nums` of `n` integers where `nums[i]` is in range [1, n], return an array of all integers in [1, n] that do not appear in `n"
+          },
+          "code": "def find_disappeared_numbers(nums: list[int]) -> list[int]:\n    # YOUR CODE HERE\n    pass\n\nprint(find_disappeared_numbers([4,3,2,7,8,2,3,1]))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "comprehension",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Create set of nums: s = set(nums). Then use list comprehension: [x for x in range(1, len(nums) + 1) if x not in s].",
+            "code": "def find_disappeared_numbers(nums: list[int]) -> list[int]:\n    num_set = set(nums)\n    return [x for x in range(1, len(nums) + 1) if x not in num_set]\n\nprint(find_disappeared_numbers([4, 3, 2, 7, 8, 2, 3, 1]))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(N)"
+          }
+        },
+        {
+          "id": 134,
+          "section": "3. Modules & Advanced Python",
+          "topic": "List & Dict Comprehensions",
+          "step": "19.1-R5",
+          "category": "advanced",
+          "categoryLabel": "Advanced",
+          "tag": "Real-World: Dataset Batcher",
+          "question": "Real-Time Scenario: Machine Learning Dataset Batch Slicer",
+          "explanation": {
+            "points": [
+              "**Challenge**: Given a dataset of sample tensors, generate list comprehension batches of size `batch_size` for neural network training loops.",
+              "**Example**: 100 samples with batch_size 32 yields 4 batches.",
+              "**Constraints**: Handle trailing uneven batch cleanly.",
+              "**Hint**: Click the 'Reveal Solution' button in the visual panel on the left to see the step-by-step logic and full code."
+            ],
+            "highlight": "Given a dataset of sample tensors, generate list comprehension batches of size `batch_size` for neural network training loops."
+          },
+          "code": "def create_batches(dataset: list, batch_size: int):\n    # YOUR CODE HERE\n    pass\n\nprint(create_batches(list(range(10)), 3))",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "comprehension",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Use list comprehension with step: [dataset[i:i + batch_size] for i in range(0, len(dataset), batch_size)].",
+            "code": "def create_batches(dataset: list, batch_size: int):\n    return [dataset[i:i + batch_size] for i in range(0, len(dataset), batch_size)]\n\nprint(create_batches(list(range(10)), 3))\nprint(create_batches(['A', 'B', 'C', 'D', 'E'], 2))",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(N)"
+          }
+        },
+        {
+          "id": 135,
+          "section": "3. Modules & Advanced Python",
+          "topic": "List & Dict Comprehensions",
+          "step": "19.1-R6",
+          "category": "advanced",
+          "categoryLabel": "Advanced",
+          "tag": "Real-World: Vector Inverter",
+          "question": "Real-Time Scenario: Embeddings Vector Normalizer & Filter",
+          "explanation": {
+            "points": [
+              "**Challenge**: Normalize an AI embedding float vector using L2 unit-norm (Euclidean length) and filter negligible sparse noise below 1e-5 using list comprehensions.",
+              "**Example**: Vector `[0.0, 3.0, 4.0, 0.0]` -> L2 norm is 5.0 -> normalized: `[0.6, 0.8]`.",
+              "**Constraints**: Compute L2 length `sqrt(sum(x**2))` and filter noise with list comprehension.",
+              "**Hint**: L2 normalization is the industry standard for cosine similarity in vector databases (Pinecone, Chroma)."
+            ],
+            "highlight": "Given embedding float vectors, normalize each value to [0.0 - 1.0] and filter out zero-magnitude sparse elements using comprehensions."
+          },
+          "code": "def clean_embeddings(vec: list[float]) -> list[float]:\n    # YOUR CODE HERE\n    pass",
+          "tip": "💡 Need help? Click 'Reveal Solution' in the visual panel on the left to view the optimal code and load it into your editor.",
+          "viz": {
+            "type": "comprehension",
+            "data": {}
+          },
+          "solution": {
+            "approach": "Compute Euclidean L2 norm sqrt(sum(x^2)). Use list comprehension to divide by norm and filter negligible noise below eps=1e-5.",
+            "code": "def normalize_embeddings(vec: list[float], eps: float = 1e-5) -> list[float]:\n    # L2 Euclidean Norm: sqrt(sum(x^2))\n    l2_norm = (sum(x**2 for x in vec)) ** 0.5\n    if l2_norm < eps:\n        return [0.0 for _ in vec]\n    # Filter negligible noise below eps and normalize with comprehension\n    return [round(x / l2_norm, 4) for x in vec if abs(x) > eps]\n\nsample_embedding = [0.0, 3.0, 4.0, 0.0, 0.000002]\nprint('L2 Normalized Vector:', normalize_embeddings(sample_embedding))\n# 3.0/5.0 = 0.6, 4.0/5.0 = 0.8",
+            "timeComplexity": "O(N)",
+            "spaceComplexity": "O(N)"
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Generator Expressions",
+      "slides": [
+        {
+          "id": 136,
+          "section": "3. Modules & Advanced Python",
+          "topic": "Generator Expressions",
+          "step": "19.2",
+          "category": "advanced",
+          "categoryLabel": "Advanced",
+          "tag": "Comprehensions",
+          "question": "How do Generator Expressions compare to List Comprehensions in RAM?",
+          "explanation": {
+            "points": [
+              "A **generator expression** uses round parentheses `(expr for x in iterable)` instead of square brackets `[...]`.",
+              "Instead of building the entire list in memory upfront, it returns a lazy generator object.",
+              "Can be passed directly into functions like `sum()`, `max()`, `min()`, `any()` with zero intermediate memory allocation.",
+              "Ideal when processing millions of log entries, streaming database rows, or calculating running aggregates."
+            ]
+          },
+          "code": "import sys\n\n# 1. Generator Expression syntax\nsquares_gen = (x ** 2 for x in range(1_000_000))\nprint(\"Type of squares_gen:\", type(squares_gen))\n\n# 2. Passing generator directly to sum() without holding 1M ints in RAM\ntotal = sum(x for x in range(1_000_000) if x % 2 == 0)\nprint(f\"Sum of 1M even numbers: {total:,}\")\n\n# 3. Memory verification\nprint(\"RAM for generator object:\", sys.getsizeof(squares_gen), \"bytes!\")",
+          "tip": "Contrast brackets [x for x in range(1000000)] (allocates MBs) vs (x for x in range(1000000)) (allocates 104 bytes).",
+          "viz": {
+            "type": "generator-yield",
+            "data": {}
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Programming Paradigms",
+      "slides": [
+        {
+          "id": 137,
+          "section": "3. Modules & Advanced Python",
+          "topic": "Programming Paradigms",
+          "step": "20.1",
+          "category": "advanced",
+          "categoryLabel": "Paradigms",
+          "tag": "Paradigms",
+          "question": "What Programming Paradigms does Python support (Procedural, OOP, Functional)?",
+          "explanation": {
+            "points": [
+              "Python is a **multi-paradigm** language supporting Procedural, Object-Oriented, and Functional programming.",
+              "**Procedural**: Sequential step-by-step instructions with functions modifying state (great for quick scripts and pipelines).",
+              "**Object-Oriented (OOP)**: Bundles data (attributes) and behavior (methods) into classes and objects (great for large scalable architectures).",
+              "**Functional**: Pure functions, immutability, first-class functions, and higher-order functions (`map`, `filter`, `functools.reduce`).",
+              "Idiomatic Python combines all three: functional data transformations inside OOP services!"
+            ]
+          },
+          "code": "# 1. Procedural Approach\nnums = [1, 2, 3, 4]\ntotal = 0\nfor n in nums: total += n * 2\nprint(\"Procedural Total:\", total)\n\n# 2. Functional Approach (Pure functions, no side-effects)\nfrom functools import reduce\nfunctional_total = reduce(lambda acc, x: acc + x * 2, nums, 0)\nprint(\"Functional Total:\", functional_total)\n\n# 3. Object-Oriented Approach\nclass Accumulator:\n    def __init__(self):\n        self.total = 0\n    def add_doubled(self, val):\n        self.total += val * 2\n\nacc = Accumulator()\nfor n in nums: acc.add_doubled(n)\nprint(\"OOP Total:\", acc.total)",
+          "tip": "Explain to your YouTube viewers that Python does not force strict OOP like Java or pure functional like Haskell; it empowers developers to choose the cleanest tool for each job.",
+          "viz": {
+            "type": "ai-hierarchy",
+            "data": {
+              "levels": [
+                "Procedural (Scripts)",
+                "OOP (Architecture)",
+                "Functional (Data Pipelines)"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "Context Managers",
+      "slides": [
+        {
+          "id": 138,
+          "section": "3. Modules & Advanced Python",
+          "topic": "Context Managers",
+          "step": "20.2",
+          "category": "advanced",
+          "categoryLabel": "Advanced",
+          "tag": "Context Managers",
+          "question": "How do Context Managers (__enter__ and __exit__) manage resources?",
+          "explanation": {
+            "points": [
+              "The `with` statement guarantees proper acquisition and release of resources (files, network locks, database connections).",
+              "Invokes `__enter__()` when entering the block and guarantees `__exit__()` runs when exiting, even if exceptions are thrown.",
+              "Eliminates resource leaks (e.g. unclosed file descriptors or hanging GPU locks).",
+              "Can also be authored using the `@contextlib.contextmanager` decorator with `yield`."
+            ]
+          },
+          "code": "class ManagedResource:\n    def __init__(self, name: str):\n        self.name = name\n    def __enter__(self):\n        print(f\"🔓 [1] Acquired resource: '{self.name}'\")\n        return self\n    def __exit__(self, exc_type, exc_val, exc_tb):\n        print(f\"🔒 [3] Safely released resource: '{self.name}'\")\n        return False  # Do not suppress exceptions\n\n# Using the context manager\nwith ManagedResource(\"GPU Model Weights\") as res:\n    print(f\"⚡ [2] Running inference on {res.name}...\")\n\nprint(\"Done with execution.\")",
+          "tip": "Show how PyTorch uses context managers like with torch.no_grad(): to disable autograd memory storage during inference.",
+          "viz": {
+            "type": "context-manager",
+            "data": {
+              "resource": "GPU Model Weights",
+              "isOpen": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "topic": "File Handling & I/O",
+      "slides": [
+        {
+          "section": "3. Modules & Advanced Python",
+          "topic": "File Handling & I/O",
+          "step": "3.9-F1",
+          "category": "advanced",
+          "categoryLabel": "Files",
+          "tag": "File I/O",
+          "question": "How do you safely Read, Write, and Append files using the `with open()` context manager?",
+          "explanation": {
+            "points": [
+              "**Context Manager (`with open(...) as f:)`**: Automatically closes the file stream when exiting the block, even if exceptions occur.",
+              "**Modes**: `'r'` (read-only), `'w'` (truncate/overwrite), `'a'` (append to end), `'x'` (exclusive creation), `'rb'`/`'wb'` (binary).",
+              "**Reading Methods**: `.read()` (entire file as string), `.readline()` (single line), `.readlines()` (list of lines).",
+              "**Writing Methods**: `.write(str)` (writes string), `.writelines(list)` (writes list of lines without adding newlines automatically)."
+            ]
+          },
+          "code": "import os\n\nfilename = \"sample_dataset.txt\"\n\n# 1. Writing to a file (Mode 'w')\nwith open(filename, \"w\", encoding=\"utf-8\") as f:\n    f.write(\"timestamp,loss,accuracy\\n\")\n    f.write(\"00:01,0.45,0.88\\n\")\n    f.write(\"00:02,0.32,0.94\\n\")\n\n# 2. Appending new data (Mode 'a')\nwith open(filename, \"a\", encoding=\"utf-8\") as f:\n    f.write(\"00:03,0.18,0.98\\n\")\n\n# 3. Reading line-by-line (Memory Efficient)\nprint(f\"--- Reading Content from {filename} ---\")\nwith open(filename, \"r\", encoding=\"utf-8\") as f:\n    for line_num, line in enumerate(f, 1):\n        print(f\"Line {line_num}: {line.strip()}\")\n\n# Cleanup generated demo file\nos.remove(filename)",
+          "tip": "Always specify encoding='utf-8' when opening files to prevent unexpected decoding crashes on Windows systems.",
+          "viz": {
+            "type": "context-manager",
+            "data": []
+          },
+          "id": 139
+        },
+        {
+          "section": "3. Modules & Advanced Python",
+          "topic": "File Handling & I/O",
+          "step": "3.9-F2",
+          "category": "advanced",
+          "categoryLabel": "Files",
+          "tag": "pathlib",
+          "question": "How does the modern `pathlib` module simplify filesystem path operations?",
+          "explanation": {
+            "points": [
+              "**`pathlib.Path`**: Introduced in Python 3.4, provides object-oriented filesystem paths that work seamlessly across Windows and POSIX.",
+              "**Path Concatenation (`/`)**: Use the division operator `/` to join directory paths safely (`Path('data') / 'models' / 'model.pt'`).",
+              "**Convenience Methods**: `Path.read_text()` and `Path.write_text()` read and write entire files in a single line.",
+              "**Inspection**: `.exists()`, `.is_file()`, `.is_dir()`, `.suffix` (file extension), and `.parent`."
+            ]
+          },
+          "code": "from pathlib import Path\n\n# Create a Path object representing current directory\ncurrent_dir = Path(\".\")\nprint(\"Working Directory:\", current_dir.resolve())\n\n# Constructing cross-platform paths using '/'\nconfig_path = Path(\"temp_config.json\")\n\n# Write text directly in one line\nconfig_path.write_text('{\"learning_rate\": 0.001, \"batch_size\": 32}', encoding=\"utf-8\")\n\nif config_path.exists():\n    print(f\"File '{config_path.name}' created! Extension: {config_path.suffix}\")\n    content = config_path.read_text(encoding=\"utf-8\")\n    print(\"Content:\", content)\n    # Cleanup\n    config_path.unlink()",
+          "tip": "Replace legacy 'os.path.join()' with 'Path / other' for cleaner, more readable Python 3 code.",
+          "viz": {
+            "type": "context-manager",
+            "data": []
+          },
+          "id": 140
+        },
+        {
+          "section": "3. Modules & Advanced Python",
+          "topic": "File Handling & I/O",
+          "step": "3.9-F3",
+          "category": "advanced",
+          "categoryLabel": "Files",
+          "tag": "JSON & CSV",
+          "question": "How do you read, parse, and write structured JSON and CSV files in Python?",
+          "explanation": {
+            "points": [
+              "**JSON**: Standard data format for web APIs and AI configurations. Use `json.dumps()` (to string), `json.loads()` (from string), `json.dump(f)` (to file), and `json.load(f)` (from file).",
+              "**CSV**: Comma-Separated Values for tabular data. Use the built-in `csv` module.",
+              "**`csv.DictWriter` and `csv.DictReader`**: Map CSV rows directly to Python dictionaries using header column names."
+            ]
+          },
+          "code": "import json\nimport csv\nimport io\n\n# 1. JSON Serialization & Deserialization\nmodel_meta = {\"name\": \"ResNet50\", \"params_m\": 25.6, \"quantized\": True}\njson_string = json.dumps(model_meta, indent=2)\nprint(\"Serialized JSON:\\n\" + json_string)\nparsed_dict = json.loads(json_string)\nprint(\"Parsed Back:\", parsed_dict[\"name\"])\n\n# 2. In-Memory CSV Processing with DictReader\ncsv_buffer = io.StringIO(\"\"\"id,model,f1_score\n1,Transformer,0.942\n2,RandomForest,0.887\n\"\"\")\n\nreader = csv.DictReader(csv_buffer)\nprint(\"\\nParsed CSV Rows:\")\nfor row in reader:\n    print(f\"  Model: {row['model']:<15} | F1: {float(row['f1_score']):.3f}\")",
+          "tip": "Use csv.DictReader and csv.DictWriter instead of standard csv.reader to avoid hardcoding numerical column indices.",
+          "viz": {
+            "type": "dict",
+            "data": {
+              "pairs": [
+                {
+                  "key": "user_id",
+                  "value": "1001"
+                },
+                {
+                  "key": "status",
+                  "value": "\"active\""
+                },
+                {
+                  "key": "balance",
+                  "value": "450.75"
+                }
+              ]
+            }
+          },
+          "id": 141
+        }
+      ]
+    }
+  ]
+}
